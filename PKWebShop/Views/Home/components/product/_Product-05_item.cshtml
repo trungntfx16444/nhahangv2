@@ -1,0 +1,66 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Utils
+@model IEnumerable<product>
+@{
+}
+@if (Model != null)
+{
+    foreach (var p in Model)
+    {
+        var urlProduct = $"/{p.Url}-pd{p.ReId}";
+        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-6 single-product-item">
+            <div class="single-product-wrap">
+                <div class="product-img product-img-zoom">
+                    <a href="@(urlProduct)">
+                        @{
+                            var url = Uri.UnescapeDataString(p.Picture);
+                            string name = Path.GetFileNameWithoutExtension(url);
+                            string path = Path.GetDirectoryName(url);
+                            var path_destop = Uri.EscapeDataString(path + $"/_resize/{name}_280x280.jpg");
+                            var path_mobile = Uri.EscapeDataString(path + $"/_resize/{name}_160x160.jpg");
+                        }
+                        <img src="@p.Picture" alt="@p.ProductName" srcset="@path_mobile 700w,@path_destop 2000w" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy" />
+
+                        @*<img src="@p.Picture" alt="@p.ProductName" loading="lazy"
+                            srcset="@path_mobile 700w,@path_destop 2000w" />*@
+                    </a>
+                    @if (p.SalePrice > 0 && p.SalePrice < p.Price)
+                    {
+                        <span class="pro-badge left">@(((p.SalePrice ?? 0)/(p.Price ?? 0) * 100 - 100).ToString("0"))%</span>
+                    }
+                    <button class="pro-badge-cart" onclick="CheckProduct('@(p.ReId)')">
+                        <span class="pro-badge-cart-icon"><i class="fas fa-cart-plus"></i></span>
+                        <span class="pro-badge-cart-content">Thêm vào giỏ hàng</span>
+                    </button>
+                </div>
+                <div class="product-content-wrap">
+                    <div class="product-content-left">
+                        <h4><a href="@(urlProduct)">@p.ProductName</a></h4>
+                        <div class="product-price">
+                            @if (p.Price > 0)
+                            {
+                                if (p.SalePrice > 0 && p.SalePrice < p.Price)
+                                {
+                                    <span class="new-price">@((p.SalePrice ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                    <span class="old-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                }
+                                else
+                                {
+                                    <span class="new-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="new-price">Liên hệ</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<script type="text/javascript">
+    $(".product-price").matchHeight();
+</script>

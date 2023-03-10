@@ -1,0 +1,456 @@
+﻿@model IEnumerable<PKWebShop.Models.category>
+@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Utils
+@using PKWebShop.AppLB
+@{
+    var info = ViewBag.WebInfo as webconfiguration ?? new webconfiguration();
+    if (!string.IsNullOrEmpty(info.ImageShared))
+    {
+        ViewBag.og_image = info.ImageShared;
+    }
+
+    var listURL = new List<(string text, string url)>();
+
+    if (ViewBag.SEO_sanpham != null)
+    {
+        var SEO_sanpham = ViewBag.SEO_sanpham as SiteSEO.SEO_Meta;
+        ViewBag.Title = SEO_sanpham.meta_title;
+        ViewBag.SEO_Description = SEO_sanpham.meta_desc;
+        ViewBag.SEO_MetaKeyWord = SEO_sanpham.meta_keyword;
+        ViewBag.SEO_Url = SEO_sanpham.url;
+        listURL.Add(("Sản phẩm", $"/{SEO_sanpham.url}"));
+    }
+
+    if (ViewBag.SEO_category != null)
+    {
+        var SEO_category = ViewBag.SEO_category as category;
+        ViewBag.Title = SEO_category.MetaTitle;
+        ViewBag.SEO_Description = SEO_category.MetaDesc;
+        ViewBag.SEO_MetaKeyWord = SEO_category.MetaKeyWord;
+        ViewBag.SEO_Url = $"{SEO_category.UrlCode}-pc{SEO_category.ReId}";
+        listURL.AddRange(GetUrl(SEO_category, new List<(string text, string url)>()));
+    }
+
+    ViewBag.Class = "shop";
+    var cateLv1 = Model.Where(x => x.Level == 1);
+    var cateLv2 = Model.Where(x => x.Level == 2);
+    var cateLv3 = Model.Where(x => x.Level == 3);
+}
+
+@functions{
+    public List<(string text, string url)> GetUrl(category cate, List<(string text, string url)> _listURL)
+    {
+        _listURL.Insert(0, (cate.CategoryName, $"/{cate.UrlCode}-pc{cate.ReId}"));
+        if (cate.Level > 1)
+        {
+            var _db = new DBLangCustom();
+            var cateParent = _db.categories.FirstOrDefault(x => x.ReId == cate.ParentId);
+            GetUrl(cateParent, _listURL);
+        }
+        return _listURL;
+    }
+}
+
+
+<section class="breadcrumbs">
+    <div class="container">
+
+        <ol>
+            <li><a href="/">Trang chủ</a></li>
+            @foreach (var item in listURL)
+            {
+                <li class="@(listURL.IndexOf(item) + 1 == listURL.Count ? "active" : "")">
+                    <a href="@(item.url)">@(item.text)</a>
+                </li>
+            }
+        </ol>
+
+    </div>
+</section>
+
+<section class="product">
+    <div class="container">
+        <div class="d-lg-flex justify-content-between align-items-center mb-3">
+
+            <div class="d-md-flex justify-content-end align-items-center">
+
+                <div class="d-flex mt-2 mt-lg-0">
+                    <div>
+                        <!-- select option -->
+                        <select class="form-select">
+                            <option selected="">Sắp xếp: Featured</option>
+                            <option value="Low to High">Price: Low to High</option>
+                            <option value="High to Low"> Price: High to Low</option>
+                            <option value="Release Date"> Release Date</option>
+                            <option value="Avg. Rating"> Avg. Rating</option>
+
+                        </select>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="nav nav-tabs menu-product-tabs" id="nav-tab" role="tablist">
+            <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_widget.png" />
+                </div>
+                Menu
+            </button>
+            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_fried-chicken.png" />
+                </div>
+                Gà rán
+            </button>
+            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_fried-chicken.png" />
+                </div>
+                Ăn nhẹ
+            </button>
+            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_burger.png" />
+                </div>
+                Burger
+            </button>
+            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_burger.png" />
+                </div>
+                Value
+            </button>
+            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_sandwich.png" />
+                </div>
+                Sandwich
+            </button>
+            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_sandwich.png" />
+                </div>
+                Pizza
+            </button>
+            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_sandwich.png" />
+                </div>
+                Nước uống
+            </button>
+            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                <div class="menu-img-icon">
+                    <img class="img-fluid" src="~/Content/client/img/menu_sandwich.png" />
+                </div>
+                Combo
+            </button>
+        </div>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
+                <div class="row">
+                    @for (int a = 0; a < 6; a++)
+                    {
+                        <div class="col-md-6">
+                            <div class="menu-product_item">
+                                <div class="product-img">
+                                    <a href="#">
+                                        <img class="img-fluid" src="~/Content/client/img/menu_list_1_1.jpg" />
+                                    </a>
+                                </div>
+                                <div class="product-content">
+                                    <div class="product-name mb-2"><a href="#">Lorem Ipsum is simply dummy text</a></div>
+                                    <div class="product-decription mb-3">
+                                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="product-price">
+                                            <ins>250.000 VNĐ</ins>
+                                            <del>250.000 VNĐ</del>
+                                        </div>
+                                        <div class="product-btn-action">
+                                            <a href="#" class="btn btn-view"><i class="bi bi-eye-fill"></i></a>
+                                            <a href="#" class="btn btn-cart"><i class="bi bi-cart-plus"></i></a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+                <div class="row">
+                    @for (int a = 0; a < 6; a++)
+                    {
+                        <div class="col-md-6">
+                            <div class="menu-product_item">
+                                <div class="product-img">
+                                    <a href="#">
+                                        <img class="img-fluid" src="~/Content/client/img/menu_list_1_1.jpg" />
+                                    </a>
+                                </div>
+                                <div class="product-content">
+                                    <div class="product-name mb-2"><a href="#">Lorem Ipsum is simply dummy text</a></div>
+                                    <div class="product-decription mb-3">
+                                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="product-price">
+                                            <ins>250.000 VNĐ</ins>
+                                            <del>250.000 VNĐ</del>
+                                        </div>
+                                        <div class="product-btn-action">
+                                            <a href="#" class="btn btn-view"><i class="bi bi-eye-fill"></i></a>
+                                            <a href="#" class="btn btn-cart"><i class="bi bi-cart-plus"></i></a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+
+                </div>
+            </div>
+            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">..3.</div>
+        </div>
+
+    </div>
+</section>
+
+
+
+<div class="shop-area pt-10 pb-50 d-none">
+    <div class="container pl-0 pr-0">
+        <div class="row flex-row-reverse py-3 m-0 bg-white">
+            <div class="col-lg-9">
+                <div class="shop-topbar-wrapper">
+                    <div class="shop-topbar-left">
+                        @*<div class="view-mode nav">
+                                <a class="active" href="#shop-1" data-toggle="tab"><i class="icon-grid"></i></a>
+                                <a href="#shop-2" data-toggle="tab"><i class="icon-menu"></i></a>
+                            </div>*@
+                        <p>Hiển thị <span id="hienthi"></span></p>
+                    </div>
+                    <div class="product-sorting-wrapper">
+                        <div class="product-shorting shorting-style">
+                            <label>Xem:</label>
+                            <select id="View" class="filter">
+                                <option selected>12</option>
+                                <option>15</option>
+                                <option>18</option>
+                                <option>21</option>
+                            </select>
+                        </div>
+                        <div class="product-show shorting-style">
+                            <label>Sắp xếp:</label>
+                            <select id="Order" class="filter">
+                                <option id="sanphammoi" value="1">Sản phẩm mới</option>
+                                <option id="sanphambanchay" value="2">Bán Chạy</option>
+                                <option id="sanphamkhuyenmai" value="3">Khuyến Mãi</option>
+                                <option value="4">Giá Thấp</option>
+                                <option value="5">Giá Cao</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="shop-bottom-area" id="ListProduct">
+                    <!--Append partial-->
+                </div>
+                <input type="hidden" id="Page" class="filter" />
+            </div>
+            <div class="col-lg-3">
+                <div class="sidebar-toggle-button sidebar-toggle d-block d-lg-none">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="sidebar-wrapper">
+                    <div class="sidebar-toggle text-right mb-20 d-block d-lg-none">
+                        <button class="btn"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="sidebar-widget mb-30">
+                        <div class="sidebar-search mt-0">
+                            <div class="sidebar-search-form">
+                                <input type="text" id="Search" class="filter" data-delay="500" placeholder="Tìm kiếm sản phẩm" value="@Request["search"]">
+                                <button>
+                                    <i class="icon-magnifier"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-widget mb-30">
+                        <h4 class="sidebar-widget-title">Danh mục </h4>
+                        <div class="shop-catigory" style="font-size:14px;">
+                            <input type="hidden" class="filter" id="Category" value="@(Request["category"]??ViewBag.category)" />
+                            <ul>
+                                <li>
+                                    <a class="Category_ cursor-pointer" href="/san-pham">
+                                        Tất cả
+                                    </a>
+                                </li>
+                                @foreach (var c1 in cateLv1)
+                                {
+                                    var lv2 = cateLv2.Where(x => x.ParentId == c1.ReId);
+                                    <li class="@(lv2.Count() > 0 ? "has-child" : "")">
+
+                                        <a class="Category_@c1.ReId cursor-pointer @(lv2.Count() > 0 ? "pl-8px" : "")" href="@($"/{c1.UrlCode}-pc{c1.ReId}")">
+                                            @if (lv2.Count() <= 0)
+                                            {
+                                                @Html.Raw("")
+                                            }
+                                            @(c1.CategoryName)
+                                        </a>
+                                        @if (lv2.Count() > 0)
+                                        {
+                                            <button id="toggle-@(c1.ReId)" class="toggle"><i class="fas fa-angle-down"></i></button>
+                                        }
+                                        @if (lv2.Count() > 0)
+                                        {
+                                            <ul class="sub-menu">
+                                                @foreach (var c2 in lv2)
+                                                {
+                                                    var lv3 = cateLv3.Where(x => x.ParentId == c2.ReId);
+                                                    <li class="@(lv3.Count() > 0 ? "has-child" : "")">
+
+                                                        <a class="cate Category_@c2.ReId cursor-pointer @(lv3.Count() > 0 ? "pl-8px" : "")" href="@($"/{c2.UrlCode}-pc{c2.ReId}")">
+                                                            @if (lv3.Count() <= 0)
+                                                            {
+                                                                @Html.Raw("")
+                                                            }
+                                                            @(c2.CategoryName)
+                                                        </a>
+                                                        @if (lv3.Count() > 0)
+                                                        {
+                                                            <button style="padding: 10px 30px;" id="toggle-@(c2.ReId)" class="toggle"><i class="fas fa-angle-down"></i></button>
+                                                        }
+                                                        @if (lv3.Count() > 0)
+                                                        {
+                                                            <ul class="sub-menu" style="display: none;">
+                                                                @foreach (var c3 in lv3)
+                                                                {
+                                                                    <li>
+                                                                        <a class="cate Category_@c3.ReId cursor-pointer" href="@($"/{c3.UrlCode}-pc{c3.ReId}")">
+                                                                            @(c3.CategoryName)
+                                                                        </a>
+                                                                    </li>
+                                                                }
+                                                            </ul>
+                                                        }
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                    </li>
+                                }
+
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="sidebar-widget mb-0">
+                        <h4 class="sidebar-widget-title">Tư vấn miễn phí</h4>
+                        <div class="shop-catigory m-3">
+                            <ul>
+                                <li class="hotline mx-0">
+                                    <img src="~/Content/client/images/icon/phone-icon.png" width="24" height="24" class="align-self-center" alt="phone-icon">
+                                    <a class="media-body d-md-flex flex-column" href="tel: @CommonFunc.CleanPhoneNumber(info.Hotline)" title=" @info.Hotline">
+                                        <strong>Hotline: @info.Hotline</strong>
+                                    </a>
+                                </li>
+                            </ul>
+                            <p style="font-size:14px">
+                                <i class="far fa-envelope"></i> @info.ContactEmail
+                            </p>
+                            <p style="font-size:14px"><i class="far fa-calendar-alt"></i> @info.WorkTime</p>
+                        </div>
+                    </div>
+                    <div class="sidebar-widget shop-sidebar-border mb-40 d-none @(!(ViewBag.maxprice > 0)?"d-none":"")">
+                        <h4 class="sidebar-widget-title"><span>Khoảng giá</span></h4>
+                        <div class="price-filter">
+                            <div id="slider-range"></div>
+                            <div class="price-slider-amount">
+                                <div class="label-input">
+                                    <input class="filter" type="text" id="amount" data-delay="500" placeholder="Add Your Price" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+
+    <script>
+    $(function () {
+        if ('@Request["order"]') {
+            $("#@Request["order"]").prop("selected",true);
+        }
+
+        /*---------------------
+        Price range
+        --------------------- */
+        var sliderrange = $('#slider-range');
+        var amountprice = $('#amount');
+        sliderrange.slider({
+            range: true,
+            min: 0,
+            max: @(ViewBag.maxprice ?? 0),
+            values: [0, @(ViewBag.maxprice ?? 0)],
+            slide: function (event, ui) {
+                amountprice.changeVal(`${ui.values[0].toLocaleString('vi')} @Constant.CURRENCY_SIGN - ${ui.values[1].toLocaleString('vi')} @Constant.CURRENCY_SIGN`);
+            }
+        });
+        amountprice.val(`${sliderrange.slider("values", 0).toLocaleString('vi')} @Constant.CURRENCY_SIGN - ${sliderrange.slider("values", 1).toLocaleString('vi')} @Constant.CURRENCY_SIGN`);
+
+        _changeTimeout = null;
+        $(".filter").on("change input", function () {
+            event.preventDefault();
+            if (_changeTimeout) clearTimeout(_changeTimeout);
+            _changeTimeout = setTimeout(function () {
+                loadProducts(sliderrange.slider("values", 0), sliderrange.slider("values", 1));
+            }, ($(this).data("delay") || 0));
+        })
+        loadProducts(sliderrange.slider("values", 0), sliderrange.slider("values", 1));
+    })
+
+        function loadProducts(PriceFrom, PriceTo) {
+            bg_loading(true);
+            var Search = $("#Search").val();
+            var Category = $("#Category").val();
+            var Order = $("#Order").val();
+            var Page = $("#Page").val();
+            var View = $("#View").val();
+            $.ajax({
+                method: "POST",
+                url: "/product/GetProducts",
+                data: { Search, Category, PriceFrom, PriceTo, Order, View, Page },
+                dataType: "html"
+            }).done(function (data) {
+                $("#ListProduct").html(data);
+                $('[class^=Category_].active').removeClass('active'); $('.Category_' + Category).addClass('active');
+                $("#scrollUp").trigger("click");
+                $(`.cate.active`).parents("li").children("button").trigger("click");
+
+                //let PrentCateReId = $("#PrentCateReId").val();
+                //if (PrentCateReId != "") {
+                //    $.each(PrentCateReId.split(","), function (index, reId) {
+                //        $(`#toggle-${reId}`).trigger("click");
+                //    })
+                //}
+            }).fail(function () {
+                //...
+            }).always(function () {
+                bg_loading(false);
+            })
+        };
+    </script>
+}

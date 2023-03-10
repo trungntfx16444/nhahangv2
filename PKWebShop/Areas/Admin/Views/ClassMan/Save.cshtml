@@ -1,0 +1,94 @@
+﻿@model PKWebShop.Models.giasu_class
+@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+
+@{
+    var arrData = ViewBag.ArrData as object[];
+    var _listOption = arrData[0] as List<giasu_option>;
+    var _key = arrData[1] as string;
+    var _listTeacher = arrData[2] as List<teacherModel>;
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="/admin/classman">Thông tin Lớp học</a>
+        </li>
+        <li>
+            <a href="javascript:void(0)">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+@if (TempData["e"] != null)
+{
+    <div class="alert alert-danger">@TempData["e"]</div>
+}
+else if (TempData["s"] != null)
+{
+    <div class="alert alert-success">@TempData["s"]</div>
+}
+
+
+
+<a href="/admin/classman/" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+
+@if (Model.ApprovedAt == null && _key != "v")
+{
+    <a href="/admin/classman/approved/@Model.Id" onclick="return confirm('Bạn có chắc muốn duyệt lớp này?')" class="btn btn-success"><i class="fa fa-check"></i> Duyệt</a>
+}
+
+
+
+<div class="row">
+    <input type="hidden" id="hd_key" value="@_key" />
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2>@ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        @if (Model.IsComplete == true)
+                        {
+                            <div class="alert alert-success">
+                                <strong>Lớp đã hoàn tất</strong>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert @(Model.Status != "Lớp chưa giao" ? Html.Raw("alert-success") : Html.Raw("alert-warning")) ">
+                                <strong>@(!string.IsNullOrEmpty(Model.Status) && Model.Status != "Lớp chưa giao" ? "Lớp đã giao" : "Lớp chưa giao")</strong>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="alert @(Model.ApprovedAt == null ? Html.Raw("alert-danger") : Html.Raw("alert-info"))">
+                            <strong>@(Model.ApprovedAt == null ? Html.Raw("Lớp chưa duyệt") : Html.Raw("Lớp đã duyệt"))</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+
+                @Html.Partial("_ClassRegisterPartial", Model, new ViewDataDictionary { { "listOption", _listOption }, { "listTeacher", _listTeacher } })
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="btn-group">
+    <a href="/admin/classman/" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+</p>
+
+
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Content/user/js/jquery.matchHeight-min.js"></script>
+}

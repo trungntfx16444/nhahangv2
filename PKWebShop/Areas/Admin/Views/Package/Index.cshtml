@@ -1,0 +1,105 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Services
+@{
+    ViewBag.Title = "Tính năng web";
+    var webLicense = new PackageServices().WebPackInfo();
+    if (webLicense.IsPackageOther())
+    {
+        Response.Redirect("/admin");
+    }
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@Html.Partial("partial/_PackageDisplayMessage")
+
+<div class="card">
+    <div class="card-body" id="partial_content">
+        <table id="dataTable" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    @* <th style="width: 175px;">Tính năng</th> *@
+                    @* <th style="width: 120px;">Ngày băt đầu</th> *@
+                    @* <th style="width: 120px;">Ngày hết hạn</th> *@
+                    @* <th style="width: 150px;">Thuộc tính</th> *@
+                    <th>Tính năng</th>
+                    <th>Ngày băt đầu</th>
+                    <th>Ngày hết hạn</th>
+                    <th>Thuộc tính</th>
+                    <th>Mô tả</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--Append data using dataTable-->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(function () {
+        let table = $('#dataTable').DataTable({
+            "lengthChange": false,
+            'paging': false,
+            'searching': false,
+            'ordering': false,
+            'info': false,
+            'autoWidth': true,
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+            "processing": false,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/admin/Package/AvaiablePackage",
+                "data": function (d) {
+                    return d;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (resp) {
+                    $("#dataTable tbody").html(resp.responseJSON[0]);
+                }
+            },
+        });
+    });
+</script>
+
+
+
+<style>
+    .blink {
+      animation: blinker 3s linear infinite;
+      text-transform: uppercase;
+    }
+    .blink_warning {
+      color: orange;
+    }
+    .blink_error {
+      color: red;
+    }
+    #dataTable th,
+    .text-center{
+        text-align: center;
+    }
+    #dataTable .badge {
+        cursor: pointer;
+    }
+</style>

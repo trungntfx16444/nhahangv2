@@ -1,0 +1,291 @@
+﻿@using Inner.Libs.Helpful
+@using PKWebShop.AppLB
+@using PKWebShop.Enums
+@using PKWebShop.Services
+@using PKWebShop.Utils
+@{
+    ViewBag.Title = "Quản lý đơn hàng";
+    var listStatus = UserContent.OrderStatus();
+    var info = PKWebShop.AppLB.UserContent.GetWebInfomation();
+}
+
+
+<style type="text/css">
+    table > tbody tr > td {
+        vertical-align: top !important;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+<style>
+    .nav-tabs .nav-link, .nav-tabs > li > a.active.nav-link, .nav-tabs .nav-link:hover {
+        border-right: 1px solid #eee;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">@ViewBag.Title</h4>
+            <div class="card-toolbar">
+                <a class="btn btn-primary" href="/admin/orderman/save">
+                    Tạo đơn hàng
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div>
+            <div class="row">
+                <div class="col-xl-3 col-md-6 col-6">
+                    <div class="card" style="border-color:#de4436">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="m-b-0">Đơn hàng mới</p>
+                                    <h3 class="m-b-0" style="font-size: 18px;">
+                                        <span id="ddh">@ViewBag.new_orders</span>
+                                    </h3>
+                                </div>
+                                <div class="avatar avatar-icon avatar-lg avatar-red" style="margin-left: -48px;">
+                                    <i class="anticon anticon-profile"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 col-6">
+                    <div class="card card" style="border-color:#00c9a7">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="m-b-0">Doanh số ĐH mới</p>
+                                    <h3 class="m-b-0" style="font-size: 18px;">
+                                        <span id="dsdh">@(ViewBag.new_sales.ToString("#,##0 đ"))</span>
+                                    </h3>
+                                </div>
+                                <div class="avatar avatar-icon avatar-lg avatar-cyan" style="margin-left: -48px;">
+                                    <i class="anticon anticon-dollar"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 col-6">
+                    <div class="card" style="border-color:#3f87f5">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="m-b-0">Tổng đơn hàng</p>
+                                    <h3 class="m-b-0" style="font-size: 18px;">
+                                        <span id="tdh">@ViewBag.total_orders</span>
+                                    </h3>
+                                </div>
+                                <div class="avatar avatar-icon avatar-lg avatar-blue" style="margin-left: -48px;">
+                                    <i class="anticon anticon-profile"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 col-6">
+                    <div class="card" style="border-color:#ffc107">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="m-b-0">Tổng doanh số</p>
+                                    <h3 class="m-b-0" style="font-size: 18px;">
+                                        <span id="tds">@(ViewBag.total_sales.ToString("#,##0 đ"))</span>
+                                    </h3>
+                                </div>
+                                <div class="avatar avatar-icon avatar-lg avatar-gold" style="margin-left: -48px;">
+                                    <i class="anticon anticon-bar-chart"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Search-->
+            <div id="filter" class="form-group row">
+                <div class="col-md-4 col-xs-12 my-1">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Trạng thái</span>
+                        </div>
+                        <select class="form-control" id="Status">
+                            <option value="">-- Tất cả --</option>
+                            @foreach (var s in listStatus)
+                            {
+                                <option value="@s.Key" @(Session["OrderFilter_Status"]?.ToString() == s.Key ? "checked" : "")>@s.Value</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 col-xs-12  my-1">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Từ ngày</span>
+                        </div>
+                        <input type="date" id="From" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="fDate" value="@(ViewBag.From)" />
+                    </div>
+                </div>
+                <div class="col-md-4 col-xs-12 my-1">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Đến ngày</span>
+                        </div>
+                        <input type="date" id="To" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="tDate" value="@(ViewBag.To)" />
+                    </div>
+                </div>
+                <div class="col-md-4 col-xs-12 my-1">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Hình thức thanh toán</span>
+                        </div>
+                        <select class="form-control" id="Paytype">
+                            <option value="">-- Tất cả --</option>
+                            @foreach (var s in (PaymentMethod[])Enum.GetValues(typeof(PaymentMethod)))
+                            {
+                                <option value="@s.ToString()" @(Session["OrderFilter_Status"]?.ToString() == s.ToString() ? "checked" : "")>@s.Text()</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-8 col-xs-12 my-1">
+                    <div class="input-group">
+                        <input type="text" id="search" class="form-control" value="" placeholder="Nhập tên KH hoặc mã ĐH" autocomplete="off" />
+                        <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                            <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Report-->
+            <!--Table list customer and order of customer-->
+            <div class="table-responsive">
+                <table id="table_order" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="no-sort">Mã ĐH</th>
+                            <th>Khách hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th>Phương thức thanh toán</th>
+                            <th colspan="3" class="no-sort" style="width:5%; min-width:100px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--Append data using dataTable-->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script type="text/javascript">
+        let table = $('#table_order').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            "order": [[3, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/admin/orderman/Load_table",
+                "data": function (data) {
+                    data.From = $("#From").val();
+                    data.To = $("#To").val();
+                    data.search = $("#search").val();
+                    data.Status = $("#Status").val();
+                    data.Paytype = $("#Paytype").val();
+                    return data;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#table_order tbody").html(json.responseJSON.data);
+                    }
+
+                    let _report = json.responseJSON.report;
+
+                }
+            }
+        });
+        table.on('draw', function () {
+            //...
+        });
+
+        setTimeout(function () {
+            $("input,select", "#filter").on("change", function () {
+                table.draw();
+            })
+        }, 1000)
+        
+        $("#search").keypress(function () {
+            if (event.keyCode == 13) {
+                $("#btn_search").trigger("click");
+            }
+        });
+
+        $("#btn_search").click(function () {
+            table.draw();
+        });
+    </script>
+}

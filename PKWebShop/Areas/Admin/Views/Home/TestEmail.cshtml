@@ -1,0 +1,147 @@
+﻿@model PKWebShop.Models.webconfiguration
+@{
+    ViewBag.Title = "Cấu hình email";
+}
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <span class="breadcrumb-item active">Hệ thống</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Cấu Hình Email</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="testemail-tab" data-toggle="tab" href="#testemail" role="tab" aria-controls="testemail" aria-selected="false">Kiểm thử Email</a>
+        </li>
+
+    </ul>
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h4>CẤU HÌNH MAIL GỬI</h4>
+                    <div class="card-toolbar">
+                        <button class="btn btn-sm btn-success" onclick="save()">
+                            <i class="fa fa-check"></i> Lưu cấu hình
+                        </button>
+                    </div>
+                </div>
+                <form id="contact_update" role="form" action="/admin/home/EmailConfigUpdate" method="post" class="main-form">
+                    @Html.HiddenFor(m => m.Id)
+                    
+                    <div class="form-group">
+                        <label>Mail server</label>
+                        <input type="text" name="MailServer" class="form-control" placeholder="Mail server" value="@(Model?.MailServer)">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact mail</label>
+                        <input type="text" name="AuthEmail" class="form-control" placeholder="Contact mail" value="@(Model?.AuthEmail)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="AuthPassword" class="form-control" placeholder="Password" value="@(Model?.AuthPassword)" autocomplete="chrome-off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cổng kết nối</label>
+                        <input type="text" name="Port" class="form-control" placeholder="Port" value="@(Model?.Port)">
+                    </div>
+                    <div class="form-group SSL">
+                        <label for="SSL">Bảo mật SSL</label>
+                        <input type="checkbox" id="SSL" name="SSL" @(Model.SSL ? "checked" : "") value="true">
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="testemail" role="tabpanel" aria-labelledby="testemail-tab">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h3>Kiểm thử Email </h3>
+                    <div class="card-toolbar">
+                        <button class="btn btn-sm btn-success" onclick="send()">
+                            <i class="fa fa-paper-plane"></i> Gửi email
+                        </button>
+                    </div>
+                </div>
+                <form id="testmail" class="" action="/admin/home/TestEmail_Send" method="post">
+                    <div class="form-group">
+                        <label class="text-uppercase">Email nhận :</label>
+                        <input type="text" name="Email" class="form-control" value="" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-uppercase">Tiêu đề :</label>
+                        <input type="text" name="Subject" class="form-control" value="Kiểm thử Email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-uppercase">Nội dung :</label>
+                        <textarea rows="7" id="ShortDesc" name="Content" class="form-control" placeholder="">
+                        @Html.Raw(Model.ShortAboutUs?.Replace("\n","<br/>"))                        
+                        </textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(function () {
+            CKEDITOR.replace('ShortDesc', {
+                height: 200,
+                toolbar: [
+                    { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', '-', 'Templates'] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
+                    ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],			// Defines toolbar group without name.
+                    //'/',																					// Line break - next group will be placed in new line.
+                    { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline'] },
+                    { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi'], items: ['NumberedList', 'BulletedList', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-'] },
+                    { name: 'colors', items: ['TextColor', 'BGColor'] }
+                ]
+            });
+        })
+        function send() {
+            $("#ShortDesc").val(CKEDITOR.instances.ShortDesc.getData());
+            $("#testmail").ajaxSubmit(function (data) {
+                cnoty(data);
+            })
+        }
+
+        function save() {
+            $("#contact_update").ajaxSubmit(function (data) {
+                cnoty(data);
+            })
+        }
+    </script>
+
+}

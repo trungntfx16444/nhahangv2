@@ -1,0 +1,472 @@
+﻿@model PKWebShop.Models.product
+@using PKWebShop.Services
+@using PKWebShop.Utils
+
+@{
+    var lang = Request["lang"]?.ToString() ?? SiteLang.GetDefault().Code;
+    var listLanguage = ViewBag.listLangs as List<SiteLang.Language>;
+}
+
+
+<style type="text/css">
+    .box_border {
+        border: 1px solid lightgrey;
+        padding: 3px;
+    }
+
+    .img_main img .box_border {
+        height: 180px;
+    }
+
+    .img_main img {
+        height: 170px;
+    }
+
+    .img_more .btn-danger {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        border-radius: unset;
+        padding: 0px 1px;
+    }
+
+    .img_more_p {
+        position: relative;
+        float: left;
+        margin-right: 5px;
+    }
+
+        .img_more_p > img {
+            height: 130px;
+            border: 1px solid lightgrey;
+        }
+
+    .media {
+        min-width: 180px;
+    }
+
+    .border-primary {
+        border-color: #3f87f5 !important;
+    }
+
+    .border-dee2e6 {
+        border-color: #dbe7f1 !important;
+        background-color: aliceblue;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .color-magenta {
+        color: #eb2f96;
+    }
+
+    #div_product_price {
+        padding: 10px;
+        padding-bottom: 0px;
+    }
+
+    fieldset {
+        border: 1px solid #3f87f5;
+        padding: 5px 11px 9px;
+        margin: 0px 2px;
+        border-radius: 4px;
+    }
+</style>
+
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <a class="breadcrumb-item" href="/admin/ProductTMDT">Sản phẩm</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<p class="btn-group">
+    <a href="/admin/ProductTMDT" class="btn btn-default">
+        <i class="anticon anticon-arrow-left"></i> Trở lại
+    </a>
+    @if (!string.IsNullOrEmpty(Model.Id))
+    {
+        <a class="btn btn-warning" href="@($"/admin/ProductTMDT/detail/{Model.ReId}?lang={lang}")">
+            <i class="anticon anticon-edit"></i> Xem chi tiết
+        </a>
+        <a class="btn btn-danger" href="@($"/admin/ProductTMDT/delete/{Model.ReId}")" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">
+            <i class="anticon anticon-delete"></i> Xóa
+        </a>
+    }
+</p>
+
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">@(ViewBag.Title)</h4>
+        </div>
+    </div>
+    <div class="card-body p-t-0">
+        @if (!string.IsNullOrEmpty(Model.Id) && listLanguage.Count > 0)
+        {
+            <div class="card-header row no-gutters px-0">
+                <div class="col-6">
+                    <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                        @foreach (var l in listLanguage)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(l.Code == lang ? "active" : "")" data-toggle="tab" href="#anticon-tab" onclick="LoadLang('@(Model.ReId)', '@(l.Code)', this)">
+                                    <i class="flag-icon @(l.Icon)"></i> @(l.Name)
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+        <br />
+        <div id="partial_content">
+            @Html.Partial("_Save", Model)
+        </div>
+    </div>
+</div>
+
+
+
+
+<div>
+    <div class="float-left">
+        <div class="btn-group">
+            <a href="/admin/ProductTMDT" class="btn btn-default">
+                <i class="anticon anticon-arrow-left"></i> Trở lại
+            </a>
+            @if (!string.IsNullOrEmpty(Model.Id))
+            {
+                <a class="btn btn-warning" href="@($"/admin/ProductTMDT/detail/{Model.ReId}?lang={lang}")">
+                    <i class="anticon anticon-edit"></i> Xem chi tiết
+                </a>
+                <a class="btn btn-danger" href="@($"/admin/ProductTMDT/delete/{Model.ReId}")" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">
+                    <i class="anticon anticon-delete"></i> Xóa
+                </a>
+            }
+        </div>
+    </div>
+    <div class="float-right">
+        <button type="button" id="btn-save" class="btn btn-primary"><i class="fa fa-check"></i> Lưu sản phẩm</button>
+    </div>
+</div>
+<div class="clearfix"></div>
+
+<!--Modal Property-->
+<div class="modal fade" id="modalProperty">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="frm_property">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalProperty-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="langCode" name="langCode" value="@(lang)" />
+                    <input type="hidden" name="properti_ReId" />
+                    <div class="form-group">
+                        <label class="required">Tên thuộc tính</label>
+                        <input type="text" name="properti_name" class="form-control" />
+                    </div>
+                    <div class="form-group div_new_value">
+                        <label>Giá trị</label>
+                        <input type="text" name="value_name" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveProperty()">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--Modal Value-->
+<div class="modal fade" id="modalValue">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="frm_value">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalValue-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="properti_ReId" />
+                    <div class="form-group div_select_value">
+                        <label class="required">Chọn giá trị cần chỉnh sửa</label>
+                        <select class="form-control" name="value_id">
+                            <option value="">-- Chọn giá trị --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Giá trị mới</label>
+                        <input type="text" name="value_name" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveValue()">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!--Modal Product Price-->
+<div class="modal fade" id="modalPrice">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="frm_price">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPrice-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="proPrice_ReId" name="proPrice_ReId" />
+                    <div class="form-group">
+                        <label class="required font-weight-semibold">Tên nhãn</label>
+                        <input type="text" id="proPrice_name" name="proPrice_name" class="form-control" placeholder="vd: viên thuốc chức năng x1 hộp" />
+                    </div>
+                    <div class="form-group m-b-0">
+                        <label class="font-weight-semibold">Giá bán áp dụng</label>
+                        <div class="input-affix m-b-10">
+                            <input type="text" class="form-control p-r-50" id="proPrice_value" name="proPrice_value" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" onkeyup="$(this).val(toMoney($(this).val()))">
+                            <span class="suffix-icon">@Constant.CURRENCY_SIGN</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="SavePrice()">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!--Modal SEO-->
+@*@Html.Partial("_ResultSEO_Partial")*@
+
+
+@section scripts
+{
+    <script src="~/Scripts/upload-more-picture.js"></script>
+    <script src="~/Content/admin/js/product-properties.js"></script>
+
+    <script type="text/javascript">
+
+        function LoadCategoryByLang() {
+            $.ajax({
+                method: "POST",
+                url: "/admin/ProductTMDT/LoadCategoryByLangCode",
+                data: {
+                    langCode: $("#langCode").val(),
+                    cateReId: "@(Model.CategoryId)"
+                },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0]) {
+                    let cate_lv1 = data[1].filter(x => x.Level == 1);
+                    let cate_lv2 = data[1].filter(x => x.Level == 2);
+                    let cate_lv3 = data[1].filter(x => x.Level == 3);
+
+                    let option = '';
+                    $.each(cate_lv1, function (index, item) {
+                        option += `<option value="${item.ReId}">${item.CategoryName}</option>`;
+
+                        $.each(cate_lv2.filter(x => x.ParentId == item.Id), function (index1, item1) {
+                            option += `<option value="${item1.ReId}">${item1.CategoryName}</option>`;
+
+                            $.each(cate_lv3.filter(x => x.ParentId == item1.Id), function (index2, item2) {
+                                option += `<option value="${item2.ReId}">${item2.CategoryName}</option>`;
+                            });
+                        });
+                    });
+                    $("#CategoryId").html(option);
+                    $('#CategoryId').select2({
+                        templateResult: function (data, container) {
+                            if (cate_lv2.filter(x => x.ReId == data.id).length > 0) {
+                                return `- ${data.text}`;
+                            }
+                            if (cate_lv3.filter(x => x.ReId == data.id).length > 0) {
+                                return `- - ${data.text}`;
+                            }
+                            return data.text;//&mdash
+                        }
+                    }).val(data[2].split(',')).trigger('change');
+
+                }
+                else {
+                    msg_error(data[2], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function LoadLang(reId, langCode, el) {
+            if (el == null || !$(el).hasClass('active')) {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/ProductTMDT/_Save",
+                    data: {
+                        id: reId,
+                        lang: langCode
+                    },
+                    dataType: "html"
+                }).done(function (data) {
+                    $("#partial_content").html(data);
+                    $("#langCode").val(langCode);
+                }).fail(function () {
+                    msg_error("Đã có lỗi xảy ra", "", "top center");
+                });
+            }
+        };
+
+        //PRODUCT PRICE
+        function GetPrice(key, priceReId) {
+            if (key == "add") {
+                $("#frm_price input").clearFields();
+                $("#proPrice_ReId").val("");
+                $("#modalPrice-title").html("Thêm giá bán tùy chọn");
+                $("#modalPrice").modal("show");
+            }
+            else if (key == "edit") {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/ProductTMDT/GetProductPrice",
+                    data: {
+                        proPrice_ReId: priceReId,
+                        lang: $("#langCode").val()
+                    },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        $("#proPrice_ReId").val(data[1].ReId);
+                        $("#proPrice_name").val(data[1].LabelName);
+                        $("#proPrice_value").val(toMoney(data[1].Price));
+                        $("#modalPrice").modal("show");
+                    }
+                    else {
+                        msg_error(data[1], "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Đã có lỗi xảy ra", "", "top center");
+                });
+            }
+        };
+
+        function DeletePrice(priceReId) {
+            $.ajax({
+                method: "POST",
+                url: "/admin/ProductTMDT/DeleteProductPrice",
+                data: { proPrice_ReId: priceReId },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    $(`#div_product_price #price_${priceReId}`).hide(500);
+                    msg_success(data[1], "", "top center");
+                    if (data[2] == 0) {
+                        setTimeout(function () {
+                            $("#div_product_price").addClass("d-none");
+                        }, 500);
+                    }
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function SavePrice() {
+            if ($("#proPrice_name").val() == "") {
+                msg_info("Tên nhãn không được trống", "proPrice_name");
+                return false;
+            }
+
+            $.ajax({
+                method: "POST",
+                url: "/admin/ProductTMDT/SaveProductPrice",
+                data: $("#frm_price").serialize() + `&lang=${$("#langCode").val()}`,
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    if ($("#proPrice_ReId").val() == "") {
+                        $("#div_product_price").append(generalHtml(data[1]));
+                        if ($("#div_product_price").hasClass("d-none")) {
+                            $("#div_product_price").removeClass("d-none");
+                        }
+                        $('[data-toggle="tooltip"]').tooltip();
+                        msg_success("Lưu thành công", "", "top center");
+                    }
+                    else {
+                        $(`#price_${data[1].ReId} .label_name`).html(data[1].LabelName);
+                        $(`#price_${data[1].ReId} .price_value`).html(`${toMoney(data[1].Price)} @Constant.CURRENCY_SIGN`);
+                        msg_success("Cập nhật thành công", "", "top center");
+                    }
+                    $("#modalPrice").modal("hide");
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function generalHtml(productPrice) {
+            let _html = `<p id="price_${productPrice.ReId}" class="p-5 border border-dee2e6">
+                <span class="font-weight-semibold text-dark label_name">${productPrice.LabelName}</span>
+                <span class="float-right">
+                    <span class="text-primary font-weight-semibold m-r-25 price_value">${toMoney(productPrice.Price)} @Constant.CURRENCY_SIGN</span>
+                    <i class="anticon anticon-form text-warning cursor-pointer m-r-5 font-size-17" data-toggle="tooltip" title="Chỉnh sửa" onclick="GetPrice('edit', '${productPrice.ReId}')"></i>
+                    <i class="anticon anticon-close text-danger cursor-pointer font-size-17" data-toggle="tooltip" title="Xóa" onclick="DeletePrice('${productPrice.ReId}')"></i>
+                </span>
+             </p>`;
+            return _html;
+        };
+    </script>
+}

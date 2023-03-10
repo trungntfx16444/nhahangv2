@@ -1,0 +1,797 @@
+﻿@model PKWebShop.Models.order
+@using Inner.Libs.Helpful
+@using PKWebShop.Enums
+@using PKWebShop.Models
+@using PKWebShop.Services
+
+@{
+    var webLicense = new PackageServices().WebPackInfo();
+
+    var listCategory = ViewBag.ListCate as List<category>;
+    var listProductItem = ViewBag.ListProductItem as List<orders_detail>;
+    var listStatus = ViewBag.ListStatus as Dictionary<string, string>;
+    var GiftCode = ViewBag.GiftCode as gift_code ?? new gift_code();
+
+    ViewBag.shippingFee = Model.Shipping ?? 0;
+    ViewBag.discountAmount = Model.DiscountAmount ?? 0;
+    ViewBag.discountPercent = Model.DiscountPercent ?? 0;
+    ViewBag.MoneyRate = Model.BonusPointsDiscount ?? 0;
+    ViewBag.grandTotal = Model.GrandTotal ?? 0;
+    bool shippingAddress = ViewBag.shippingAddress ?? false;
+    List<PaymentMethod> payType = Enum.GetValues(typeof(PaymentMethod)).OfType<PaymentMethod>().Select(x => x).ToList();
+}
+
+<style type="text/css">
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .p-7 {
+        padding: 7px !important;
+    }
+
+    .border-dee2e6 {
+        border-color: #dbe7f1 !important;
+        background-color: aliceblue;
+    }
+
+    .meta-des {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 1; /* number of lines to show */
+        -webkit-box-orient: vertical;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <a class="breadcrumb-item" href="/admin/orderman">Quản lý đơn hàng</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+
+<div class="btn-group">
+    <a href="/admin/orderman" class="btn btn-default">
+        <i class="anticon anticon-left"></i> Trở lại
+    </a>
+    @if (!string.IsNullOrEmpty(Model.Id))
+    {
+        <a class="btn btn btn-info" href="/admin/orderman/vieworder/@(Model.Id)">
+            <i class="anticon anticon-eye"></i> Xem ĐH
+        </a>
+        <a class="btn btn btn-danger" href="/admin/orderman/DeleteOrder/@(Model.Id)" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')">
+            <i class="anticon anticon-delete"></i> Xóa ĐH
+        </a>
+    }
+</div>
+
+<form action="/admin/orderman/SaveOrder" method="post">
+    <br />
+    <div class="row">
+        <input type="hidden" id="Id" name="Id" value="@(Model.Id)" />
+        <div class="col-md-12">
+            <!--Customer-->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h4 class="card-title">Thông tin khách hàng</h4>
+                        <div class="card-toolbar">
+                            <button type="button" class="btn btn-sm btn-success" onclick="LoadCustomer('@Model.CustomerId')">
+                                <i class="fa fa-cog"></i> chỉnh sửa thông tin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!--<div class="input-group">
+                        <input type="text" id="text_search" class="form-control" name="text_search" placeholder="Nhập tên khách hàng hoặc sđt">
+                        <div id="btn_search" class="input-group-append cursor-pointer" onclick="searchCustomer()">
+                            <span class="input-group-text">
+                                <i class="fa fa-search"></i>&nbsp;<b>Tìm kiếm</b>
+                            </span>
+                        </div>
+                    </div>
+                    <br />
+                    <div id="div_customer" class="m-b-10 border" style="display:none;">
+                        <h6 class="text-uppercase text-white text-center p-t-10 p-b-10 mb-0" style="background-color:#333333">
+                            Danh sách khách hàng
+                        </h6>
+                        <div id="SearchCustomerPartial" style="max-height: 250px; overflow: auto;">-->
+                    <!--Append _SearchCustomerPartial-->
+                    <!--</div>
+                    </div>-->
+                    <div id="CustomerInfo" style="display:none">
+                        <div style="border:1px solid red; ">
+                            <table class="table mb-0">
+                                <tr>
+                                    <td>
+                                        <span>Tên KH: </span>
+                                    </td>
+                                    <td>
+                                        <span id="cusName" class="font-weight-semibold text-uppercase text-dark">@(Model.CustomerName)</span><br />
+
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span>Địa chỉ</span>
+                                    </td>
+                                    <td>
+                                        <span id="cusAddress" class="font-size-11 text-dark font-weight-semibold">@(Model.Customer_Address)</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span>Số Điện thoại: </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            <i class="anticon anticon-phone"></i>
+                                            <span id="cusPhone">@(Model.CustomerPhone ?? "---")</span>
+                                        </span><br />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span>
+                                            Email:
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            <i class="anticon anticon-mail"></i>
+                                            <span id="cusEmail">@(Model.CustomerEmail ?? "---")</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <input type="hidden" id="CustomerId" name="CustomerId" value="@(Model.CustomerId ?? "")" />
+                    <input type="hidden" id="address_exist" name="address_exist" value="" />
+                </div>
+            </div>
+
+            <!--Shipping-->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h4 id="ship-card-title" class="card-title">ĐỊA CHỈ GIAO HÀNG</h4>
+                        <div class="card-toolbar" style="display:contents">
+                            <div class="checkbox">
+                                <input id="check-ship" type="checkbox" name="check-ship" value="1" @(shippingAddress ? "checked" : "")>
+                                <label for="check-ship" class="check-ship text-primary mb-0">
+                                    Khác địa chỉ khách hàng
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="div-shipping" @(string.IsNullOrEmpty(Model.CustomerId) ? "class=collapse" : "") @(shippingAddress == false ? "style=display:none" : "")>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="required">Tỉnh/Thành phố</label>
+                                <select id="Province" class="form-control" name="Shipping_Province" onchange="LoadDistrict()">
+                                    <option value="@(Model.Shipping_Province ?? "")">-- Chọn Tỉnh/Thành phố --</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="required">Quận/Huyện</label>
+                                <select id="District" class="form-control" name="Shipping_District" onchange="LoadWard()">
+                                    <option value="@(Model.Shipping_District ?? "")">-- Chọn Quận/Huyện --</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="required">Xã/Phường</label>
+                                <select id="Ward" class="form-control" name="Shipping_Ward">
+                                    <option value="@(Model.Shipping_Ward ?? "")">-- Chọn Xã/Phường --</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="required">Địa chỉ</label>
+                                <input type="text" id="ShippingAddress" class="form-control" name="ShippingAddress" value="@(Model.ShippingAddress)" placeholder="Số nhà, tên đường">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Order-->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">ĐƠN HÀNG</h4>
+                </div>
+                <div class="card-body">
+
+                    <div class="row form-group">
+                        @if (webLicense.GiftCode == true)
+                        {
+                            <div class="col-md-4">
+                                <label>Mã giảm giá áp dụng</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="giftcode" placeholder="không có mã giảm giá" value="@(GiftCode?.code)" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="checkGiftCode($('[name=giftcode]').val())">Check</button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="col-md-4">
+                            <label>Trạng thái đơn hàng</label>
+                            <select class="form-control" name="Status">
+                                @foreach (var item in listStatus)
+                                {
+                                    <option @(Model.Status == item.Key ? "selected" : "") value="@(item.Key)">@(item.Value)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Phương thức thanh toán</label>
+                            <select class="form-control" name="PaymentMethod">
+                                @foreach (var pay in payType)
+                                {
+                                    <option @(Model.PaymentMethod == pay.Code<string>() ? "selected" : "") value="@(pay.Code<string>())">@(pay.Text())</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <br />
+                    <div id="div_product_item">
+                        <!--Append _ProductItemPartial-->
+                        @Html.Partial("_ProductItemPartial", listProductItem)
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea rows="4" class="form-control" name="Customer_Comment">@Html.Raw(Model.Customer_Comment)</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <div class="col-md-12 pl-0">
+        <div style="float:left">
+            <div class="btn-group">
+                <a href="/admin/orderman" class="btn btn-default">
+                    <i class="anticon anticon-left"></i> Trở lại
+                </a>
+                @if (!string.IsNullOrEmpty(Model.Id))
+                {
+                    <a class="btn btn btn-info" href="/admin/orderman/vieworder/@(Model.Id)" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')">
+                        <i class="anticon anticon-eye"></i> Xem ĐH
+                    </a>
+                    <a class="btn btn btn-danger" href="/admin/orderman/DeleteOrder/@(Model.Id)" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')">
+                        <i class="anticon anticon-delete"></i> Xóa ĐH
+                    </a>
+                }
+            </div>
+        </div>
+        <div style="float:right">
+            <button type="submit" id="btn_Luu" class="btn btn-primary" onclick="return SaveOrder()">
+                <i class="anticon anticon-check"></i> Lưu
+            </button>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</form>
+
+
+
+<div class="modal fade" id="modalProduct">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form id="frmcontent">
+                <!--Append _ProductPopupPartial-->
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addproduct">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-uppercase">Thêm sản phẩm</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label>NHÓM SẢN PHẨM:</label>
+                    <select class="form-control" id="selectCategory" onchange="Loadproduct()">
+                        <option value="">-- Chọn nhóm sản phẩm --</option>
+                        @foreach (var item in listCategory.Where(x => x.Level == 1))
+                        {
+                            <option value="@(item.ReId)">@(item.CategoryName)</option>
+
+                            foreach (var item1 in listCategory.Where(x => x.Level == 2 && x.ParentId == item.ReId))
+                            {
+                                <option value="@(item1.ReId)">--@(item1.CategoryName)</option>
+
+                                foreach (var item2 in listCategory.Where(x => x.Level == 3 && x.ParentId == item1.ReId))
+                                {
+                                    <option value="@(item2.ReId)">----@(item2.CategoryName)</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label>SẢN PHẨM:</label>
+                    <div id="div_listproduct" style="border: 1px solid #CCCCCC;height:60vh;overflow-y:auto;overflow-x:hidden;padding:5px;">
+                        <!--Append _ListProductPartial-->
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalCustomer">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form id="frm-customer" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cập nhật thông tin khách hàng</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="Id" name="Id" value="" />
+                <div class="form-group">
+                    <label class="font-weight-semibold required">Tên khách hàng</label>
+                    <input type="text" class="form-control" id="FullName" name="FullName" placeholder="Nhập tên KH" required autocomplete="off">
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Số điện thoại</label>
+                        <input type="text" class="form-control" id="Phone" name="Phone" placeholder="Nhập số điện thoại" oninput="this.value = this.value.replace(/[^0-9,]/g, '');" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Email</label>
+                        <input type="email" class="form-control" id="Email" name="Email" placeholder="Nhập email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Tỉnh/TP</label>
+                        <select id="Province2" name="Province" class="form-control" onchange="LoadDistrict2()">
+                            <option value="">--- Chọn Tỉnh/TP ---</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Quận/Huyện</label>
+                        <select id="District2" name="District" class="form-control" onchange="LoadWard2()">
+                            <option value="">--- Chọn Quận/Huyện ---</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Xã/Phường</label>
+                        <select id="Ward2" name="Ward" class="form-control">
+                            <option value="">--- Chọn Xã/Phường ---</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Số nhà, tên đường</label>
+                        <input type="text" class="form-control" id="Address" name="Address">
+                    </div>
+                </div>
+                <div class="form-group mb-0">
+                    <div class="checkbox">
+                        <input id="Active" name="Active" type="checkbox" value="true">
+                        <label for="Active" class="font-weight-semibold">Đang hoạt động</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="SaveCustomer()">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+@section scripts {
+    <script src="~/Content/admin/js/load-full-address.js"></script>
+    <script src="~/Content/admin/js/load-full-address_2.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#check-ship").change(function () {
+                if ($(this).prop("checked")) {
+                    if ($("#CustomerId").val() != "" && $("#address_exist").val() == "") {
+                        $(this).prop("checked", false);
+                        msg_info("Khách hàng không có địa chỉ. Vui lòng chọn địa chỉ giao hàng.", $(this).prop("id"), "");
+                    }
+                    else {
+                        $("#div-shipping").slideDown();
+                    }
+                }
+                else {
+                    $("#div-shipping").slideUp();
+                }
+            })
+        })
+
+        if ($("#CustomerId").val() != "") {
+            chooseCustomer($("#CustomerId").val());
+        }
+
+        function ChangePriceOpt(el) {
+            let _price = $(el).data("price");
+            $("input[name='_price']").val(_price);
+        };
+
+        //======================================PRODUCT==============================
+        function Loadproduct() {
+            if ($("#selectCategory").val() == "") {
+                $("#div_listproduct").empty();
+            }
+            else {
+                $.ajax({
+                    method: "GET",
+                    url: "/admin/orderman/loadproduct",
+                    data: { cateReId: $("#selectCategory").val() },
+                    dataType: "html"
+                }).done(function (data) {
+                    $("#div_listproduct").html(data);
+                    let err = $("#err_msg").val();
+                    if (err != "") {
+                        msg_error(err, "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Đã có lỗi xảy ra", "", "top center");
+                });
+            }
+        };
+
+        function SelectItemOrder(proReId, orderDetail) {
+            $.ajax({
+                method: "GET",
+                url: "/admin/orderman/GetProductDetail",
+                data: { proReId, orderDetail },
+                dataType: "html"
+            }).done(function (data) {
+                $("#frmcontent").html(data);
+                let err = $("#detail_err").val();
+                if (err != "") {
+                    msg_error(err, "", "top center");
+                }
+                else {
+                    $("#modalProduct").modal("show");
+                }
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function AddItemOrder() {
+            let shippingFee = $("#ShippingFee").val().replace(/\./g, "");
+            let discountAmount = $("#DiscountAmount").val().replace(/\./g, "");
+            let moneyRate = $("#money_rate").val();
+            $.ajax({
+                method: "GET",
+                url: "/admin/orderman/additemorder",
+                //data: { proId: proId },
+                data: $("#frmcontent").serialize(),
+                dataType: "html"
+            }).done(function (data) {
+                $("#div_product_item").html(data);
+                let err = $("#add_err").val();
+                if (err != "") {
+                    msg_error(err, "", "top center");
+                }
+                else {
+                    $("#ShippingFee").val(toMoney(shippingFee));
+                    $("#money_rate").val(moneyRate);
+                    if (moneyRate > 0) {
+                        $("#money_rate_text").html(`Sử dụng điểm tích lũy giảm ${toMoney(moneyRate)}`);
+                        $("#money_rate_text").parent().slideDown();
+                    }
+
+                    let giftCode_percent = parseFloat("@(GiftCode.percent ?? 0)");
+                    if (giftCode_percent > 0) {
+                        let subTotal = $("#SubTotal").text().replace(/\./g, "").trim();
+                        subTotal = parseInt(subTotal == "" ? "0" : subTotal);
+                        discountAmount = parseInt((giftCode_percent / 100) * subTotal);
+                    }
+                    $("#DiscountAmount").val(toMoney(discountAmount == "" ? "0" : discountAmount));
+
+                    ChangeShippingOrDiscount();
+                    $("#modalProduct").modal("hide");
+                }
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function RemoveItemOrder(orderDetail) {
+            $.ajax({
+                method: "GET",
+                url: "/admin/orderman/removeitemorder",
+                data: { orderDetail },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    if (data[1] != "-1") {
+                        $("#SubTotal").html(toMoney(data[1]));
+                        let shippingFee = $("#ShippingFee").val().replace(/\./g, "");
+                        let discountAmount = $("#DiscountAmount").val().replace(/\./g, "");
+                        let moneyRate = $("#money_rate").val();
+
+                        let giftCode_percent = parseFloat("@(GiftCode.percent ?? 0)");
+                        if (giftCode_percent > 0) {
+                            let subTotal = $("#SubTotal").text().replace(/\./g, "").trim();
+                            subTotal = parseInt(subTotal == "" ? "0" : subTotal);
+                            discountAmount = parseInt((giftCode_percent / 100) * subTotal);
+                            $("#DiscountAmount").val(toMoney(discountAmount == "" ? "0" : discountAmount));
+                        }
+
+                        let grandTotal = (parseInt(data[1]) + parseInt(shippingFee == "" ? "0" : shippingFee)) - parseInt(discountAmount == "" ? "0" : discountAmount) - parseInt(moneyRate == "" ? "0" : moneyRate);
+                        $("#GrandTotal").html(toMoney(grandTotal));
+                        $(`#tr_${orderDetail}`).remove();
+                        $(".td_stt").each(function (index) {
+                            $(this).html(index + 1);
+                        })
+                    }
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+        function checkGiftCode(code) {
+            $.ajax({
+                method: "Post",
+                url: "/admin/orderman/checkgiftcode",
+                data: { code },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    if (data[2].percent) {
+
+                        $("[name=discount_type][value=%]").trigger("click");
+                        $("#DiscountAmount").val(data[2].percent).trigger("blur");
+                    } else {
+                        $("[name=discount_type][value=đ]").trigger("click");
+                        $("#DiscountAmount").val(data[2].price).trigger("blur");
+                    }
+
+                };
+            }).fail(function () {
+
+            });
+        };
+
+        function ChangeShippingOrDiscount() {
+            let freeShip = $("#free_ship").val();
+            let subTotal = $("#SubTotal").text().replace(/\./g, "").trim();
+            let shippingFee = $("#ShippingFee").val().replace(/\./g, "");
+            let discountAmount = $("#DiscountAmount").val().replace(/\./g, "");
+
+            let moneyRate = $("#money_rate").val();
+
+            freeShip = parseInt(freeShip == "" ? "0" : freeShip);
+            subTotal = parseInt(subTotal == "" ? "0" : subTotal);
+            if ($('[name="discount_type"]:checked').val() == "%") {
+                discountAmount = Math.max(Math.min(discountAmount, 100), 0);
+                $("#DiscountAmount").val(discountAmount);
+                discountAmount = parseInt((discountAmount || "0") * subTotal/100);
+            } else {
+                discountAmount = Math.max(Math.min(discountAmount, subTotal), 0);
+                $("#DiscountAmount").val(toMoney(discountAmount));
+                discountAmount = parseInt(discountAmount || "0");
+            }
+
+            moneyRate = parseInt(moneyRate == "" ? "0" : moneyRate);
+
+            let grandTotal = subTotal - discountAmount - moneyRate;
+            if (grandTotal < freeShip) {
+                grandTotal += parseInt(shippingFee == "" ? "0" : shippingFee);
+                $("#ShippingFee").css("text-decoration", "none");
+            }
+            else {
+                $("#ShippingFee").css("text-decoration", "line-through");
+            }
+
+            //let grandTotal = (parseInt(subTotal == "" ? "0" : subTotal) + parseInt(shippingFee == "" ? "0" : shippingFee)) - parseInt(discountAmount == "" ? "0" : discountAmount);
+            $("#GrandTotal").html(toMoney(grandTotal));
+        };
+        //==\End.
+
+        //======================================CUSTOMER==============================
+        $("input[name='text_search']").keypress(function (event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                searchCustomer();
+            }
+        });
+
+        function searchCustomer() {
+            $.ajax({
+                method: "POST",
+                url: "/admin/orderman/searchcustomer",
+                data: { search: $("input[name='text_search']").val() },
+                dataType: "html"
+            }).done(function (data) {
+                //data: Partial_html
+                $("#SearchCustomerPartial").html(data);
+                $("#div_customer").show('slow');
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        }
+
+        function chooseCustomer(id) {
+            $.ajax({
+                method: "POST",
+                url: "/admin/orderman/GetCustomerInfo",
+                data: { id: id },
+                dataType: "json"
+            }).done(function (data) {
+                //data: object[] {[true/false], [cus_info/err_msg]}
+                if (data[0] == true) {
+                    $("#cusName").html(data[1].FullName);
+                    $("#cusPhone").html(data[1].Phone);
+                    $("#cusEmail").html(data[1].Email);
+                    $("#cusAddress").html(data[2]);
+
+                    //auto check shipping address default
+                    if (!$("#check-ship").prop("checked")) {
+                        if ((data[1].Address ?? "") == "" || (data[1].Ward ?? "") == "" || (data[1].District ?? "") == "" || (data[1].Province ?? "") == "") {
+                            $("#address_exist").val("");
+                            $("#check-ship").prop("checked", true);
+                            $("#div-shipping").slideDown();
+                        }
+                        else {
+                            $("#address_exist").val("1");
+                        }
+                    }
+                    else {
+                        if ((data[1].Address ?? "") == "" || (data[1].Ward ?? "") == "" || (data[1].District ?? "") == "" || (data[1].Province ?? "") == "") {
+                            $("#address_exist").val("");
+                        }
+                        else {
+                            $("#address_exist").val("1");
+                        }
+                    }
+
+                    $("#div_customer").hide();
+                    $("#CustomerInfo").slideDown();
+                    $("#CustomerId").val(id);
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function LoadCustomer(cusId = "") {
+            if (cusId != "") {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/customerman/LoadCustomer",
+                    data: { id: cusId },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        $("#frm-customer [name=Id]").val(data[1].Id);
+                        $("#frm-customer [name=FullName]").val(data[1].FullName);
+                        $("#frm-customer [name=Phone]").val(data[1].Phone);
+                        $("#frm-customer [name=Email]").val(data[1].Email);
+                        $("#frm-customer [name=Address]").val(data[1].Address);
+                        $("#frm-customer [name=Active]").prop("checked", data[1].Active ?? false);
+
+                        $("#frm-customer [name=District]").append(`<option value='${data[1].District}' selected>Quận/Huyện</option>`);
+                        $("#frm-customer [name=Ward]").append(`<option value='${data[1].Ward}' selected>Xã/Phường</option>`);
+                        $("#frm-customer [name=Province]").val(data[1].Province).trigger("change");
+
+                        $("#ModalCustomer").modal("show");
+                    }
+                    else {
+                        msg_error(data[1], "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Tải dữ liệu thất bại. Vui lòng thử lại.", "", "top right");
+                });
+            }
+        };
+        function SaveCustomer() {
+            if ($("#frm-customer [name=FullName]").val() == "") {
+                msg_info("Tên khách hàng không được trống.", "FullName", "");
+                return false;
+            }
+            else if ($("#frm-customer [name=Phone]").val() == "") {
+                msg_info("Số điện thoại không được trống.", "Phone", "");
+                return false;
+            }
+
+            $.ajax({
+                method: "POST",
+                url: "/admin/customerman/SaveCustomer",
+                data: $("#frm-customer").serialize(),
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    msg_success(data[1], "", "top center");
+                    $("#ModalCustomer").modal("hide");
+                    chooseCustomer($("#CustomerId").val());
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Lưu thất bại. Đã có sự cố xảy ra.", "", "top right");
+            });
+        };
+        //==\End.
+
+        //======================================ORDER==============================
+        function SaveOrder() {
+            if ($("#CustomerId").val() == "") {
+                msg_info("Vui lòng chọn khách hàng", "text_search");
+                $("#text_search").focus();
+                return false;
+            }
+            else if ($("#check-ship").prop("checked") == true && ($("#Province option:selected").val() == "" || $("#District option:selected").val() == "" || $("#Ward option:selected").val() == "" || $("#ShippingAddress").val() == "")) {
+                msg_info("Vui lòng chọn địa chỉ giao hàng", "ship-card-title", "");
+                $("#ShippingAddress").focus();
+                return false;
+            }
+            else if ($(".tr_item").length == 0) {
+                msg_info("Vui lòng chọn sản phẩm cho đơn hàng", "btn_Luu", "left");
+                return false;
+            }
+            return true;
+        };
+            //==\End.
+    </script>
+}

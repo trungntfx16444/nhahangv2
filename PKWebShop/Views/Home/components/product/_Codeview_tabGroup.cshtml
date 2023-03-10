@@ -1,0 +1,55 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@model sFeatures_view
+@{
+    string url_product = ViewBag.url_product;
+    var data = (Model.Data as Dictionary<category, List<product>>).Select(x => new { x.Key, x.Value }).ToList();
+    data.Insert(0, new { Key = new category { Id = "0", CategoryName = "All Products" }, Value = data.SelectMany(s => s.Value).OrderByDescending(s => s.Sold).Take(8).ToList() });
+}
+<!--List tab header theo category-->
+@foreach (var c in data.Select(s => s.Key))
+{
+    <a href="#product-@c.ReId" data-toggle="tab" @(c.Id == "0" ? "class=active" : "")> @c.CategoryName </a>
+}
+<!--List tab theo category-->
+@foreach (var c in data)
+{
+    <div id="product-@c.Key.ReId" class="tab-pane @(c.Key.Id=="0"?"active":"")">
+        <div class="row">
+            <!--List sản phẩm-->
+            @foreach (var product in c.Value)
+            {
+                //Hình ảnh
+                <img src="@product.Picture" alt="@product.ProductName" srcset="@product.pictureResize(3) 700w,@product.pictureResize(4) 2000w" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy" />
+
+                //Liên kết
+                @($"/{product.Url}-pd{product.ReId}")
+                
+                //Tên sp
+                @product.ProductName
+                
+                //Giá bán
+                <div class="product-price">
+                    @if (product.Price > 0)
+                    {
+                        if (product.SalePrice > 0 && product.SalePrice < product.Price)
+                        {
+                            <span class="new-price"> @Constant.CURRENCY_SIGN @((product.SalePrice ?? 0).ToString("#,##0.00"))</span>
+                            <span class="old-price"> @Constant.CURRENCY_SIGN @((product.Price ?? 0).ToString("#,##0.00"))</span>
+                        }
+                        else
+                        {
+                            <span class="new-price">@Constant.CURRENCY_SIGN @((product.Price ?? 0).ToString("#,##0.00")) </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="new-price">Liên hệ</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}

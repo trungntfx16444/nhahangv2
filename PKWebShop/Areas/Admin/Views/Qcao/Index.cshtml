@@ -1,0 +1,179 @@
+﻿@using PKWebShop.Models
+@{
+    ViewBag.Title = "Popup quảng cáo";
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+}
+
+<style type="text/css">
+    i.flag-title:hover {
+        cursor: help;
+    }
+</style>
+
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+<div class="alert alert-danger">
+    <div class="d-flex align-items-center justify-content-start">
+        <span class="alert-icon">
+            <i class="anticon anticon-warning font-size-18"></i>
+        </span>
+        <span>@Html.Raw(TempData["error"])</span>
+    </div>
+</div>
+}
+else if (TempData["success"] != null)
+{
+<div class="alert alert-success">
+    <div class="d-flex align-items-center justify-content-start">
+        <span class="alert-icon">
+            <i class="anticon anticon-check font-size-18"></i>
+        </span>
+        <span> @Html.Raw(TempData["success"])</span>
+    </div>
+</div>
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">@(ViewBag.Title)</h4>
+            <div class="card-toolbar">
+                <a class="btn btn-primary" href="/admin/qcao/save">
+                    <i class="anticon anticon-plus"></i> Tạo quảng cáo
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="partial_content">
+        <!--Search-->
+        <div class="form-group row">
+            <div class="col-md-4 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Từ ngày</span>
+                    </div>
+                    <input type="date" id="From" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="fDate" value="@(ViewBag.From)" />
+                </div>
+            </div>
+            <div class="col-md-4 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <input type="text" id="search" class="form-control" value="" placeholder="Nhập tên tiêu đề quảng cáo" autocomplete="off" />
+                    <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                        <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table id="dataTable" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Tiêu đề</th>
+                    <th>Thời gian</th>
+                    <th class="no-sort">Mô tả</th>
+                    <th class="no-sort">Hình ảnh</th>
+                    <th>Trạng thái</th>
+                    <th class="no-sort" style="width:140px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--Append data using dataTable-->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section scripts{
+    <script type="text/javascript">
+        var table = $('#dataTable').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            "order": [[1, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/admin/Qcao/Load_table",
+                "data": function (data) {
+                    data.From = $("#From").val();
+                    data.search = $("#search").val();
+                    return data;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (data) {
+                    //console.log(json);
+                    if (data.responseJSON.data == null || data.responseJSON.data[0] == -1) {
+                        window.location.reload();
+                    }
+                    $("#dataTable tbody").html(data.responseJSON.data);
+                }
+            },
+        });
+
+        $("#search").keypress(function () {
+            if (event.keyCode == 13) {
+                $("#btn_search").trigger("click");
+            }
+        });
+
+        $("#btn_search").click(function () {
+            table.draw();
+        });
+
+        function LoadLang(lang) {
+            $('#lang').val(lang);
+            table.draw();
+        }
+        
+        function Delete(id) {
+            if (confirm("Bạn có chắc chắn muốn xóa quảng cáo này?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/Qcao/Delete",
+                    data: { id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        table.draw();
+                        msg_success(data[1], "", "top center");
+                    }
+                    else {
+                        msg_error(data[1], "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Lấy dữ liệu thất bại. Đã có sự cố xảy ra", "", "top center");
+                });
+            }
+        }
+    </script>
+}
+
+

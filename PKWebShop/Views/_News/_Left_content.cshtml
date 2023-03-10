@@ -1,0 +1,85 @@
+﻿<!-- Sidebar-->
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@{
+    var db = new DBLangCustom();
+    var topic_dichvu = ((int)UserContent.Posts_topic.DichVu).ToString();
+    Session["dichvu"] = Session["dichvu"] ?? db.n_news.Where(n => n.Active != false && n.ParentTopicId == topic_dichvu).OrderByDescending(n => n.Order).ThenByDescending(n => n.CreatedAt).Select(n => new option_value { Code = n.UrlCode, Value = n.Name }).ToList();
+    var dichvus = Session["dichvu"] as List<option_value>;
+    var topic_tintuc = ((int)UserContent.Posts_topic.TinTuc).ToString();
+    dynamic tintucs = Session["tintuc"] = Session["tintuc"] ?? db.n_news.Where(n => n.Active != false && n.ParentTopicId == topic_tintuc).OrderByDescending(n => n.Order).ThenByDescending(n => n.CreatedAt).Take(5).ToList();
+    //dynamic tags = Session["tags"] = Session["tags"] ?? db.n_news.Select(t => t.Tags).ToList().Select(t => (t ?? string.Empty).Split('|')).SelectMany(i => i).Where(t => !string.IsNullOrEmpty(t)).GroupBy(t => t)
+    //.Select(t => new { Count = t.Count(), tag = t.Key }).OrderByDescending(x => x.Count).Take(5).Select(x => x.tag).ToList();
+    var dichvu = db.n_parent_topic.FirstOrDefault(p=>p.ReId== topic_dichvu);
+    var tintuc = db.n_parent_topic.FirstOrDefault(p => p.ReId == topic_tintuc);
+}
+
+<style>
+    .meta-des2 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        padding-bottom: 0px;
+    }
+</style>
+
+
+<div class="cs-is-sidebar cs-sidebar col-lg-3 pt-lg-5">
+    <div class="cs-offcanvas-collapse cs-offcanvas-right" id="blog-sidebar">
+        <div class="cs-offcanvas-cap navbar-box-shadow px-4 mb-3">
+            <h5 class="mt-1 mb-0">Danh mục</h5>
+            <button class="close lead" type="button" data-toggle="offcanvas" data-offcanvas-id="blog-sidebar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="cs-offcanvas-body px-4 pt-3 pt-lg-0 pr-lg-0 pl-lg-2 pl-xl-4" data-simplebar>
+
+            <!-- Categories-->
+            @if (dichvus != null)
+            {
+                <div class="cs-widget cs-widget-categories mb-5">
+                    <h3 class="cs-widget-title">@dichvu.Name</h3>
+                    <ul>
+                        @foreach (var s in dichvus)
+                        {
+                            <li class="  @(ViewBag.UrlItem==s.Code?"active":"")"><a class="cs-widget-link" href="/dich-vu/@s.Code">@s.Value</a></li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <!-- Featured posts-->
+            @if (ViewBag.UrlPage=="tin-tuc")
+            {
+                <div class="cs-widget mt-n1 mb-5">
+                    <h3 class="cs-widget-title pb-1">@tintuc.Name</h3>
+                    @foreach (var t in tintucs)
+                    {
+                        <div class="media align-items-center pb-1 mb-3">
+                            <a class="d-block" href="/tin-tuc/@t.UrlCode"><img class="rounded" width="64" src="@t.Picture" alt="Post" /></a>
+                            <div class="media-body pl-2 ml-1">
+                                <h4 class="font-size-md nav-heading mb-1 meta-des2"><a class="font-weight-medium" href="/tin-tuc/@t.UrlCode">@t.Name</a></h4>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Tag cloud-->
+            @*@if (tags != null)
+            {
+                <div class="cs-widget mb-5">
+                    <h3 class="cs-widget-title pb-1">Tag phổ biến</h3>
+                    @foreach (var tag in tags)
+                    {
+                        <a class="cs-tag mr-2 mb-2" href="/@(ViewBag.Url=="dich-vu"?"dich-vu":"tin-tuc")?tag=@tag.Split(']')[0].Replace("[","")">#@tag.Split(']')[1]</a>
+                    }
+                </div>
+            }*@
+
+        </div>
+    </div>
+    <!-- Sidebar toggle button-->
+    <button class="btn btn-primary btn-sm cs-sidebar-toggle" type="button" data-toggle="offcanvas" data-offcanvas-id="blog-sidebar"><i class="fe-sidebar font-size-base mr-2"></i>Danh mục</button>
+</div>

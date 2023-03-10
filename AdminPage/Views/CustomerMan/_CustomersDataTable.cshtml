@@ -1,0 +1,112 @@
+﻿@model List<CustomerManController.CustomerModelCustomize>
+@using AdminPage.Controllers
+@{
+    var pkg = new AdminPage.Services.PackageServices().packageInfoSS();
+}
+
+@if (ViewBag.LoadCusError != null)
+{
+    <script type="text/javascript">
+        msg_error('@(ViewBag.LoadCusError)', "", "top right");
+    </script>
+}
+else
+{
+    <table id="table-customer" class="table table-bordered responsive">
+        <thead>
+            <tr>
+                <th>Ngày đăng ký</th>
+                <th>Khách hàng</th>
+                <th>Liên hệ</th>
+                <th>Thông tin mua hàng</th>
+                <th style="width:120px"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@(item.CreateAt)</td>
+                    <td>
+                        <span class="text-uppercase font-weight-semibold">@(item.FullName)</span><br />
+                        <span class="badge badge-pill @(item.Active == true ? "badge-geekblue" : "badge-magenta")">
+                            @(item.Active == true ? "Đang hoạt động" : "Không hoạt động")
+                        </span>
+                        @if (item.Role == "Partner")
+                        {
+                            <span class="badge badge-pill badge-success">
+                               Nhà phân phối
+                            </span>
+                        }
+                        @*else
+                        {
+                            <span class="badge badge-pill badge-light">
+                               Khách hàng
+                            </span>
+                        }*@
+
+                        <br />
+                        <span class="font-italic font-weight-semibold" style="font-size:13px;">
+                            @(item.Address + (string.IsNullOrEmpty(item.Ward) ? "" : $", {item.Ward}") + (string.IsNullOrEmpty(item.District) ? "" : $", {item.District}") + (string.IsNullOrEmpty(item.Province) ? "" : $", {item.Province}"))
+                        </span>
+                    </td>
+                    <td>
+                        <span class="font-weight-semibold">SĐT: </span>@(string.IsNullOrEmpty(item.Phone) ? "---" : item.Phone)<br />
+                        <span class="font-weight-semibold">Email: </span>@(string.IsNullOrEmpty(item.Email) ? "---" : item.Email)
+                    </td>
+                    <td>
+                        <span>
+                            Tổng đơn hàng:
+                            <span class="text-success font-weight-semibold">@(item.NumberOfOrder_completed)</span> / @(item.NumberOfOrder)
+                        </span><br />
+                        <span>
+                            Tổng thanh toán:
+                            <span class="text-primary font-weight-semibold">@(item.TotalAmount)</span>
+                        </span><br />
+                        @if (pkg.MembershipPoints)
+                        {
+                            <span>
+                                Điểm tích lũy:
+                                <span class="text-warning font-weight-semibold">@(item.BonusPoint)</span>
+                            </span>
+                        }
+                    </td>
+
+                    <td>
+                        <center>
+                            <button type="button" class="btn btn-sm btn-primary btn-badge m-2" data-toggle="tooltip" title="lịch sử đơn hàng" onclick="GetListOrder('@(item.Id)')">
+                                <span class="badge badge-success">
+                                    <span class="fill_count"></span>
+                                    <span>@(item.NumberOfOrder)</span>
+                                </span>
+                                <i class="fas fa-box"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-tone btn-primary m-2" data-toggle="tooltip" title="Đổi mật khẩu" onclick="ResetPassword('@(item.Id)')">
+                                <i class="anticon anticon-unlock"></i>
+                            </button>
+                            <br />
+                            <button type="button" class="btn btn-sm btn-warning m-2" data-toggle="tooltip" title="chi tiết KH" onclick="LoadCustomer('@(item.Id)')">
+                                <i class="anticon anticon-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger m-2" data-toggle="tooltip" title="xóa KH" onclick="DeleteCustomer('@(item.Id)')">
+                                <i class="anticon anticon-delete"></i>
+                            </button>
+                        </center>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <script type="text/javascript">
+        $(function () {
+            $('#table-customer').DataTable({
+                "lengthChange": false,
+                "searching": false,
+                "order": [[0, "desc"]]
+            });
+
+            $('[data-toggle="tooltip"]').tooltip();
+        })
+    </script>
+}

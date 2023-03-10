@@ -1,0 +1,164 @@
+﻿@model List<ProductsHome>
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Utils
+@using PKWebShop.Models
+
+
+@if (Model != null && Model.Count > 0)
+{
+    foreach (var item in Model)
+    {
+        int j = 0; int k = 0;
+
+        if (item.Section_detail.URL.Contains("sanphambanchay") || item.Section_detail.URL.Contains("sanphamkhuyenmai"))
+        {
+            <div class="product-area mb-15" style="border: 3px solid; border-color: var(--color-theme-primary);">
+                <div class="container bg-white">
+                    <div class="section-title-tab-wrap align-items-inherit bg-theme">
+                        <div class="section-title-3 d-flex align-items-center">
+                            <h2 class="text-white">@item.Section_detail.Title</h2>
+                        </div>
+                        <div class="cate-list nav">
+                            @foreach (var cp in item.Cate_product.Where(x => x.Products.Count > 0))
+                            {
+                                <a href="#@($"tab{item.Section_detail.Id}-{cp.Cate.ReId}")" data-toggle="tab" class="cate-item @(j == 0 ? "active" : "")">
+                                    <span>@(cp.Cate.CategoryName)</span>
+                                </a>
+                                j++;
+                            }
+                        </div>
+                    </div>
+                    <div class="tab-content jump">
+                        @foreach (var cp in item.Cate_product.Where(x => x.Products.Count > 0))
+                        {
+                            <div id="@($"tab{item.Section_detail.Id}-{cp.Cate.ReId}")" class="tab-pane @(k == 0 ? "active" : "")">
+                                <div class="row no-gutters">
+                                    @foreach (var p in cp.Products.Take(8))
+                                    {
+                                        var urlProduct = $"/{p.Url}-pd{p.ReId}";
+
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-6">
+                                            <div class="single-product-wrap">
+                                                <div class="product-img product-img-zoom">
+                                                    <a href="@(urlProduct)">
+                                                        <img src="@p.Picture" alt="@p.ProductName" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" />
+                                                    </a>
+                                                    @if (p.SalePrice > 0 && p.SalePrice < p.Price)
+                                                    {
+                                                        <span class="pro-badge left">@((100 - (p.Price ?? 0) / (p.SalePrice ?? 0) * 100).ToString("0"))%</span>
+                                                    }
+                                                </div>
+                                                <div class="product-content-wrap">
+                                                    <div class="product-content-left">
+                                                        <h4><a href="@(urlProduct)">@p.ProductName</a></h4>
+                                                        <div class="product-price">
+                                                            @if (p.SalePrice > 0 && p.SalePrice != p.Price)
+                                                            {
+                                                                <span class="new-price">@((p.SalePrice ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                                                <span class="old-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="new-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="buy" onclick="CheckProduct('@(p.ReId)')">
+                                                    <button class="btn btn-outline-theme w-100">Chọn mua</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="product-items-button">
+                                    <a href="@(item.Section_detail.URL)">
+                                        Xem thêm sản phẩm <i class="fas fa-caret-down"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            k++;
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="product-area mb-15">
+                <div class="container bg-white">
+                    <div class="section-title-tab-wrap align-items-inherit py-3">
+                        <div class="section-title-3">
+                            <h2>@item.Section_detail.Title</h2>
+                        </div>
+                        <div class="btn-style-5">
+                            <a href="@(item.Section_detail.URL)">Xem tất cả <i class="icon-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="row no-gutters">
+                        @{ 
+                            var listProds = new List<product>();
+                            foreach (var pro in item.Cate_product)
+                            {
+                                listProds.AddRange(pro.Products);
+                            }
+                        }
+
+                        @foreach (var p in listProds.Take(8))
+                        {
+                            var urlProduct = $"/{p.Url}-pd{p.ReId}";
+
+                            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-6">
+                                <div class="single-product-wrap">
+                                    <div class="product-img product-img-zoom">
+                                        <a href="@(urlProduct)">
+                                            <img src="@p.Picture" alt="@p.ProductName" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" />
+                                        </a>
+                                        @if (p.SalePrice > 0 && p.SalePrice < p.Price)
+                                        {
+                                            <span class="pro-badge left">@((100 - (p.Price ?? 0) / (p.SalePrice ?? 0) * 100).ToString("0"))%</span>
+                                        }
+                                    </div>
+                                    <div class="product-content-wrap">
+                                        <div class="product-content-left">
+                                            <h4><a href="@(urlProduct)">@p.ProductName</a></h4>
+                                            <div class="product-price">
+                                                @if (p.SalePrice > 0 && p.SalePrice != p.Price)
+                                                {
+                                                    <span class="new-price">@((p.SalePrice ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                                    <span class="old-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="new-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="buy" onclick="CheckProduct('@(p.ReId)')">
+                                        <button class="btn btn-outline-theme w-100">Chọn mua</button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="product-items-button">
+                        <a href="@(item.Section_detail.URL)">
+                            Xem thêm sản phẩm <i class="fas fa-caret-down"></i>
+                        </a>
+                    </div>
+                    @if (item.Cate_product.Count > 0)
+                    {
+                        <div class="cate-prom">
+                            @foreach (var cp in item.Cate_product)
+                            {
+                                <a href="@($"/{cp.Cate.UrlCode}-pc{cp.Cate.ReId}")">@(cp.Cate.CategoryName)</a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+}
+

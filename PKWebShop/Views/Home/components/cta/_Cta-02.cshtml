@@ -1,0 +1,26 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Models.CustomizeModels
+@{
+    webconfiguration info = UserContent.GetWebInfomation();
+    string url_product = ViewBag.url_product;
+    var first_sfDetail = Model.Details.FirstOrDefault();
+}
+@if (first_sfDetail != null)
+{
+    <div class="cta-area-2 position-relative bg-img" style="background-image: url('/Upload/images/banner/bg-cta.jpg');background-position: bottom">
+        <div class="container py-5">
+            <div class="row align-items-center justify-content-center slider-animated-1">
+                <div class="col-xl-8 col-lg-6 col-12 text-center">
+                    <img class="img-responsive" src="@(first_sfDetail.Files.FirstOrDefault()?.FileName)" />
+                    <p class="h5">@(first_sfDetail.Detail.Title)</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="tel:@CommonFunc.CleanPhoneNumber(info.Hotline)" class="btn btn-base text-gradient mx-2 ">@(info.Hotline)</a>
+                        <a href="@(!string.IsNullOrEmpty(first_sfDetail.Detail.URL) ? first_sfDetail.Detail.URL : $"/{url_product}")" class="btn bg-gradient mx-2">Xem sản phẩm</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

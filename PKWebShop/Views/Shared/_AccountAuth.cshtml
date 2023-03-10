@@ -1,0 +1,492 @@
+﻿@using PKWebShop.AppLB
+@using PKWebShop.Models
+@using PKWebShop.Models.DTO
+@model (PackageInfo webLicense, webconfiguration info)
+@{
+    var config = new
+    {
+        FacebookAppId = "",
+        FacebookAppVersion = "v10.0",
+        GoogleClientId = "",
+        GoogleClientSC = "",
+        AccountType = "",
+        CompanyName = "",
+    };
+    var info = Model.info;
+    var webLicense = Model.webLicense;
+    bool debug = false;
+}
+@if (!CommonFunc.IsDebug())
+{
+
+@* <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"> *@
+<script src="https://apis.google.com/js/api:client.js"></script>
+@* <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/all.js"></script> *@
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=@(config.FacebookAppVersion)" nonce="jPL430mz"></script>
+
+    }
+<style>
+    .customGPlusSignIn {
+    border: 2px solid #d2d1d3;
+        font-family: roboto,arial,helvetica,sans-serif !important;
+        font-weight: 500 !important;
+        background-color: #fff;
+        box-shadow: 0 0 1px rgba(77,71,81,0);
+    color: #757575;
+    }
+
+        .customGPlusSignIn .buttonText {
+    color: #757575;
+        }
+
+        .customGPlusSignIn:active,
+        .customGPlusSignIn:hover,
+        .customGPlusSignIn:focus {
+        background-color: #fff !important;
+        }
+
+    .customFaceSignin {
+        font-family: roboto,arial,helvetica,sans-serif !important;
+        font-weight: 500 !important;
+        box-shadow: 0 0 1px rgba(77,71,81,0);
+        background-color: #3c5a99;
+        border-color: #3c5a99;
+        color: #fff;
+    }
+
+        .customFaceSignin svg {
+    fill: white;
+    }
+
+        .customFaceSignin:active,
+        .customFaceSignin:hover,
+        .customFaceSignin:focus {
+        background-color: #3c5a99 !important;
+        }
+
+    .m-btn_iconLeft {
+        border-radius: 25px;
+    }
+
+    .btn-icon {
+        float: left;
+    height: 25px;
+    width: 25px;
+    }
+
+        .btn-icon svg {
+    top: -3px;
+    position: relative;
+    }
+
+    .ht-heading-title.ht-heading-line-on:before {
+    content: '';
+    display: inline-block;
+    width: calc(100% / 2 - 70px);
+    height: 2px;
+    background: rgba(239, 80, 48, 0.2);
+        margin-right: 20px;
+    }
+
+    .ht-heading-title.ht-heading-line-on:after {
+    content: '';
+    display: inline-block;
+    width: calc(100% / 2 - 70px);
+    height: 2px;
+    background: rgba(239, 80, 48, 0.2);
+        margin-left: 20px;
+    }
+
+    .elementor-widget-container:after {
+    content: '';
+    display: inline-block;
+    clear: both;
+    }
+
+    .elementor-widget-container,
+    .elementor-widget-container h2 {
+    display: inline-block;
+    }
+
+    .elementor-element {
+    margin: 15px;
+    }
+
+    .login-form-container {
+    padding: 15px 15px 0px 15px !important;
+        box-shadow: 5px 4px 25px #0000001a !important;
+    }
+
+    label.btn-login {
+    color: #fff;
+        border: medium none;
+    cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1;
+    padding: 13px 30px 13px;
+        text-transform: uppercase;
+        -webkit-transition: all 0.3s ease 0s;
+        -o-transition: all 0.3s ease 0s;
+    transition: all 0.3s ease 0s;
+    }
+
+    .login-register-wrapper .login-form-container {
+        -webkit-box-shadow: unset !important;
+        box-shadow: unset !important;
+    }
+</style>
+
+<div class="modal fade" id="login" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:550px;">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div @*class="row"*@>
+                    <div @*class="col-lg-7 col-md-12 ml-auto mr-auto"*@>
+                        <div class="login-register-wrapper">
+                            <div class="login-register-tab-list nav">
+                                <a class="active" data-toggle="tab" href="#lg1">
+                                    <h4> Đăng nhập </h4>
+                                </a>
+                                <a data-toggle="tab" href="#lg2">
+                                    <h4> Đăng ký </h4>
+                                </a>
+                            </div>
+                            <div class="tab-content">
+                                <div id="lg1" class="tab-pane active">
+                                    <div class="login-form-container">
+                                        <div class="login-register-form">
+                                            <form name="sign-in-form">
+                                                <input type="text" id="lg_email" name="Email" placeholder="Nhập email *">
+                                                <input type="password" id="lg_pass" style="margin-bottom:10px" name="Password" placeholder="Nhập mật Khẩu *">
+                                                <div class="button-box" style="text-align: center">
+                                                    @*<div class="login-toggle-btn" style="display:none;">
+                                                        <input type="checkbox" checked>
+                                                        <label>Remember me</label>
+                                                        <a href="#">Forgot Password?</a>
+                                                    </div>*@
+                                                    <div class="text-left mb-30">
+                                                        <a style="color: #0056b3" href="javascript:void(0)" data-toggle="modal" data-target="#modal-fg" onclick="$('#login').modal('hide')">Quên mật khẩu?</a>
+                                                    </div>
+                                                    <label class=" btn btn-pill btn-outline-primary" onclick="return SignIn()" style="border-radius: 100px;padding: 10px 50px;"><b>Xác nhận</b></label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="lg2" class="tab-pane">
+                                    <div class="login-form-container">
+                                        <div class="login-register-form">
+                                            <form name="sign-up-form">
+                                                <input type="text" id="rg_fullname" name="FullName" placeholder="Họ và Tên">
+                                                <input type="tel" id="rg_phone" name="Phone" placeholder="Số điện thoại">
+                                                <input type="password" id="rg_pass" name="Password" placeholder="Password">
+                                                <input name="Email" id="rg_email" placeholder="Email" type="email">
+                                                <div class="button-box" style="text-align: center">
+                                                   <label class=" btn btn-pill btn-outline-primary" onclick="return AccountRegister()" style="border-radius: 100px;padding: 10px 50px;">Xác nhận</label>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (webLicense.SocialLogin)
+                                {
+                                    <hr />
+                                    <div class="google-facebook-wrapper">
+                                        <button class="btn btn-lg btn-primary btn-block mb-4 m-btn_iconLeft customFaceSignin">
+                                            <span class="btn-icon">
+                                                <i style="color:#fff;width: 25px">
+                                                    <svg id="icon-facebookLogo" viewBox="0 0 58 58">
+                                                        <path d="M53.85 0H3.15A3.15 3.15 0 0 0 0 3.15v50.7A3.15 3.15 0 0 0 3.15 57h27.3V35H23v-8.67h7.41V20c0-7.37 4.49-11.38 11.06-11.38a62.15 62.15 0 0 1 6.68.38v7.69h-4.54c-3.57 0-4.26 1.69-4.26 4.18v5.5h8.55L46.79 35h-7.44v22h14.5A3.15 3.15 0 0 0 57 53.85V3.15A3.15 3.15 0 0 0 53.85 0z"></path>
+                                                    </svg>
+                                                </i>
+                                            </span>
+                                            <span class="buttonText">Tiếp tục với Facebook</span>
+                                        </button>
+                                        <button class="btn btn-lg btn-primary btn-block mb-4 m-btn_iconLeft customGPlusSignIn" id="customBtn">
+                                            <span class="btn-icon">
+                                                <i style="color:#fff;width: 25px">
+                                                    <svg id="icon-googleLogo" viewBox="0 0 18 18">
+                                                        <g fill="none" fill-rule="evenodd">
+                                                            <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"></path>
+                                                            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"></path>
+                                                            <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"></path>
+                                                            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"></path>
+                                                        </g>
+                                                    </svg>
+                                                </i>
+                                            </span>
+                                            <span class="buttonText">Tiếp tục với Google</span>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modal-fg" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:500px; width: auto">
+        <div class="modal-content">
+            <form id="form-fg" action="/home/cusforgotpassword" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Quên mật khẩu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding-top:15px">
+                    <p id="fg_noty" class="text-success"></p>
+                    <input type="email" id="fg_email" class="mb-15" style="background-color:white" name="fg_email" placeholder="Nhập tài khoản (email)" required>
+                    <input type="password" id="fg_pass" class="mb-15" style="background-color:white" name="fg_pass" placeholder="Mật Khẩu mới" required>
+                    <input type="password" id="fg_retype_pass" style="background-color:white" name="fg_retype_pass" placeholder="Nhập lại mật Khẩu" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" style="border-radius:unset;" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" style="border-radius:unset;" onclick="bg_loading(); $('#form-fg').submit();">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div id="fb-root"></div>
+<!-- Your Plugin chat code -->
+<div id="fb-customer-chat" class="fb-customerchat"></div>
+
+
+<script>
+    @if (webLicense.SocialLogin)
+    {<text>
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId: "@(config.FacebookAppId)",
+            cookie: true,
+            xfbml: true,
+            version: "@(config.FacebookAppVersion)"
+        })
+    }
+        // Google
+        window.ggLogin = (response) => {
+            let profile = response.getBasicProfile();
+            AccountRegister({
+                UserId      : profile.getId(),
+                Avatar      : profile.getImageUrl(),
+                Email       : profile.getEmail(),
+                UserName    : profile.getName(),
+                Fullname    : profile.getName(),
+                AccountType : "Google"
+            });
+        };
+        window.ggLogout = () => {
+            gapi.auth2.getAuthInstance().signOut().then(function () {
+                SignOut();
+            });
+        }
+
+        // Facebook
+        window.faceLogin = (response) => {
+            FB.api('/me?fields=id,name,email,picture{url}', function(profile) {
+                AccountRegister({
+                    UserId      : profile.id,
+                    Avatar      : profile.picture.data.url,
+                    Email       : profile.email,
+                    UserName    : profile.name,
+                    Fullname    : profile.name,
+                    AccountType : "Facebook"
+                });
+            });
+        }
+        window.faceLogout = ()=>{
+            FB.getLoginStatus(function(response) {
+                if (response.status === 'connected') {
+                    FB.logout(function(response) {
+                        SignOut();
+                    });
+                }
+            });
+        }
+    </text>}
+
+    $(document).ready(() => {
+        @*@if (!string.IsNullOrEmpty(info.FacebookUrl)) {
+            <text>
+            let chatbox = document.getElementById('fb-customer-chat');
+            chatbox.setAttribute("page_id", "@info.FacebookUrl");
+            chatbox.setAttribute("attribution", "biz_inbox");
+            (function (d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s); js.id = id;
+                js.src = 'https://connect.facebook.net/vi_VN/sdk/xfbml.customerchat.js';
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+            </text>
+        }*@
+        @if (webLicense.SocialLogin && !CommonFunc.IsDebug())
+        {<text>
+            gapi.load("auth2", function() {
+               let o = gapi.auth2.init({
+                       client_id: "@config.GoogleClientId"
+                   }),
+                   n = document.getElementById("customBtn");
+               o.attachClickHandler(n, {}, o => {
+                   console.log("success :", o), window.ggLogin(o)
+               }, o => console.log("error :", o))
+            });
+            $(".customFaceSignin").click(() => {
+                FB.login(
+                    (response) => {
+                        if (response.status === 'connected') {
+                            window.faceLogin(response);
+                        }
+                    },
+                    {scope: 'public_profile,email'}
+                );
+            });
+        </text>}
+    });
+
+    $(function () {
+        $(".login-register-form").on("keydown", function (e) {
+            if (e.keyCode == 13) {
+                $(this).find(".btn-login").trigger("click");
+            }
+        })
+
+        $("#form-fg").ajaxForm(function (data) {
+            bg_loading(false);
+            if (data[0] == true) {
+                msg_success(data[1], "", "top right");
+                $("#fg_noty").html(data[1]);
+            }
+            else {
+                msg_error(data[1], "", "top center");
+            }
+        }, function (response) {
+            bg_loading(false);
+            msg_error(response, "", "top right");
+        });
+    })
+
+    // Register
+    function AccountRegister(acc = null) {
+        if (acc == null) {
+            let _fullName = $('form[name="sign-up-form"] input[name="FullName"]').val();
+            let _phone = $('form[name="sign-up-form"] input[name="Phone"]').val();
+            let _email = $('form[name="sign-up-form"] input[name="Email"]').val();
+            let _pass = $('form[name="sign-up-form"] input[name="Password"]').val();
+
+            if (_fullName == null || _fullName == "") {
+                msg_info("Vui lòng nhập họ tên", "rg_fullname");
+                return false;
+            }
+            else if (_phone == null || _phone == "") {
+                msg_info("Vui lòng nhập sđt", "rg_phone");
+                return false;
+            }
+            else if (_pass == null || _pass == "") {
+                msg_info("Vui lòng nhập mật khẩu", "rg_pass");
+                return false;
+            }
+            else if (_email == null || _email == "") {
+                msg_info("Vui lòng nhập email", "rg_email");
+                return false;
+            }
+
+            acc = {
+                FullName: _fullName,
+                Phone: _phone,
+                Email: _email,
+                Password: _pass,
+                AccountType : "Web",
+            };
+        }
+
+        bg_loading();
+        $.ajax({
+            method: "POST",
+            url: "/Home/SignUp",
+            data: JSON.stringify(acc),
+            dataType: "json",
+            contentType: 'application/json',
+        }).done((data) => {
+            // document.location.href = "@TempData["BASE_PATH"]";
+            if (data[0] == true) {
+                window.location.reload();
+            }
+            else {
+                bg_loading(false);
+                msg_warning(data[1], "", "top center");
+            }
+        }).fail((error) => {
+            bg_loading(false);
+            $("#LogIn").modal("hide");
+            msg_error(error.responseJSON.message, "", "top center");
+            //showError(error.responseJSON.message);
+        });
+    }
+
+    // SignIn
+    function SignIn() {
+        let _email = $('form[name="sign-in-form"] input[name="Email"]').val();
+        let _pass = $('form[name="sign-in-form"] input[name="Password"]').val();
+        if (_email == null || _email == "") {
+            msg_info("Vui lòng nhập SĐT", "lg_email");
+            return false;
+        }
+        else if (_pass == null || _pass == "") {
+            msg_info("Vui lòng nhập mật khẩu", "lg_pass");
+            return false;
+        }
+
+        bg_loading();
+        $.ajax({
+            method: "POST",
+            url: "/Home/LoginSubmit",
+            data: JSON.stringify({
+                Email: _email,
+                Password: _pass,
+            }),
+            dataType: "json",
+            contentType: 'application/json',
+        }).done((data) => {
+            if (data[0] == true) {
+                window.location.reload();
+            }
+            else {
+                bg_loading(false);
+                msg_warning(data[1], "lg_email");
+            }
+        }).fail((err) => {
+            bg_loading(false);
+            msg_error(err, "", "top center");
+        });
+    }
+
+    // SignOut
+    function SignOut() {
+        $.ajax({
+            method: "POST",
+            url: "/Auth/LogOut",
+        })
+        .done(()=>{
+            document.location.href = "/";
+        })
+        .fail((err)=>{
+          console.log(err);
+        });
+    }
+
+</script>

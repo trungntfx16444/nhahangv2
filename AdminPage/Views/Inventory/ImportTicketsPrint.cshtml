@@ -1,0 +1,166 @@
+﻿@model AdminPage.Models.import_ticket
+@using AdminPage.Models
+@using AdminPage.Models.CustomizeModels
+@using Inner.Libs.Helpful;
+@using AdminPage.Enums;
+@using Newtonsoft.Json;
+@{
+    Layout = null;
+    var listProducts = ViewBag.details as List<(submit_product s, product p)>;
+    var Other_costs = JsonConvert.DeserializeObject<Dictionary<string, decimal>>(Model.Other_costs);
+}
+<style type="text/css" media="print">
+    @@page {
+        size: auto; /* auto is the initial value */
+        margin: 0; /* this affects the margin in the printer settings */
+        padding: 50px;
+    }
+
+    @@media print {
+        tr {
+            break-inside: avoid;
+        }
+    }
+</style>
+<style>
+    table td, table th {
+        padding: 10px;
+    }
+</style>
+<table class="contentpaneopen" style="margin:auto;">
+    <tbody>
+        <tr>
+            <td valign="top">
+                <table class="MsoTableGrid" style="width: 100.0%; border-collapse: collapse; mso-yfti-tbllook: 480; mso-padding-alt: 0in 5.4pt 0in 5.4pt;" border="0" cellspacing="0" cellpadding="0" width="100%">
+                    <tbody>
+                        <tr style="mso-yfti-irow: 0; mso-yfti-firstrow: yes; mso-yfti-lastrow: yes;">
+                            <td style="width: 174.5pt; padding: 0in 5.4pt 0in 5.4pt;" width="233" valign="top">
+                                <p class="MsoNormal" style="text-align: left;" align="left"><strong><span style="font-size: 10.0pt; font-family: Verdana;">PHIẾU NHẬP KHO</span></strong></p>
+                                <p class="MsoNormal" style="text-align: left;" align="left"><span style="font-size: 10.0pt; font-family: Verdana;">@(Model.CreatedAt.Value.ToString("'Ngày 'dd' tháng 'MM' năm 'yyyy"))</span></p>
+                                <p class="MsoNormal" style="text-align: left;" align="left"><span style="font-size: 10.0pt; font-family: Verdana;">Mã Phiếu <b>@(Model.Code)</b></span></p>
+                                <p class="MsoNormal" style="mso-margin-top-alt: auto; mso-margin-bottom-alt: auto; text-align: center;" align="center">&nbsp;</p>
+                            </td>
+                            <td style="width: 174.5pt; padding: 0in 5.4pt 0in 5.4pt;" width="233" valign="top">
+                                <p class="MsoNormal" style="text-align: right;" align="right"><em><span style="font-size: 10.0pt; font-family: Verdana;">NCC: @ViewBag.VendorName</span></em></p>
+                                <p class="MsoNormal" style="text-align: right;" align="right"><em><span style="font-size: 10.0pt; font-family: Verdana;">Thanh toán: @(Ext.EnumParse<ImportTicket_PaymentStatus>(Model.PayStatus).Text())</span></em></p>
+                                <p class="MsoNormal" style="text-align: right;" align="right"><em><span style="font-size: 10.0pt; font-family: Verdana;">Nhận hàng: @(Ext.EnumParse<ImportTicket_ImportStatus>(Model.ImportStatus).Text())</span></em></p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                @if (Model.OrderDate.HasValue)
+                {
+                    <span>Thời gian đặt: @Model.OrderDate.Value.ToString("dd' tháng 'MM' năm 'yyyy")</span><br />
+                }
+                @if (Model.ReceivedDate.HasValue)
+                {
+                    <span>Thời gian nhận: @Model.ReceivedDate.Value.ToString("HH:mm', 'dd' tháng 'MM' năm 'yyyy")</span><br />
+                }
+                <br />
+                <table class="MsoTableGrid" style="width: 100.0%; border-collapse: collapse; border: none; mso-border-alt: solid windowtext .5pt; mso-yfti-tbllook: 480; mso-padding-alt: 0in 5.4pt 0in 5.4pt; mso-border-insideh: .5pt solid windowtext; mso-border-insidev: .5pt solid windowtext;" border="1" cellspacing="0" cellpadding="0" width="100%">
+                    <thead>
+                        <tr><th colspan="6" style="background-color: #eee; -webkit-print-color-adjust: exact; ">Sản phẩm</th></tr>
+                        <tr>
+                            <th>STT</th>
+                            <th>Sản phẩm</th>
+                            <th>Giá nhập</th>
+                            <th>Số lượng</th>
+                            <th>Đơn vị tính</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int i = 0;}
+                        @foreach (var item in listProducts)
+                        {
+                            i++;
+                            <tr>
+                                <td>@i</td>
+                                <td>@item.p.ProductName</td>
+                                <td style="text-align:right">@item.s.EntryPrice.ToString("#,##0")</td>
+                                <td style="text-align:right">@item.s.ImportQty</td>
+                                <td>@item.s.ImportUnit</td>
+                                <td style="text-align:right">@((item.s.EntryPrice* item.s.ImportQty).ToString("#,##0"))</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td style="text-align:right" colspan="5">Tổng tiền sản phẩm </td>
+                            <td style="text-align:right">@listProducts.Sum(item => item.s.EntryPrice * item.s.ImportQty).ToString("#,##0")</td>
+                        </tr>
+                    </tbody>
+                    @if (Other_costs.Count > 0)
+                    {
+
+
+                        <thead>
+                            <tr><th colspan="6" style="background-color: #eee; -webkit-print-color-adjust: exact; ">Phụ phí</th></tr>
+                            <tr>
+                                <th>STT</th>
+                                <th colspan="4">Tên phụ phí</th>
+                                <th>Số tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{i = 0;}
+                            @foreach (var item in Other_costs)
+                            {
+                                i++;
+                                <tr>
+                                    <td>@i</td>
+                                    <td colspan="4">@item.Key</td>
+                                    <td style="text-align:right">@((item.Value).ToString("#,##0"))</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td style="text-align:right" colspan="5">Tổng phụ phí </td>
+                                <td style="text-align:right">@Other_costs.Sum(item => item.Value).ToString("#,##0")</td>
+                            </tr>
+                        </tbody>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+
+
+                        <thead>
+                            <tr><th colspan="6" style="background-color: #eee; -webkit-print-color-adjust: exact; ">Ghi chú</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6">@Html.Raw(Model.Note)</td>
+                            </tr>
+                        </tbody>
+                    }
+                    <thead>
+                        <tr>
+                            <th style="text-align:right" " colspan="5">TỔNG CỘNG</th>
+                            <th style="text-align:right">@((Model.Total??0).ToString("#,##0"))</th>
+                        </tr>
+                    </thead>
+
+                </table>
+                <p>&nbsp;</p>
+
+                <table class="MsoTableGrid" style="width: 100.0%; border-collapse: collapse; mso-yfti-tbllook: 480; mso-padding-alt: 0in 5.4pt 0in 5.4pt;" border="0" cellspacing="0" cellpadding="0" width="100%">
+                    <tbody>
+                        <tr style="mso-yfti-irow: 0; mso-yfti-firstrow: yes; mso-yfti-lastrow: yes;">
+                            <td style="width: 220.7pt; padding: 0in 5.4pt 0in 5.4pt;" width="296" valign="top">
+                            </td>
+                            <td style="width: 220.7pt; padding: 0in 5.4pt 0in 5.4pt;" width="296" valign="top">
+                                <p class="MsoNormal" style="text-align: center;" align="center"><em><span style="font-size: 10.0pt; font-family: Verdana;">@(DateTime.Now.ToString("'Ngày 'dd' tháng 'MM' năm 'yyyy"))</span></em></p>
+                                <p class="MsoNormal" style="text-align: center; padding-bottom: 60px" align="center"><strong><span style="font-size: 10.0pt; font-family: Verdana;">Người lập phiếu</span></strong></p>
+                                <p class="MsoNormal" style="text-align: center;" align="center"><span style="font-size: 10.0pt; font-family: Verdana;">@Model.CreatedBy</span></p>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+
+    </tbody>
+</table>
+<script>
+    window.print();
+</script>
+
+

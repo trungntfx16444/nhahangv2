@@ -1,0 +1,121 @@
+.comments {
+    margin-bottom: 30px;
+    padding: 10px 25px;
+    border-radius: 10px;
+    background-color: #f4f8fa;
+  }
+  .comments .comments-count {
+    font-weight: bold;
+  }
+  .comments .comment {
+    margin-top: 30px;
+    position: relative;
+  }
+  .comments .comment .comment-img {
+    margin-right: 14px;
+  }
+  .comments .comment .comment-img img {
+    width: 60px;
+    border-radius: 10rem;
+  }
+  .comments .comment .comment-content{
+    border-bottom: 1px solid #d9d9d9;
+    padding-bottom: 20px;
+  }
+
+  .comments > .comment:last-of-type .comment-content{
+    border-bottom: 0;
+  }
+
+  .comments .comment .name {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+  .comments .comment .name a {
+    font-weight: bold;
+    color: #444;
+    transition: 0.3s;
+  }
+  .comments .comment .name a:hover {
+    color: #68A4C4;
+  }
+  .comments .comment .name .reply {
+    padding-left: 10px;
+    color: #1e4356;
+  }
+  .comments .comment .name .reply i {
+    font-size: 20px;
+  }
+  .comments .comment time {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+  .comments .comment.comment-reply {
+    padding-left: 40px;
+  }
+  .comments .reply-form {
+    margin-top: 30px;
+  }
+  .comments .reply-form h4 {
+    font-weight: bold;
+    font-size: 22px;
+  }
+  .comments .reply-form p {
+    font-size: 14px;
+  }
+  .comments .reply-form input {
+    border-radius: 4px;
+    padding: 10px 10px;
+    font-size: 14px;
+  }
+  .comments .reply-form input:focus {
+    box-shadow: none;
+    border-color: #b1d0e1;
+  }
+  .comments .reply-form textarea {
+    border-radius: 4px;
+    padding: 10px 10px;
+    font-size: 14px;
+  }
+  .comments .reply-form textarea:focus {
+    box-shadow: none;
+    border-color: #b1d0e1;
+  }
+  .comments .reply-form .form-group {
+    margin-bottom: 25px;
+  }
+  .comments .reply-form .btn-primary {
+    border-radius: 4px;
+    padding: 10px 20px;
+    border: 0;
+    background-color: #00aeef;
+  }
+  .comments .reply-form .btn-primary:hover {
+    background-color: #00aeef;
+  }
+.navbar-comment{
+    margin: 20px 0;
+}
+.navbar-comment .navbar{
+    justify-content: flex-start;
+}
+.navbar-comment .navbar .nav-link {
+    background-color: #fff;
+    padding: 10px 20px;
+    border: 1px solid #ec258a;
+    border-radius: 10rem;
+    color: #000;
+    display: block;
+    text-align: center;
+    font-weight: 500;
+
+}
+.navbar-comment .navbar .nav-link:not(:last-child) {
+    margin-right: 10px;
+}
+.navbar-comment .navbar .nav-link:hover, .navbar-comment .navbar .nav-link.active {
+    background-color: #ec258a;
+    color: #fff;
+}

@@ -1,0 +1,157 @@
+﻿@model IEnumerable<users_permissions_granted>
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Services
+@{
+    ViewBag.Title = "Phân quyền";
+    var perm = ViewBag.permissons as List<users_permissions> ?? new List<users_permissions>();
+    var webLicense = new PackageServices().WebPackInfo();
+    if (webLicense.IsExpired)
+    {
+        Response.Redirect("/Expired");
+    }
+}
+
+
+<style type="text/css">
+    .checkbox label {
+        font-weight: normal;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <span class="breadcrumb-item active"> Hệ thống</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">@ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" action="/admin/users/permissionsave">
+            <div class="row">
+                @foreach (var item in Enum.GetValues(typeof(UserContent.UserRole)).Cast<UserContent.UserRole>())
+                {
+                    if ((int)item != 100)
+                    {
+                        <ul class="list-group col-md-6">
+                            <li class="list-group-item active"><h4 class="mb-0">@(item.ToString())</h4></li>
+                            @foreach (var p in perm)
+                            {
+                                if (p.Code == "update_member" || p.Code == "update_posts" || p.Code == "update_topics" || p.Code == "update_features" ||
+                                    p.Code == "update_menu" || p.Code == "update_webinfo" || p.Code == "update_apoiment")
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                                else if ((p.Code == "update_order" || p.Code == "update_product" || p.Code == "update_customer") && webLicense.IsNewsSite() == false)
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                                else if (p.Code == "update_payment" && webLicense.PaymentOnline == true)
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                                else if (p.Code == "update_gift_code" && webLicense.GiftCode == true)
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                                else if (p.Code == "update_membership_point" && webLicense.MembershipPoints == true)
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                                else if (p.Code == "update_shipping_fee" && webLicense.ShippingFee == true)
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                                else if (p.Code == "update_warehouse" && webLicense.Warehouse == true)
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                                else if (p.Code == "update_dept" && webLicense.Dept == true)
+                                {
+                                    <li class="list-group-item">
+                                        <div class="checkbox mb-0">
+                                            <input id="@($"{(int)item}{p.Code}")" type="checkbox" name="role" value="@($"{(int)item}{p.Code}")" @(Model.Any(x => x.RoleLevel == (int)item && x.PermissionCode == p.Code && x.Active == true) ? "checked" : "")>
+                                            <label for="@($"{(int)item}{p.Code}")" class="mb-0">@(p.Name)</label>
+                                        </div>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    }
+                }
+            </div>
+            <div class="mt-4" style="float:right">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Lưu thay dổi</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,563 @@
+﻿<!DOCTYPE html>
+
+@using PKWebShop.AppLB
+
+@{
+    string controller = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+    string action = ViewContext.RouteData.Values["action"].ToString().ToLower();
+    string curURL = Request.Url.LocalPath;
+
+    //cac gia tri can thiet lap trong chi tiet cac bai viet or san pham.
+    //viewbag.web_desc : gioi thieu
+    //viewbag.og_image : hinh anh
+    //viewbag.og_image_alt :  mo ta hinh anh.
+    //default cac thong tin nay se lay thong tin trong he thong neu khong duoc set.
+
+    var webinfo = PKWebShop.AppLB.UserContent.GetWebInfomation();
+    var intro = PKWebShop.AppLB.UserContent.GetWebIntroFromNews();
+    var topic = PKWebShop.AppLB.UserContent.GetWebTopic();
+    var menus = PKWebShop.AppLB.UserContent.GetWebMenu(true);
+    var tracker = PKWebShop.AppLB.UserContent.GetTracker(true);
+    //var service = PKWebShop.AppLB.UserContent.GetWebService();
+    //var cate = PKWebShop.AppLB.UserContent.GetWebCategoryProduct();
+    //var cate_service = cate.Where(c => string.IsNullOrEmpty(c.Type) == false).ToList();
+    //var cate_product = cate.Where(c => string.IsNullOrEmpty(c.Type) == true).ToList();
+
+    string webdesc = webinfo.SEO_MetaDescription;
+    if (!string.IsNullOrWhiteSpace(ViewBag.SEO_Description))
+    {
+        webdesc = ViewBag.SEO_Description;
+    }
+    var ListLang = PKWebShop.Services.SiteLang.GetListLangs();
+    string lang = Request.Cookies["culture"]?.Value?? ListLang.FirstOrDefault().Code;
+    Session["culture"] = lang;
+}
+
+
+<html lang="en">
+<head>
+    <!-- SITE TITTLE -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="geo.region" content="VN" />
+
+    <title>@Html.Raw(ViewBag.Title)</title>
+    <link rel="canonical" href="@Request.Url.Scheme://@Request.Url.Authority@Request.Url.AbsolutePath" />
+    <link rel="alternate" hreflang="vi-vn" href="@(Request.Url.Scheme + "://" + Request.Url.Authority)" />
+
+    <meta name="description" content="@Html.Raw(webdesc)">
+    <meta name="keywords" content="@webinfo.SEO_MetaKeyWord" />
+    <meta name="image" content="@Request.Url.Scheme://@Request.Url.Authority@webinfo.LogoPicture" />
+    <meta name="robots" content="ALL">
+    <meta name="GOOGLEBOT" content="NOARCHIVE">
+
+    <meta property="og:url" content="@Request.Url.AbsoluteUri" />
+    <meta property="og:site_name" content="@(Request.Url.Scheme + "://" + Request.Url.Authority)" />
+    <meta property="og:title" content="@Html.Raw(ViewBag.Title)" />
+    <meta property="og:description" content="@Html.Raw(webdesc)" />
+    <meta itemprop="name" content="@(Request.Url.Scheme + "://" + Request.Url.Authority)">
+    <meta itemprop="description" content="@Html.Raw(webdesc)">
+
+    @if (string.IsNullOrWhiteSpace(ViewBag.og_image))
+    {
+        <meta property="og:image:alt" content="@webinfo.ShortAboutUs" />
+        <meta property="og:image" content="@(Request.Url.Scheme)://@(Request.Url.Authority)/@webinfo.LogoPicture" />
+        <meta itemprop="image" content="@Request.Url.Scheme://@Request.Url.Authority/@webinfo.LogoPicture">
+    }
+    else
+    {
+        <meta property="og:image:alt" content="@Html.Raw(ViewBag.Title)" />
+        <meta property="og:image" content="@Request.Url.Scheme://@Request.Url.Authority@ViewBag.og_image" />
+        <meta itemprop="image" content="@Request.Url.Scheme://@Request.Url.Authority@ViewBag.og_image">
+    }
+
+    <meta name="author" content="GiaSuHappy">
+
+    <!-- CSS -->
+    <link href="~/Content/admin/js/jquery-ui/jquery-ui.css" rel="stylesheet" />
+    <link href="~/Content/user/css/main.css" rel="stylesheet" type="text/css" />
+    <!-- FAVICON -->
+    <link rel="shortcut icon" type="image/png" href="~/Content/user/images/img/favicon.png">
+    <!--main js file start-->
+    <script type="text/javascript" src="~/Content/user/js/jquery-1.12.2.js"></script>
+    <script src="~/Content/admin/js/jquery-ui/jquery-ui.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <link href="~/Content/user/js/plugins/fancybox/jquery.fancybox.min.css" rel="stylesheet" />
+    <script src="~/Content/user/js/plugins/fancybox/jquery.fancybox.min.js"></script>
+    <link href="~/Content/user/css/owl.carousel.css" rel="stylesheet" />
+    <link href="~/Content/flag/css/flag-icon.min.css" rel="stylesheet" />
+    @if (webinfo != null && !string.IsNullOrEmpty(webinfo.GoogleAnalytics))
+    {
+        @Html.Raw(webinfo.GoogleAnalytics)
+    }
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        /*html {
+            scroll-behavior: smooth;
+        }*/
+
+        /* Paste this css to your style sheet file or under head tag */
+        /* This only works with JavaScript,
+        if it's not present, don't show loader */
+        .no-js #loader {
+            display: none;
+        }
+
+        .js #loader {
+            display: block;
+            position: absolute;
+            left: 100px;
+            top: 0;
+        }
+
+        .se-pre-con {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url(/Content/user/plugins/simple-pre-loader/images/loader-64x/Preloader_2.gif) center no-repeat #fff;
+        }
+        .flag-icon{
+            font-size:15px;
+        }
+        .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
+            width: auto !important; 
+        }
+        [data]
+    </style>
+
+    @RenderSection("style", false)
+</head>
+<body>
+    @*<div class="se-pre-con"></div>*@
+    <div class="educo_wrapper">
+        <!--Header start-->
+        <header id="ed_header_wrapper">
+            <div class="ed_header_top">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <div class="ed_contact_details">
+                                <ul>
+                                    <li><a href="tel:@(webinfo.Hotline)"><i class="fa fa-phone" aria-hidden="true"></i> @(webinfo.Hotline)</a></li>
+                                    <li><a href="mailto:@(webinfo.ContactEmail)"><i class="fa fa-envelope-o" aria-hidden="true"></i> @(webinfo.ContactEmail)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <div class="ed_social_icons">
+                                <ul>
+                                    <li>
+                                        <a href="@(!string.IsNullOrEmpty(webinfo.FacebookUrl) ? webinfo.FacebookUrl : "#")" target="_blank">
+                                            <i class="fa fa-facebook" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="@(!string.IsNullOrEmpty(webinfo.YoutubeUrl) ? webinfo.YoutubeUrl : "#")" target="_blank">
+                                            <i class="fa fa-youtube-play" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                    <li><a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+                                    <li><a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ed_header_bottom">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-3 col-sm-3">
+                            <div class="educo_logo"><a href="/"><img src="@(webinfo.LogoPicture)" alt="logo" /></a> </div>
+                        </div>
+                        <div class="col-lg-9 col-md-9 col-sm-9">
+                            <div class="edoco_menu_toggle navbar-toggle" data-toggle="collapse" data-target="#ed_menu">Menu <i class="fa fa-bars"></i></div>
+                            <div class="edoco_menu">
+                                <ul class="collapse navbar-collapse" id="ed_menu">
+                                    @foreach (var item in menus)
+                                    {
+                                        <li @if (curURL == item.menu.URL) { @Html.Raw("class='active'") }>
+                                            <a href="@(!string.IsNullOrEmpty(item.menu.URL) ? item.menu.URL : "javascript:void(0)")">@item.menu.Name</a>
+
+                                            @if (item.child != null && item.child.Count() > 0)
+                                            {
+                                                <ul class="sub-menu">
+                                                    @foreach (var sub in item.child)
+                                                    {
+                                                        <li><a href="@sub.URL">@sub.Name</a></li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!--header end -->
+
+        @RenderBody()
+
+
+        <!--call to action-->
+        <div class="hotline-phone-ring-wrap">
+            <div class="hotline-phone-ring">
+                <div class="hotline-phone-ring-circle"></div>
+                <div class="hotline-phone-ring-circle-fill"></div>
+                <div class="hotline-phone-ring-img-circle">
+                    <a href="tel:@(webinfo.Hotline)" class="pps-btn-img">
+                        <img src="~/Content/user/images/img/phone.png" alt="Số điện thoại" width="50">
+                    </a>
+                </div>
+            </div>
+            <div class="hotline-bar">
+                <a href="tel:@(webinfo.Hotline)">
+                    <span class="text-hotline">@(webinfo.Hotline)</span>
+                </a>
+            </div>
+        </div>
+
+        <!--support section start -->
+        <div class="ed_graysection call-us">
+            <div class="container">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="ed_heading_top">
+                        <h3>Hỗ trợ <span class="linehight">tư vấn</span></h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 col-sm-6 col-xs-12 footer-callus-icon">
+                        <h4>
+                            <a class="btn-border-only" href="tel:@(webinfo.Hotline)">
+                                <i class="fa fa-phone"></i>&nbsp;
+                                <span>Hotline: @(webinfo.Hotline)</span>
+                            </a>
+                        </h4>
+                    </div>
+                    <div class="col-md-4 col-sm-6 col-xs-12 footer-callus-icon">
+                        <h4>
+                            <a class="btn-border-only" href="mailto:@(webinfo.ContactEmail)">
+                                <i class="fa fa-envelope"></i>&nbsp;
+                                <span>@(webinfo.ContactEmail)</span>
+                            </a>
+                        </h4>
+                    </div>
+                    <div class="col-md-4 col-sm-12 col-xs-12 footer-callus-icon chat-zopim">
+                        <h4>
+                            <a class="btn-border-only" href="@(!string.IsNullOrEmpty(webinfo.FacebookUrl) ? webinfo.FacebookUrl : "#")" target="_blank">
+                                <i class="fa fa-commenting" aria-hidden="true"></i>&nbsp;
+                                <span>Tư Vấn Trực Tuyến</span>
+                            </a>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--support section end -->
+        <!--Footer Top section start-->
+        <div class="ed_footer_wrapper">
+            <div class="ed_img_overlay"></div>
+            <div class="ed_footer_top">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4 col-sm-12">
+                            <div class="widget text-widget">
+                                <p><a href="/"><img src="@(webinfo.LogoPicture)" alt="Footer Logo" style="margin-bottom:0px;" /></a></p>
+                                <p style="text-align:justify;">@(webinfo.ShortAboutUs)</p>
+                                <div class="ed_sociallink">
+                                    <ul>
+                                        <li data-toggle="tooltip" data-placement="bottom" title="Facebook">
+                                            <a href="@(!string.IsNullOrEmpty(webinfo.FacebookUrl) ? webinfo.FacebookUrl : "#")" target="_blank">
+                                                <i class="fa fa-facebook" aria-hidden="true"></i>
+                                            </a>
+                                        </li>
+                                        <li data-toggle="tooltip" data-placement="bottom" title="Youtube">
+                                            <a href="@(!string.IsNullOrEmpty(webinfo.YoutubeUrl) ? webinfo.YoutubeUrl : "#")" target="_blank">
+                                                <i class="fa fa-youtube-play" aria-hidden="true"></i>
+                                            </a>
+                                        </li>
+                                        <li data-toggle="tooltip" data-placement="bottom" title="Google+">
+                                            <a href="#"><i class="fa fa-google-plus" aria-hidden="true"></i></a>
+                                        </li>
+                                        <li data-toggle="tooltip" data-placement="bottom" title="Linkedin">
+                                            <a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+                                        </li>
+                                        <li data-toggle="tooltip" data-placement="bottom" title="Twitter">
+                                            <a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12">
+                            <div class="widget text-widget">
+                                <h4 class="widget-title">Liên hệ</h4>
+                                <ul>
+                                    <li><i class="fa fa-safari"></i> @(webinfo.Address)</li>
+                                    <li><i class="fa fa-envelope-o"></i> <a href="mailto:@(webinfo.ContactEmail)">@(webinfo.ContactEmail)</a></li>
+                                    <li><i class="fa fa-phone"></i> <a href="tel:@(webinfo.Hotline)">@(webinfo.Hotline)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12">
+                            <div class="widget text-widget">
+                                <h4 class="widget-title" style="color:#a72025; text-transform: unset;">Quét mã QR</h4>
+                                <img style="width:138px" src="~/Content/user/images/img/GiaSuHappy_QRcode.jpg" />
+                                <br /><br />
+                                <p style="margin-bottom:10px;"><strong>Số lượt truy cập </strong>@(tracker?.Split('|')[0])</p>
+                                <p><strong>Lượt truy cập hôm nay </strong>@(tracker?.Split('|')[1])</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Footer Top section end-->
+        <!--Footer Bottom section start-->
+        <div class="ed_footer_bottom">
+            <div class="container">
+                <div class="col-lg-12 col-md-12 col-sm-12">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                            <div class="ed_footer_menu">
+                                <ul>
+                                    <li><a href="/">Trang chủ</a></li>
+                                    <li><a href="/gioi-thieu">Giới thiệu</a></li>
+                                    <li><a href="/lien-he">Liên hệ</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                            <div class="ed_copy_right">
+                                <p>&copy; Copyright 2020 Giasuhappy.com. All Rights Reserved. Design by <a href="https://webphukhang.com" title="Thiết kế website trọn gói" target="_blank">Webphukhang</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Footer Bottom section end-->
+        <!--Popup section start-->
+        <div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="exampleModalLongTitle">Đăng Ký <span class="linehight">Tư Vấn Miễn Phí</span></h3>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <div class="ed_event_single_address_info">
+                                        <img src="~/Content/user/images/img/tu-van-gia-su.png">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-sm-6">
+                                    <div class="row">
+                                        <div class="ed_contact_form">
+                                            <div id="alert"></div>
+                                            @using (Ajax.BeginForm("SendEmailFeedBack", "Contact", new AjaxOptions
+                                            {
+                                                HttpMethod = "POST",
+                                                //InsertionMode = InsertionMode.Replace,
+                                                //UpdateTargetId = "",
+                                                LoadingElementId = "submit_loading",
+                                                OnBegin = "BeginSend",
+                                                OnSuccess = "SendComplete",
+                                                OnFailure = "SendError",
+                                            }))
+                                            {
+                                                <div class="form-group">
+                                                    <input type="text" name="contact-form-name" class="form-control" required placeholder="Họ tên *" autocomplete="off">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="email" name="contact-form-email" class="form-control" required placeholder="Email *" autocomplete="off">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="text" name="contact-form-mobile" class="form-control phone" required placeholder="Số điện thoại *" autocomplete="off">
+                                                </div>
+                                                <div class="form-group btn-group-toggle" data-toggle="buttons">
+                                                    <p>Bạn là ai?</p>
+                                                    <label class="btn btn-secondary">
+                                                        <input type="radio" name="options" value="Gia sư" id="option2"> Tôi là gia sư
+                                                    </label>
+                                                    <label class="btn btn-secondary">
+                                                        <input type="radio" name="options" value="Phụ huynh" id="option3"> Tôi là phụ huynh
+                                                    </label>
+                                                </div>
+                                                <div class="form-group">
+                                                    <textarea name="contact-form-message" class="form-control" required placeholder="Khóa học quan tâm *"></textarea>
+                                                </div>
+                                                <button type="submit" id="contact-submit-btn" class="btn ed_btn ed_orange pull-right">
+                                                    Gửi <img id="submit_loading" src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" style="display:none" />
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!--Popup section end-->
+    </div>
+
+
+    <!--main js file start-->
+    <script type="text/javascript" src="~/Content/user/js/bootstrap.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/modernizr.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/owl.carousel.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/smooth-scroll.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/plugins/revel/jquery.themepunch.tools.min.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/plugins/revel/jquery.themepunch.revolution.min.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/plugins/revel/revolution.extension.layeranimation.min.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/plugins/revel/revolution.extension.navigation.min.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/plugins/revel/revolution.extension.slideanims.min.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/plugins/countto/jquery.countTo.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/plugins/countto/jquery.appear.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/custom.js"></script>
+    <script type="text/javascript" src="~/Content/user/js/jquery.matchHeight-min.js"></script>
+    <script type="text/javascript" src="~/Scripts/mask.js"></script>
+    <!--main js file end-->
+
+
+    <!--
+    <div class="zalo-chat-widget" data-oaid="1607980739334339984" data-welcome-message="Rất vui khi được hỗ trợ bạn!" data-autopopup="0" data-width="350" data-height="420" style="bottom:80px !important; right: 24px !important;"></div>
+    <script src="https://sp.zalo.me/plugins/sdk.js"></script>
+    -->
+
+
+    <!-- Facebook Script -->
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v7.0" nonce="64UVsrUF"></script>
+
+    <!-- Load Facebook SDK for JavaScript -->
+    <div id="fb-root"></div>
+    <script>
+        window.fbAsyncInit = function () {
+            FB.init({
+                xfbml: true,
+                version: 'v7.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = 'https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js';
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <!-- Your Chat Plugin code -->
+    <div class="fb-customerchat"
+         attribution=setup_tool
+         page_id="107868474312390">
+    </div>
+
+
+    @RenderSection("scripts", false)
+
+    <script type="text/javascript">
+        $(function () {
+            $('.c_content').matchHeight();
+            $('[data-toggle="tooltip"]').tooltip();
+            //mask.js
+            $('.phone').inputmask('999-999-9999');
+
+            $(".datepicker").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                dateFormat: "dd/mm/yy",
+                yearRange: "-50:+10"
+            });
+        });
+
+        if (window.location.pathname == "/lien-he") {
+            $('#myModal1').remove();
+        }
+        else {
+            setTimeout(function () {
+                $('#myModal1').modal();
+            }, 90000);
+        }
+
+        function BeginSend() {
+            $("#contact-submit-btn").prop("disabled", true);
+        };
+
+        function SendComplete(data) {
+            $("#contact-submit-btn").prop("disabled", false);
+            if (data[0] == true) {
+                $("#alert").removeClass("alert alert-danger");
+                $("#alert").addClass("alert alert-success");
+                $("#alert").html(data[1]);
+
+                $("input[name='contact-form-name']").val("");
+                $("input[name='contact-form-email']").val("");
+                $("input[name='contact-form-mobile']").val("");
+                $("textarea[name='contact-form-message']").val("");
+            }
+            else {
+                $("#alert").removeClass("alert alert-success");
+                $("#alert").addClass("alert alert-danger");
+                $("#alert").html(data[1]);
+            }
+        };
+
+        function SendError() {
+            $("#contact-submit-btn").prop("disabled", false);
+            $("#alert").removeClass("alert alert-success");
+            $("#alert").addClass("alert alert-danger");
+            $("#alert").html("Gửi email thất bại! Đã có sự cố xảy ra.");
+        };
+
+
+        //paste this code under head tag or in a seperate js file.
+        //Wait for window load
+        //                    $(window).load(function () {
+        //    // Animate loader off screen
+        //    $(".se-pre-con").fadeOut("slow");
+        //});
+        $('.owl-carousel').owlCarousel({
+            loop: true,
+            items: 1,
+            autoplay: true,
+            autoplayTimeout: 4000
+        })
+        $('#owl-ed_slider').owlCarousel({
+            loop: true,
+            items: 1,
+            autoplay: true,
+            autoplayTimeout: 4000,
+            nav: false,
+            control: false
+        })
+
+    </script>
+</body>
+</html>

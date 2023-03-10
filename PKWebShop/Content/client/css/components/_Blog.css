@@ -1,0 +1,37 @@
+﻿.blog .section-header {
+    margin-bottom: 10px;
+}
+
+.blog .entry{
+   background-color: #fff;
+}
+
+.blog .entry-img a{
+    display:block;
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%
+}
+.blog .entry-img a img{
+   position: absolute;
+   top:0;
+   left:0;
+   width:100%;
+   height: 100%;
+   object-fit: cover;
+}
+.blog .entry-content {
+   text-align: center;
+   padding: 15px;
+}
+.blog .entry-content .entry-title {
+   font-size: 18px;
+   color:#666;
+   font-weight: 500;
+}
+.blog .entry-content .entry-title a{
+   color:#666;
+}
+    .blog .entry-content p:last-of-type {
+        margin-bottom: 0;
+    }

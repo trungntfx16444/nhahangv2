@@ -1,0 +1,132 @@
+﻿@model AdminPage.Models.policy
+@using AdminPage.Models
+@{
+    
+     ViewBag.Title = "Hướng dẫn đặt hàng";
+    
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header well" data-original-title="">
+                <h2 class="card-title">@ViewBag.Title</h2>
+            </div>
+            <div class="card-body">
+                <form role="form" action="/supportpolicy/OrderPoSubmit" method="post" enctype="multipart/form-data">
+                  
+                    <div class="form-group">
+                        <label>Ảnh đại diện</label>
+                        <input type="file" class="input-sm" name="pic" id="pic" onchange="reviewUpload(this)" />
+
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_pic">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_pic" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_pic"></i>
+                                <a onclick="upload_delete('pic')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model?.OrderPolicyImage))
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="rv_pic">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.OrderPolicyImage" />
+                                    <i style="padding-left:5px">@Model.OrderPolicyImage</i>
+
+                                    <a style="padding-left:10px" href="@Model.OrderPolicyImage" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete('order')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="floading" style="display:none" />
+                                </p>
+
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nội dung</label>
+                        <textarea name="desc" class="form-control ckeditor">@(Model?.OrderPolicy)</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script src="~/Content/admin/ckeditor/ckeditor.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder.js"></script>
+    <script src="~/Scripts/upload_and_review.js"></script>
+
+    <script type="text/javascript">
+        function PicDelete(t) {
+            if (confirm("Xác nhận muốn xóa tập tin này?")) {
+                $("#floading").show();
+                $.ajax({
+                    url: "/supportpolicy/PicDelete/",
+                    type: "post",
+                    datatype: "json",
+                    contenttype: "application/json",
+                    data: { "t": t }
+
+                })
+                    .success(function (data) {
+                        if (data == true) {
+                            $("#rv_pic").hide(500);
+                            alert("Delete successfully");
+                        }
+
+                    })
+                    .error(function () { alert("Can not delete."); $("#floading").hide(); })
+                    .complete(function () { $("#floading").hide(); });
+
+            }
+
+        }
+
+    </script>
+
+}
+
+

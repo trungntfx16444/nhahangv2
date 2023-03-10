@@ -1,0 +1,179 @@
+﻿@using PKWebShop.Models
+@{
+    if (Model?.DesignsId > 0)
+    {
+        ViewBag.Title = "Sửa mẫu thiêt kế";
+    }
+    else
+    {
+        ViewBag.Title = "Thêm mẫu thiết kế";
+    }
+
+    var pic_phu = ViewBag.pic as List<uploadmorefile>;
+
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="#">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/sample/" class="btn btn-default">< Trở lại</a>
+</p>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-book"></i> @ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                <form role="form" action="/admin/sample/save" method="post" enctype="multipart/form-data">
+                    @*@Html.HiddenFor(m => m.DesignsId)*@
+
+                    <div class="form-group">
+                        <label>Chọn dịch vụ</label>
+                        <select name="ServiceId" class="form-control" required>
+                            @foreach (var item in ViewBag.services as List<service>)
+                            {
+                                <option value="@item.ServiceId" @if (Model?.ServiceId == item.ServiceId) { @Html.Raw(@"selected=""selected""") }>@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mã số</label>
+                        <input type="text" name="Code" class="form-control" required value="@Model.Code" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ảnh đại diện (ảnh chính)</label>
+                        <input type="file" @if (Model.DesignsId == 0) { @Html.Raw("required") } class="input-sm" name="pic0" id="pic0" onchange="reviewUpload(this)" />
+
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_pic0">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_pic0" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_pic0"></i>
+                                <a onclick="upload_delete('pic0')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Picture))
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="pic_@Model.DesignsId">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.Picture" />
+                                    <i style="padding-left:5px">@Model.Picture</i>
+         
+                                    <a style="padding-left:10px" href="@Model.Picture" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete('@Model.DesignsId')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="floading" style="display:none" />
+                                </p>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Ảnh khác (ảnh phụ)</label>
+                    </div>
+
+                    @Html.Partial("_UploadMoreFilesPartial", pic_phu, new ViewDataDictionary { { "upload", true } })
+
+                    <br />
+                    <div class="checkbox">
+                        <label data-toggle="tooltip" title="Được hiển thị trong mẫu thiết kế nổi bật ở trang chủ">
+                            @*@Html.CheckBox("ShowHomePage", Model.ShowHomePage ?? false)*@ Hiển thị trang chủ
+                        </label>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+                        <label>Giới thiệu</label>
+                        <textarea rows="10" name="desc" class="form-control ckeditor" placeholder="Giới thiệu">@Html.Raw(Model?.Description)</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<p class="btn-group">
+    <a href="/admin/sample/" class="btn btn-default">< Trở lại</a>
+</p>
+
+@section scripts
+{
+    <script src="~/Content/admin/ckeditor/ckeditor.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder.js"></script>
+    <script src="~/Scripts/upload_and_review.js"></script>
+
+    <script type="text/javascript">
+        function PicDelete(id) {
+            if (confirm("Xác nhận muốn xóa tập tin này?")) {
+                $("#floading").show();
+                $.ajax({
+                    url: "/admin/sample/picdelete/",
+                    type: "post",
+                    datatype: "json",
+                    contenttype: "application/json",
+                    data: { "id": id }
+
+                })
+                    .success(function (data) {
+                        if (data == true) {
+                            $("#pic_" + id).hide(500);
+                            alert("Delete successfully");
+                        }
+
+                    })
+                    .error(function () { alert("Can not delete."); $("#floading").hide(); })
+                    .complete(function () { $("#floading").hide(); });
+               
+            }
+            
+        }
+
+    </script>
+
+}

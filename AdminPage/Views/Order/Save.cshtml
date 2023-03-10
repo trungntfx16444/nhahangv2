@@ -1,0 +1,323 @@
+﻿@model AdminPage.Models.order
+@using AdminPage.Models;
+@{
+    if (Model.Id > 0)
+    {
+        ViewBag.Title = "Sửa hóa đơn: " + AdminPage.AppLB.CommonFunc.GetIDStr(Model.Id);
+    }
+    else
+    {
+        ViewBag.Title = "Thêm hóa đơn";
+    }
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">Home</a>
+        </li>
+        <li>
+            <a href="#">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+<p class="btn-group">
+    <a href="/order/" class="btn btn-default">< Trở lại</a>
+</p>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+    </div>
+}
+
+
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-book"></i> @ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                <form role="form" action="/order/save" method="post">
+                    @Html.HiddenFor(m => m.Id)
+                    <div class="row">
+                        <fieldset class="col-md-6">
+                            <legend>KHÁCH HÀNG</legend>
+                            <div class="form-group">
+                                <label>Tên</label>
+                                <input type="text" class="form-control" name="CustomerName" value="@Model.CustomerName" placeholder="Tên khách hàng" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Địa chỉ</label>
+                                <input type="text" class="form-control" name="Customer_Address" value="@Model.Customer_Address" placeholder="Địa chỉ khách hàng" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <input type="text" class="form-control" name="CustomerPhone" value="@Model.CustomerPhone" placeholder="Số điện thoại khách hàng" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="text" class="form-control" name="CustomerEmail" value="@Model.CustomerEmail" placeholder="Email khách hàng" readonly>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="col-md-6">
+                            <legend>NGƯỜI NHẬN HÀNG</legend>
+                            <div class="form-group">
+                                <label>Tên</label>
+                                <input type="text" class="form-control" name="Shipping_Name" value="@Model.Shipping_Name" placeholder="Tên người giao hàng" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <input type="text" class="form-control" name="Shipping_Phone" value="@Model.Shipping_Phone" placeholder="Điện thoại người giao hàng" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Địa chỉ giao hàng</label>
+                                <input type="text" class="form-control" name="ShippingAddress" value="@Model.ShippingAddress" placeholder="Địa chỉ giao hàng" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Chi phí giao hàng</label>
+                                <input type="text" class="form-control" name="Shipping" value="@(Model.Shipping?.ToString("#,###"))" placeholder="Chi phí giao hàng" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tình trạng giao hàng</label>
+                                <select name="Complete" class="form-control">
+                                    <option @if (Model.Complete == false) { @Html.Raw(@"selected=""selected""") } value="0">Đang giao hàng</option>
+                                    <option @if (Model.Complete == true) { @Html.Raw(@"selected=""selected""") } value="1">Đã giao hàng</option>
+                                </select>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <hr />
+
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <span style="font-size:21px;">DANH SÁCH SẢN PHẨM</span><br />
+
+                            <div class="form-group">
+                                <label>Danh mục cha</label>
+                                <select id="service" name="ServiceId" class="form-control" onchange="LoadCategory(this)">
+                                    @foreach (var item in ViewBag.Service as List<service>)
+                                    {
+                                        <option value="@item.ServiceId">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Danh mục con</label>
+                                <select name="category" class="form-control">
+                                    @foreach (var item in ViewBag.category as List<category>)
+                                    {
+                                        <option value="@item.Id">@item.CategoryName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div style="height: 400px; overflow:scroll;">
+
+                                @foreach (var item in ViewBag.ProListDefault as List<product>)
+                                {
+                                    <div class="thumbnail" style="border:1px solid grey; height:400px;">
+                                        <img src="@item.Picture" alt="ảnh đại diện"  />
+                                        <div class="caption">
+                                            <p><b>@item.ProductName</b></p>
+                                            <p><b>Giá: @(item.Price?.ToString("#,###"))</b></p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+
+                        </div>
+
+                        <div class="col-md-8">
+                            <span style="font-size:21px;">SẢN PHẨM ĐÃ CHỌN</span>
+                            <table class="table table-striped table-bordered responsive">
+                                <thead>
+                                    <tr>
+                                        <th>#ID</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th>Số lượng</th>
+                                        <th>Đơn giá</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Xóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in ViewBag.OrderDetail as List<orders_detail>)
+                                    {
+                                        <tr>
+                                            <td>@AdminPage.AppLB.CommonFunc.GetIDStr(item.Id)</td>
+                                            <td>@item.ProductName</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@(item.Price?.ToString("#,###"))</td>
+                                            <td>@(item.Quantity * item.Price)</td>
+                                            <td class="center">
+                                                <a class="btn btn-xs btn-danger" data-toggle="tooltip" title="Xóa sản phẩm" onclick="DeleteOrderDetail('@item.Id')">
+                                                    <i class="glyphicon glyphicon-trash icon-white"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                            <div>
+                                <span style="color:red"><b>Thuế (VAT)</b></span>
+                                <input type="text" class="" style="width: 50px; margin-left:5px;" name="TaxPercent" value="@Model.TaxPercent" placeholder="Thuế" required>
+                                <span style="color:red;"><b> %</b></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="checkbox">
+
+                        <br />
+                        <div>
+                            <label>
+                                <input type="checkbox" name="chk" onclick="CheckChange()" @if (Model.Status == "Đã thanh toán") { @Html.Raw("checked") } /><span style="color:red; font-weight:bold">Đã thanh toán</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="status">
+                        <label>Hình thức thanh toán</label>
+                        <input type="text" class="form-control" name="PaymentMethod" value="@Model.PaymentMethod" placeholder="Hình thức thanh toán">
+                    </div>
+
+                    @*<div class="form-group">
+                            <label>Bình luận</label>
+                            <textarea rows="10" class="form-control ckeditor" name="desc" placeholder="Nội dung">@Html.Raw(Model?.Comment)</textarea>
+                        </div>*@
+
+                    <br /><button type="submit" class="btn btn-primary">Lưu lại</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<p class="btn-group">
+    <a href="/order/" class="btn btn-default">< Trở lại</a>
+</p>
+
+@section scripts
+{
+    <script src="~/Content/admin/ckeditor/ckeditor.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder_v1.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            if ($("input[name='chk']").is(":checked") == true) {
+                $("#status").show();
+            }
+            else {
+                $("#status").hide();
+                $("input[name='PaymentMethod']").val("");
+            }
+        })
+
+        //function uploadpic() {
+        //    var finder = new CKFinder();
+        //    finder.BasePath = '/Content/admin/ckfinder/';
+        //    finder.SelectFunction = SetFileField;
+        //    finder.Popup();
+
+        //}
+
+        //function SetFileField(fileUrl, data) {
+        //    $("#hdPicture").val(fileUrl);
+        //    $("#showPicture").attr("src", fileUrl);
+        //}
+
+        function CheckChange() {
+            if ($("input[name='chk']").is(":checked") == true) {
+                $("#status").show();
+            }
+            else {
+                $("#status").hide();
+                $("input[name='PaymentMethod']").val("");
+            }
+        }
+
+        function DeleteOrderDetail(id) {
+            if (confirm("Xác nhận bạn muốn xóa?")) {
+                $.ajax({
+                    url: "/order/deleteorderdetail",
+                    method: "post",
+                    data: { Id: id },
+                    dataType: "json"
+                })
+                    .success(function (data) {
+                        if (data == true) {
+                            alert("Delete successfully");
+                        }
+                    })
+                    .error(function () {
+                        alert("Can not delete.");
+                    })
+            }
+        }
+
+        function LoadCategory() {
+            var id = $("#service").val();
+            $("select[name='category']").empty();
+
+            if (id != null) {
+
+                $.ajax({
+                    url: "/order/loadcategory",
+                    method: "post",
+                    data: { Id: id },
+                    dataType: "json"
+                })
+                    .done(function (rdata) {
+                        //{list category}
+
+                        var opt = new Option("ALL", "", false, false);
+                        $("select[name='category']").append(opt);
+
+                        if (rdata != null && rdata.length > 0) {
+
+                            for (var i = 0; i < rdata.length; i++) {
+                                var opt = new Option(rdata[i].CategoryName, rdata[i].Id, false, false);
+                                $("select[name='category']").append(opt);
+                            }
+                        }
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        alert("ERROR. " + errorThrown);
+                    });
+            }
+            else {
+                alert("false")
+                var opt = new Option("ALLL", "", false, false);
+                $("select[name='category']").append(opt);
+            }
+
+        }
+
+    </script>
+
+}

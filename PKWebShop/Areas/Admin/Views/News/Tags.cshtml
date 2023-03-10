@@ -1,0 +1,287 @@
+﻿@using PKWebShop.Services
+@{
+    ViewBag.Title = "Quản lý tags";
+    var webLicense = new PackageServices().WebPackInfo();
+    if (webLicense.IsExpired)
+    {
+        Response.Redirect("/Expired");
+    }
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">Danh sách các tags</h4>
+            <div class="card-toolbar">
+                <button class="btn btn-primary" onclick="AddTag()">
+                    <i class="fa fa-plus"></i> Thêm Tag
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body pt-1">
+        <!--Tab-->
+        <ul class="nav nav-tabs" id="TagsTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="news-tab" data-toggle="tab" href="#news" role="tab" aria-controls="news" aria-selected="true">Tags bài viết</a>
+            </li>
+            @if (webLicense.IsNewsSite() == false)
+            {
+                <li class="nav-item">
+                    <a class="nav-link" id="product-tab" data-toggle="tab" href="#product" role="tab" aria-controls="product" aria-selected="false">Tags sản phẩm</a>
+                </li>
+            }
+        </ul>
+        <div class="tab-content m-t-15" id="myTabContent">
+            <div class="tab-pane fade show active" id="news" role="tabpanel" aria-labelledby="news-tab">
+                <!--Table news tags-->
+                <div id="news_tags" class="table-responsive"></div>
+            </div>
+            @if (webLicense.IsNewsSite() == false)
+            {
+                <div class="tab-pane fade" id="product" role="tabpanel" aria-labelledby="product-tab">
+                    <!--List product tags-->
+                    <div id="product_tags" class="table-responsive"></div>
+                </div>
+            }
+        </div>
+        <!--/.End Tab-->
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal-tag">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-tag-title">Thêm Tag</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="frm-tags">
+                    <div class="form-group">
+                        <label class="font-weight-semibold required">Tên tag:</label>
+                        <input type="hidden" class="form-control" name="id"/>
+                        <input type="text" id="tags_name" class="form-control" name="tags_name" placeholder="Nhập tên tag" />
+                    </div>
+                    <div class="form-row @(webLicense.IsNewsSite() == false ? "" : "d-none")" style="margin-bottom: 20px; ">
+                        <div class="col-md-4">
+                            <div class="radio">
+                                <input type="radio" name="tag_opt" id="tag_news" value="news" checked>
+                                <label class="font-weight-semibold" for="tag_news">Tag bài viết</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="radio">
+                                <input type="radio" name="tag_opt" id="tag_product" value="product">
+                                <label class="font-weight-semibold" for="tag_product">Tag sản phẩm</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">
+                            SEO META TITLE:
+                        </label>
+                        <label class="text-success" style="cursor:pointer">
+                            <input id="checkbox_seo_title" type="checkbox" checked="" value="1"> Sử dụng Tiêu đề chủ đề
+                        </label>
+                        <input type="text" class="form-control" name="seo_title" required/>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-semibold ">SEO Meta Description:</label>
+                        <textarea id="seo_desc" class="form-control" name="seo_desc" placeholder="Nhập mô tả SEO meta"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="SaveTag()">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts {
+    <script type="text/javascript">
+        LoadData("news");
+        $(function () {
+            $("input[name=tags_name]").on("input", function () {
+                console.log($("#checkbox_seo_title").is(":checked"));
+                if ($("#checkbox_seo_title").is(":checked")) {
+                    $('[name="seo_title"]').val($(this).val());
+                }
+            });
+            $('[name="seo_title"]').on("input", function () {
+                if ($("#checkbox_seo_title").is(":checked")) {
+                    $("#checkbox_seo_title").prop("checked", false);
+                }
+            });
+            $("#checkbox_seo_title").on("change", function () {
+                if ($("#checkbox_seo_title").is(":checked")) {
+                    $('[name="seo_title"]').val($("input[name=tags_name]").val());
+                }
+            })
+        })
+        if ('@(webLicense.IsNewsSite())' == 'False') {
+            LoadData("product");
+        }
+
+        function AddTag() {
+            $("#modal-tag [name=id]").val("");
+            $("#modal-tag [name=seo_title]").val("");
+            $("#checkbox_seo_title").prop("checked", true);
+            $("#modal-tag [name=seo_desc]").val("");
+            $("#tags_name").val("");
+            $("#tag_news").prop("checked", true);
+            if (!$("#news-tab").hasClass("active")) {
+                $("#tag_product").prop("checked", true);
+            }
+            $("#modal-tag").modal("show");
+        };
+        function EditTag(id,type) {
+            $.ajax({
+                method: "POST",
+                url: "/admin/news/GetTag",
+                data: { id, type },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0]) {
+                   
+                    if (type == "news") {
+                        $("#tags_name").val(data[1].tag_name);
+                        $("#modal-tag [name=id]").val(data[1].id);
+                        $("#modal-tag [name=seo_title]").val(data[1].seo_title);
+                        $("#checkbox_seo_title").prop("checked", (data[1].tag_name == data[1].seo_title));
+                        $("#modal-tag [name=seo_desc]").val(data[1].seo_desc);
+                        $("#tag_news").prop("checked", true);
+                    } else {
+                        $("#modal-tag [name=id]").val(data[1].Id);
+                        $("#tags_name").val(data[1].TagName);
+                        $("#modal-tag [name=seo_title]").val(data[1].seo_title);
+                        $("#checkbox_seo_title").prop("checked", (data[1].TagName == data[1].seo_title));
+                        $("#modal-tag [name=seo_desc]").val(data[1].seo_desc);
+                        $("#tag_product").prop("checked", true);
+                    }
+                    $("#modal-tag").modal("show");
+                }
+                else {
+                    msg_error(`Lưu thất bại. ${data[1]}`, "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Lưu thất bại. Đã có sự cố xảy ra.", "", "top center");
+            });
+
+        };
+
+        function SaveTag() {
+            if ($("#tags_name").val() == "") {
+                msg_info("Vui lòng nhập tên tag", "tags_name");
+                return false;
+            }
+
+            $.ajax({
+                method: "POST",
+                url: "/admin/news/SaveTag",
+                data: $("#frm-tags").serialize(),
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0]) {
+                    LoadData(data[1]);
+                    msg_success("Lưu tag thành công", "", "top center");
+                    $("#modal-tag").modal("hide");
+                }
+                else {
+                    msg_error(`Lưu thất bại. ${data[1]}`, "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Lưu thất bại. Đã có sự cố xảy ra.", "", "top center");
+            });
+        };
+
+        function RemoveTag(tagId) {
+            if (confirm("Bạn có chắc muốn xóa Tag?")) {
+                let tag_opt = "news";
+                if (!$("#news-tab").hasClass("active")) {
+                    tag_opt = "product";
+                }
+
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/news/RemoveTag",
+                    data: {
+                        id: tagId,
+                        tagOpt: tag_opt
+                    },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        LoadData(tag_opt);
+                        msg_success(data[1], "", "top center");
+                    }
+                    else {
+                        msg_error(`Xóa thất bại. ${data[1]}.`, "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Xóa thất bại. Đã có sự cố xảy ra.", "", "top center");
+                });
+            }
+        };
+
+        function LoadData(tag_opt) {
+            $.ajax({
+                method: "POST",
+                url: "/admin/news/_partial_tags",
+                data: { tagOpt: tag_opt },
+                dataType: "html"
+            }).done(function (data) {
+                if (tag_opt == "news") {
+                    $("#news_tags").html(data);
+                }
+                else {
+                    $("#product_tags").html(data);
+                }
+            }).fail(function () {
+                msg_error("Tải dữ liệu thất bại. Đã có sự cố xảy ra.", "", "top center");
+            });
+        };
+    </script>
+}

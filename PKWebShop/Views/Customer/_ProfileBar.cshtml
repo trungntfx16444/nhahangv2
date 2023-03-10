@@ -1,0 +1,25 @@
+﻿@model PKWebShop.Models.customer
+@{
+    var pkg = new PKWebShop.Services.PackageServices().packageInfoSS();
+}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-4 py-4 mb-0 text-center border-bottom">
+        <img class="d-block rounded-circle mx-auto my-2" width="110" style="height:110px; object-fit: cover" src="@(Model.Avatar??"")" alt="@Model.FullName" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';">
+        <h4 class="mb-0 pt-1">@Model.FullName</h4>
+        @if (pkg.MembershipPoints)
+        {
+            <span class="text-muted font-size-sm"><i class="icon_star" style="color:gold"></i> Điểm tích lũy: <b>@Model.BonusPoints</b></span>
+        }
+    </div>
+    <div class="myaccount-tab-menu nav" role="tablist">
+
+        <a href="#orders" data-toggle="tab" class="active">
+            <i class="lnr lnr-cart"></i> Đơn hàng
+            <span class="main-menu-font-size-14 font-weight-normal float-right">@ViewBag.OrderCount</span>
+        </a>
+        <a href="#account-info" data-toggle="tab"><i class="lnr lnr-user"></i> Thông tin tài khoản</a>
+        <a href="#account-changepass" data-toggle="tab"><i class="lnr lnr-user"></i> Thay đổi mật khẩu  </a>
+        @*<a href="#address-edit" data-toggle="tab"><i class="fa fa-map-marker"></i> address</a>*@
+        <a href="/home/CustomerLogout"><i class="lnr lnr-exit"></i> Đăng xuất</a>
+    </div>
+</div>

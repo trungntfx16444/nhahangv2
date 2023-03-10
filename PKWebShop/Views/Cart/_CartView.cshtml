@@ -1,0 +1,46 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Utils
+@using PKWebShop.AppLB
+@model List<cart_detail>
+
+@{
+    var listProp = ViewBag.ListProp as List<product_properties> ?? new List<product_properties>();
+    var adminSite = UserContent.GetAdminSite();
+    ViewBag.Class = "shop";
+}
+
+
+<ul>
+    @foreach (var p in Model)
+    {
+        var url = $"/{CommonFunc.ConvertNonUnicodeURL(p.ItemName)}-pd{p.ItemId}";
+        <li class="single-product-cart">
+            <div class="cart-img">
+                <a href="@url"><img src="@($"{adminSite}{p.ProductPicture}")" @*srcset="@($"{adminSite}{p.prd.pictureResize(4)}") 700w,@($"{adminSite}{p.prd.pictureResize(5)}") 2000w"*@ onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy"></a>
+            </div>
+            <div class="cart-title">
+                <h4><a href="@url">@p.ItemName</a> @(!string.IsNullOrEmpty(p.PriceOpt1)?"("+p.PriceOpt1_name+")":"") @(!string.IsNullOrEmpty(p.PriceOpt2)?"("+p.PriceOpt2_name+")":"")</h4>
+                @if (!string.IsNullOrEmpty(p.Properties))
+                {
+                    foreach (var item in p.Properties.Split('|').Where(x => !string.IsNullOrEmpty(x)))
+                    {
+                        <span class="badge badge-pill badge_prop text-capitalize">
+                            @(listProp.FirstOrDefault(x => x.ReId == item)?.name)
+                        </span>
+                    }
+                    <br />
+                }
+                <span>@($"{p.Quantity} x {p.Price:0,###}") @Constant.CURRENCY_SIGN</span>
+            </div>
+            <div class="cart-delete">
+                <a onclick="RemoveFromCart('@p.Id')">×</a>
+            </div>
+        </li>
+    }
+</ul>
+<div class="cart-total">
+    <h4>Tổng: <span>@(Model.Sum(p => p.Quantity * p.Price).ToString("0,###")) @Constant.CURRENCY_SIGN</span></h4>
+</div>
+<script>
+    $(".pro-count_cart").html(@Model.Count);
+</script>

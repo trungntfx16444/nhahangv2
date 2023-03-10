@@ -1,0 +1,169 @@
+﻿@using PKWebShop.AppLB
+@{
+    ViewBag.Title = "Nhật ký hoạt động";
+    var curRoleLevel = ViewBag.CurrentRole as int?;
+}
+
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <a class="breadcrumb-item" href="/admin/users">Thành viên</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">@ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div>
+            <div class="form-row">
+                <div class="col-lg-3 col-md-4 col-sm-12 m-t-5 @(curRoleLevel != (int)UserContent.UserRole.Admin ? "d-none" : "")">
+                    <div class="input-affix">
+                        <i class="prefix-icon anticon anticon-search"></i>
+                        <input type="text" id="SearchText" class="form-control" placeholder="tìm kiếm">
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-12 m-t-5">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><b>Từ ngày</b></span>
+                        </div>
+                        <input type="date" id="From" class="form-control" data-date="" data-date-format="DD/MM/YYYY" value="@(ViewBag.From)">
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-12 m-t-5">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><b>Đến ngày</b></span>
+                        </div>
+                        <input type="date" id="To" class="form-control" data-date="" data-date-format="DD/MM/YYYY" value="@(ViewBag.To)">
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-2 col-sm-12 m-t-5">
+                    <button type="button" class="btn btn-primary btn-tone" onclick="Search()">
+                        Tìm kiếm
+                    </button>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <br />
+            <div class="p-15" style="overflow:auto">
+                <table id="logs_table" class="table table-hover table-bordered">
+                    <!--Append data using json - dataTable-->
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts{
+    <script type="text/javascript">
+        
+        $(document).ready(function () {
+            var t = $('#logs_table').DataTable({
+                "serverSide": true, // for process server side
+                "processing": true, // for show progress bar
+                "filter": false, // this is for disable filter (search box)
+                "orderMulti": true, // for disable multiple column at once
+                "scrollX": false,
+                "pageLength": 15,
+                "search.smart": false,
+                "searchable": false,
+                "orderable": false,
+                "targets": 0,
+                "lengthChange": true,
+                "ordering": false,
+                "info": true,
+                "lengthMenu": [[15, 25, 50, 200], [15, 25, 50, 200]],
+                "ajax": {
+                    "url": "/users/loadlogs",
+                    "type": "POST",
+                    "datatype": "json",
+                    data: function (data) {
+                        data.From = $('#From').val();
+                        data.To = $('#To').val();
+                        data.SearchText = $('#SearchText').val();
+                        return data;
+                    }
+                },
+                "language": {
+                    "processing": '<i class="fa fa-spinner fa-spin fa-2x fa-fw"></i>',
+                },
+                "columns": [
+                    {
+                        "title": "#",
+                        "className": 'text-center',
+                        "data": function () { return "" },
+                        "width": '30',
+                    },
+                    {
+                        "title": "User name",
+                        "data": "username",
+                    },
+                    {
+                        "title": "Trạng thái",
+                        "data": function (data) {
+                            return `<span class="badge badge-pill ${data.status == 'Đăng nhập' ? 'badge-primary' : 'badge-success'}">${data.status}</span>`;
+                        },
+                        "width": '250',
+                    },
+                    {
+                        "title": "Thời gian",
+                        "data": "time",
+                        "width": '250',
+                    }
+                ]
+            });
+            t.on('draw.dt', function () {
+                var PageInfo = $('#logs_table').DataTable().page.info();
+                t.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                    cell.innerHTML = i + 1 + PageInfo.start;
+                });
+            });
+        });
+
+        $("#SearchText").keyup(function (e) {
+            if (e.keyCode == 13) {
+                Search();
+            }
+        });
+
+        function Search() {
+            $('#logs_table').DataTable().ajax.reload();
+        };
+
+    </script>
+}
+

@@ -1,0 +1,88 @@
+﻿@using PKWebShop.Models
+@{
+    List<n_toppic> topics = ViewBag.topics;
+    List<string> tags = ViewBag.tags;
+    tags = tags.Where(x => !string.IsNullOrEmpty(x)).ToList();
+
+    n_toppic topic = ViewBag.topic;
+    n_parent_topic ptopic = ViewBag.ptopic;
+
+
+}
+<div class="sidebar-wrapper">
+    @*<div class="sidebar-widget">
+            <div class="news-block" id="promotionblock">
+                <h2 id="promotions">KHUYẾN MÃI </h2>
+                <a href="#">Xem thêm</a>
+                <ul class="newspromotion">
+                    <li>
+                        <a href="#" title="Mua sắm tại BHX online, thanh toán ZaloPay nhận nhiều ưu đãi">Mua sắm tại BHX online, thanh toán ZaloPay nhận nhiều ưu đãi</a>
+                        <div>
+                            <span class="nview"><i class="far fa-eye"></i> 794</span>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" title="Mua sắm tại BHX online, thanh toán ZaloPay nhận nhiều ưu đãi">Từ 11/8 - 20/8 giảm giá sốc nhiều mặt hàng hot với hóa đơn 50k</a>
+                        <div>
+                            <span class="nview"><i class="far fa-eye"></i> 1510</span>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#" title="Mua sắm tại BHX online, thanh toán ZaloPay nhận nhiều ưu đãi">Bách hóa XANH tuyển 1000 shipper giao hàng xe máy các hàng hoá thiết yếu</a>
+                        <div>
+                            <span class="nview"><i class="far fa-eye"></i> 7105</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>*@
+
+    <div class="sidebar-widget mb-20">
+        <div class="sidebar-search mt-0">
+            <form class="sidebar-search-form" action="@($"/{ptopic?.URL}")" method="get">
+                <input type="text" name="search" value="@(Request["search"] ?? "")" placeholder="Tìm kiếm theo tiêu đề">
+                <button>
+                    <i class="icon-magnifier"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (topics != null && topics.Count > 0)
+    {
+        <div class="sidebar-widget shop-sidebar-border mb-20">
+            <h4 class="sidebar-widget-title"><span>Chủ đề</span></h4>
+            <div class="shop-catigory">
+                <ul>
+                    <li>
+                        <a class="@(topic == null ? "active" : "")" href="@($"/{ptopic?.URL}")">
+                            Tất cả
+                        </a>
+                    </li>
+                    @foreach (var t in topics)
+                    {
+                        <li>
+                            <a class="@(t.TopicId == topic?.TopicId ? "active" : "")" href="@($"/{ptopic?.URL}?topic={t.URL}")">
+                                @t.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+
+    @if (tags != null && tags.Count > 0)
+    {
+        <div class="sidebar-widget shop-sidebar-border">
+            <h4 class="sidebar-widget-title"><span>Tag phổ biến</span></h4>
+            <div class="tag-wrap sidebar-widget-tag px-3 mb-15">
+                @foreach (var t in tags)
+                {
+                    <a href="@($"/{ptopic?.URL}?tag={t}")">@t</a>
+                }
+            </div>
+        </div>
+    }
+</div>
+

@@ -1,0 +1,261 @@
+﻿@using PKWebShop.Models
+@model IEnumerable<n_parent_topic>
+@{
+    ViewBag.Title = "Quản lý bài viết";
+    //string p_select = Cookies["parentId"]?.ToString() ?? Model.FirstOrDefault()?.Id;
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+    var topics = ViewBag.Topics as List<n_toppic>;
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-close-circle"></i>
+            </span>
+            <span>@TempData["error"]</span>
+        </div>
+    </div>
+}
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check-circle"></i>
+            </span>
+            <span>@TempData["success"]</span>
+        </div>
+    </div>
+}
+<div class="card">
+    <div class="card-header row no-gutters px-0">
+        <div class="col-12">
+            <ul class="nav nav-tabs border-0" id="pTab">
+                @foreach (var p in Model.OrderBy(x => x.Order))
+                {
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" id="nav_@p.Id" data-toggle="tab" onclick="$('#parentTopic').val('@p.ReId').trigger('change')">@p.Name</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="card-body" id="partial_content">
+        <div class="row m-0 w-100">
+            <input type="hidden" name="parentTopicId_hd" value="@(TempData["parentTopic"] != null ? TempData["parentTopic"] : "")" />
+            <input type="hidden" name="TopicId_hd" value="@(TempData["Topic"] != null ? TempData["Topic"] : "")" />
+            <div class="col-md-3">
+                <select id="TopicId" class="form-control" name="TopicId">
+                    <option class="pr_default" value="">-- Tất cả chủ đề --</option>
+                    @foreach (var t in topics)
+                    {
+                        <option class="pr_@t.ParentTopicId" value="@t.ReId">@t.Name</option>
+                    }
+                </select>
+            </div>
+            <form class="col-md-6">
+                <div class="input-group">
+                    <input id="parentTopic" name="parentTopic" type="hidden" value="" />
+                    <input type="text" id="search" class="form-control" name="search" style="width:250px" placeholder="Nhập từ khóa cần tìm..." />
+                </div>
+            </form>
+            <div class="col-md-3">
+                <a class="btn btn-primary float-right" href="/admin/news/save"> <i class="anticon anticon-plus m-r-5"></i> <span>Thêm bài viết</span></a>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="dataTable" class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width:25%">Tiêu đề</th>
+                        <th class="no-sort">Ảnh đại diện</th>
+                        <th>Ưu tiên</th>
+                        <th class="no-sort">Trạng thái</th>
+                        <th>Ngày đăng</th>
+                        <th class="no-sort" style="width: 42px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--Append data using dataTable-->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    $(function () {
+        var select_p = $("#nav_" + $.cookie("newspage_parentId"));
+        if (select_p.length == 0) {
+            select_p = $("#pTab .nav-link").first();
+        }
+        select_p.trigger("click");
+        table = $('#dataTable').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            "order": [[4, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<img src="/Content/admin/img/loading.gif" width="60px">'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/admin/news/Load_table",
+                "data": function (d) {
+                    d.parentTopicId = $("#parentTopic").val();
+                    d.topicId = $("#TopicId").val();
+                    d.search = $("#search").val();
+                    d.language = $('#lang').val();
+                    return d;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    //console.log(json);
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#dataTable tbody").html(json.responseJSON.data);
+                        var _changeInterval = null;
+                        $("#search").off().on("input", function () {
+                            if (_changeInterval) clearInterval(_changeInterval);
+                            _changeInterval = setInterval(function () {
+                                table.draw();
+                                clearInterval(_changeInterval)
+                            }, 500);
+
+                        });
+                    }
+
+                    $("#parentTopic").off().on("change", function () {
+                        table.draw();
+                    });
+
+                    $("#TopicId option:not(.pr_" + $("#parentTopic").val() + ")").prop("hidden", true);
+                    $("#TopicId option.pr_" + $("#parentTopic").val()).removeAttr("hidden");
+                    $("#TopicId option.pr_default").removeAttr("hidden");
+                }
+            },
+            //"stateSave": true,
+            //"stateSaveParams": function (settings, d) {
+            //    d.Tags = $("#ticket_tags_filter").val();
+            //    localStorage.setItem("tiket_filter_default", JSON.stringify(d));
+            //},
+            //"stateLoadParams": function (settings, d) {
+            //    var current = localStorage.getItem("tiket_filter_default");
+            //    if (current) {
+            //        d = JSON.parse(current); current = null;
+            //        $("#ticket_tags_filter").val(d.Tags);
+            //    }
+            //    return d;
+            //}
+        });
+        table.on('draw', function () {
+            //...
+        });
+
+        $("#TopicId").on("change", function () {
+            table.draw();
+        });
+
+        
+    });
+
+    function LoadLang(lang) {
+        $('#lang').val(lang);
+        table.draw();
+    }
+
+    function LoadTopic(parentId) {
+        let TopicId = $("input[name='TopicId_hd']").val();
+
+        $.ajax({
+            method: "POST",
+            url: "/admin/news/LoadToppic",
+            data: { parentTopicId: parentId },
+            dataType: "json"
+        })
+            .done(function (data) {
+                if (data[0] == true) {
+                    let selected = "";
+                    let opt = '<option value="">Tất cả</option>';
+
+                    for (var i = 0; i < data[1].length; i++) {
+                        if (data[1][i].TopicId == TopicId) {
+                            selected = "selected";
+                        }
+                        else {
+                            selected = "";
+                        }
+
+                        opt += '<option ' + selected + ' value="' + data[1][i].TopicId + '">' + data[1][i].Name + '</option>';
+                    }
+
+                    if (data[1].length > 0 && parentId != "") {
+                        if (TopicId == "-1") {
+                            opt += '<option selected value="-1">Khác</option>'
+                        }
+                        else {
+                            opt += '<option value="-1">Khác</option>'
+                        }
+                    }
+
+                    $("#Topic").html(opt);
+                }
+                else {
+                    error(errMsg)
+                }
+            })
+            .fail(function () {
+                error("Oops! Something went wrong");
+            })
+            .always(function () {
+                //...
+            });
+    };
+    function News_newLang(id) {
+        $.ajax({
+            method: "POST",
+            url: "/admin/news/_NewsAddLang_Modal",
+            data: { id },
+            dataType: "html"
+        })
+            .done(function (data) {
+                $("body").append(data);
+            })
+            .fail(function () {
+            })
+            .always(function () {
+            });
+
+    }
+</script>
+

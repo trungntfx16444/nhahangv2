@@ -1,0 +1,128 @@
+﻿@model IEnumerable<(PKWebShop.Models.orders_detail detail, string categoryUrl, string prodUrl) >
+@using PKWebShop.Services
+@using PKWebShop.Utils
+@using PKWebShop.Models
+
+@{
+    var dbLang = new DBLangCustom();
+    order order = ViewBag.order;
+    var webLicense = new PackageServices().packageInfoSS();
+    var listProp = ViewBag.ListProp as List<product_properties> ?? new List<product_properties>();
+}
+
+
+<div class="card-body pt-4 border-top">
+    <!-- Item-->
+
+    @foreach (var item in Model)
+    {
+        <div class="d-sm-flex justify-content-between mb-3 pb-1">
+            <div class="order-item media media-ie-fix d-block d-sm-flex mr-sm-3">
+                <div class="media-body font-size-sm pt-2 pl-sm-3 text-center text-sm-left">
+                    <h5 class="nav-heading font-size-sm mb-2">
+                        <a href="@($"/{item.prodUrl}-pd{item.detail.ProductId}")" class="text-dark">@item.detail.ProductName</a>
+                    </h5>
+                    @if (!string.IsNullOrEmpty(item.detail.PropertiesId))
+                    {
+                        foreach (var p in item.detail.PropertiesId.TrimEnd(',').Split(','))
+                        {
+                            <span class="badge badge-pill badge-info text-white" style="font-size:small; font-weight:inherit;">
+                                @(listProp.FirstOrDefault(x => x.ReId == p)?.name)
+                            </span>
+                        }
+                    }<div>
+                        <label class="text-muted">Đơn giá:</label>
+                         <label class="text-muted">@item.detail.Quantity x @item.detail.Price.Value.ToString("0,###") @Constant.CURRENCY_SIGN</label>
+                    </div>
+                </div>
+            </div>
+            <div class="font-size-sm text-right pt-2 unit-price">
+                <div class="text-muted text-center">Tổng giá:</div>
+                <label class="font-weight-bold pr-2">@(((item.detail.Price*item.detail.Quantity)??0).ToString("0,###")) @Constant.CURRENCY_SIGN</label>
+            </div>
+        </div>
+    }
+
+    <!-- Total-->
+    <div class="d-flex flex-wrap align-items-center justify-content-end pt-3 border-top" style="padding-bottom: @(order.PaymentData != null ? "16" : "0")px">
+        @*<div class="font-size-sm my-2 mr-2"><span class="text-muted mr-1">Thuế:</span><span class="font-weight-medium">@order.TaxPercent.Value.ToString("#,##")</span></div>*@
+        <div class="font-size-sm mw-100 pr-2" style="width:350px;">
+            <div>
+                <span class="text-muted mr-1">Tạm tính:</span><span class="font-weight-medium float-right">@order.SubTotal.Value.ToString("#,###") @Constant.CURRENCY_SIGN</span>
+            </div>
+            @if (webLicense.GiftCode)
+            {
+                <div>
+                    <span class="text-muted mr-1">Giảm giá:</span>
+                    <span class="font-weight-medium float-right">
+                        @((order.DiscountAmount != null && order.DiscountAmount > 0) ? order.DiscountAmount?.ToString("#,###") + " " + Constant.CURRENCY_SIGN : "---")
+                    </span><br />
+                </div>
+            }
+
+
+            @if (order.Shipping>0)
+            {
+            <div>
+                <span class="text-muted mr-1">Phí vận chuyển:</span>
+                <span class="font-weight-medium float-right" style="text-decoration: @(order.SubTotal == order.GrandTotal + order.DiscountAmount && order.Shipping.Value > 0 ? "line-through" : "")">
+                    @(order.Shipping.HasValue ? order.Shipping.Value.ToString("#,###") + " " + Constant.CURRENCY_SIGN : "---")
+                </span><br />
+            </div>
+            }
+            <hr />
+            @if ((order.BonusPointsUsed ?? 0) > 0)
+            {
+                <div>
+                    <span class="text-success mr-1">Sử dụng điểm tích lũy giảm</span>
+                    <span class="float-right text-danger">@order.BonusPointsDiscount.Value.ToString("#,###") @Constant.CURRENCY_SIGN</span>
+                </div>
+            }
+            <div>
+                <span class="text-muted mr-1">Tổng:</span>
+                <span class="font-weight-bold float-right text-success">@(order.GrandTotal.Value > 0 ? order.GrandTotal.Value.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</span>
+            </div><br />
+        </div>
+
+    </div>
+
+    @if (webLicense.PaymentOnline)
+    {
+        <!-- Payment -->
+        if (order.PaymentData != null)
+        {
+            <div class="d-flex flex-wrap align-items-center justify-content-between pt-3 border-top">
+                <div class="font-size-sm my-2 mr-2">
+                    <span style="color: red">Thanh toán không thành công :</span>
+                    <span class="font-weight-medium">@PaymentServices.VNPAY_MessageResp(order.PaymentData.ResponseCode, false)</span>
+                </div>
+                <div class="font-size-sm my-2">
+                    <form method="post" action="/cart/VnpayPayment" style="margin-top: 0">
+                        <input type="hidden" name="orderId" value="@order.Id">
+                        <input type="hidden" name="type" value="payment">
+                        <button type="submit" class="btn btn-theme pt-2 mt-2">
+                            Thanh toán lại <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+        else if (order.Status == "0")
+        {
+            <div class="d-flex flex-wrap align-items-center justify-content-between pt-3 border-top">
+                <div class="font-size-sm my-2 mr-2">
+                    @* <span style="color: red">Thanh toán ngay</span> *@
+                </div>
+                <div class="font-size-sm my-2">
+                    <form method="post" action="/cart/VnpayPayment" style="margin-top: 0">
+                        <input type="hidden" name="orderId" value="@order.Id">
+                        <input type="hidden" name="type" value="payment">
+                        <button type="submit" class="btn btn-theme pt-2 mt-2">
+                            Thanh toán ngay <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+</div>

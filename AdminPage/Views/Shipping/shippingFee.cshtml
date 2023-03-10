@@ -1,0 +1,388 @@
+﻿@model IEnumerable<string>
+@using AdminPage.Models
+@using AdminPage.Services
+@using AdminPage.Utils
+@{
+    ViewBag.Title = "Quản lý phí giao hàng";
+    List<vn_province> tinhs = ViewBag.Tinhs ?? new List<vn_province>();
+    decimal fee_default = ViewBag.fee_default ?? 0;
+    decimal free_ship = ViewBag.free_ship ?? 0;
+    var webLicense = new PackageServices().WebPackInfo();
+    if (webLicense.ShippingFee == false)
+    {
+        Response.Redirect("/");
+    }
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<div class="mail-wrapper">
+    <div class="mail-nav" id="mail-nav">
+        <div class="p-h-10 m-t-25">
+            <div class="w-100">
+                <i class="anticon anticon-setting"></i>
+                <b class="m-l-5">Phí ship mặc định: <a class="badge badge-pill badge-success ml-1" onclick="setfeeDefault()"><span id="default_fee">@(fee_default.ToString("#,##0 "))@Constant.CURRENCY_SIGN</span> <span class="fa fa-pencil-alt"></span></a></b>
+            </div>
+            <div class="w-100 mt-2">
+                <i class="anticon anticon-setting"></i>
+                <b class="m-l-5">Miễn phí ship từ : <a class="badge badge-pill badge-success ml-1" onclick="setFreeShip()"><span id="free_ship">@(free_ship.ToString("#,##0 "))@Constant.CURRENCY_SIGN</span> <span class="fa fa-pencil-alt"></span></a></b>
+            </div>
+            <hr />
+            <button class="btn btn-primary w-100" onclick="show_content('select_tinhs')">
+                <i class="anticon anticon-setting"></i>
+                <span class="m-l-5">Phí ship theo tỉnh thành</span>
+            </button>
+        </div>
+        <div class="p-v-15">
+            <ul id="List_prov" class="menu nav">
+                <template>
+                    <li class="nav-item">
+                        <a data-id="{Id}" href="#" onclick="LoadProvince('{Id}')" class="nav-link _province">
+                            <i class="anticon anticon-star"></i>
+                            <span><small>{Type}</small> {Name}</span>
+                        </a>
+                    </li>
+                </template>
+                @foreach (var s in tinhs.Where(t => Model.Contains(t.provinceid)))
+                {
+                    <li class="nav-item">
+                        <a data-id="@s.provinceid" href="#" onclick="LoadProvince('@s.provinceid')" class="nav-link _province">
+                            <i class="anticon anticon-star"></i>
+                            <span><small>@s.type</small> @s.name</span>
+                        </a>
+                    </li>
+                }
+                @*<li class="nav-item">
+                    <a href="#" onclick="show_content('defaultfee')" class="nav-link _province _defaultfee">
+                        <i class="anticon anticon-star"></i>
+                        <span>Các tỉnh thành khác</span>
+                    </a>
+                </li>*@
+
+            </ul>
+        </div>
+    </div>
+    <div id="select_huyen" class="mail-content d-none">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5>Phí ship của <span class="province_showname"></span></h5>
+            <button class="btn btn-sm btn-success" onclick="SaveShippingConfig()">
+                <i class="fa fa-check"></i> Lưu thay đổi
+            </button>
+        </div>
+        <div class="form-group">
+            <input type="text" id="search_huyens" class="form-control" placeholder="Lọc tên quận/huyện">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Nội Thành <a class="badge badge-pill badge-success ml-3" onclick="setShippingfee($('#noithanh_fee'))"><span id="noithanh_fee">Đặt giá ship</span> <span class="fa fa-pencil-alt"></span></a></h4>
+            </div>
+            <div id="huyen_noithanh" class="box-huyen card-body">
+            </div>
+        </div>
+        <div class="card">
+            <div class=" card-header">
+                <h4 class="card-title">Ngoại Thành <a class="badge badge-pill badge-success ml-3" onclick="setShippingfee($('#ngoaithanh_fee'))"><span id="ngoaithanh_fee">Đặt giá ship</span> <span class="fa fa-pencil-alt"></span></a></h4>
+            </div>
+            <div id="huyen_other" class="box-huyen card-body">
+            </div>
+        </div>
+    </div>
+    <div id="select_tinhs" class="mail-content">
+        <div class="p-b-15 m-r-15 d-md-none d-inline-block">
+            <a class="text-dark font-size-18 mail-open-nav" href="javascript:void(0);">
+                <i class="anticon anticon-menu-unfold"></i>
+            </a>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5>Chọn Tỉnh/Thành</h5>
+            <button class="btn btn-sm btn-success" onclick="SaveProvince()">
+                <i class="fa fa-check"></i> Lưu
+            </button>
+        </div>
+
+
+        <form>
+            <div class="form-group">
+                <input type="text" id="search_tinhs" class="form-control" placeholder="Tìm kiếm">
+            </div>
+            <div class="form-group">
+                @foreach (var t in tinhs)
+                {
+                    <a class="tinh badge badge-pill badge-blue font-size-14 p-v-5 p-h-20 m-5 @(Model.Contains(t.provinceid)?"active":"")">@t.name</a>
+                }
+
+            </div>
+        </form>
+
+    </div>
+</div>
+<div class="modal" id="ptopic" aria-modal="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Nhóm chủ đề mới</h4>
+            </div>
+            <div class="modal-body" style="padding-bottom:0px;">
+                <div class="form-group">
+                    <label style="font-weight:bold">Tên nhóm CĐ</label><br />
+                    <input type="hidden" name="id" />
+                    <input class="form-control" name="name" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default float-left" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="SavePTopic()"><i class="fa fa-check"></i> Lưu</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<link href="~/Content/css/Custom.css" rel="stylesheet" />
+<style>
+    #List_prov {
+        max-height: calc(100vh - 275px);
+        overflow-y: auto;
+    }
+
+        #List_prov::-webkit-scrollbar {
+            display: none;
+        }
+
+    .tinh {
+        transition: .5s;
+    }
+
+    .menu.nav .nav-item {
+        width: 100%;
+    }
+
+    .mail-wrapper .mail-nav {
+        width: 350px;
+    }
+
+    .box-huyen {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .huyen {
+        transition: 1s;
+    }
+
+    .sorting {
+        background-color: rgba(2,211,239,0.1);
+        border: 2px solid rgba(2,211,239,0.15) !important;
+        margin: -2px !important;
+    }
+
+        .sorting.huyen {
+            transition: 0s !important;
+        }
+</style>
+
+<script>
+    $(function () {
+        $("#search_tinhs").on("input", function () {
+            var search = StringToSlug($(this).val());
+            $(".tinh").each(function () {
+                $(this).toggle((StringToSlug($(this).text()).indexOf(search) != -1));
+            })
+        })
+        $(".tinh").on("click", function () {
+            $(this).toggleClass("active");
+        })
+        $("#search_huyens").on("input", function () {
+            var search = StringToSlug($(this).val());
+            $(".huyen").each(function () {
+                $(this).toggle((StringToSlug($(this).text()).indexOf(search) != -1));
+            })
+        })
+        $(".box-huyen").sortable({
+            connectWith: ".box-huyen",
+            start: function (event, ui) {
+                $(".box-huyen").addClass("sorting");
+                $(ui.item).addClass("sorting");
+            },
+            sort: function () {
+            },
+            stop: function (event, ui) {
+                $(ui.item).removeClass("sorting");
+                $(ui.item).addClass("active");
+                setTimeout(function () { $(ui.item).removeClass("active"); }, 200);
+                $(".box-huyen").removeClass("sorting");
+            },
+        }).disableSelection();
+        $("#List_prov ._province").first().trigger("click");
+    })
+
+    function SaveProvince() {
+        var selected = [];
+        $(".tinh.active").each(function (el) {
+            selected.push($(this).text());
+        })
+        $.ajax({
+            method: "POST",
+            url: "/shipping/SelectProvince",
+            data: { selected },
+            dataType: "json"
+        }).done(function (data) {
+            if (cnoty(data)) {
+                $("#List_prov .nav-item").remove();
+                var temp = $("#List_prov template").html();
+                data[2].forEach(function (i) {
+                    $("#List_prov").append($(temp.replace(/{Id}/g, i.Id).replace(/{Type}/g, i.Type).replace(/{Name}/g, i.Name)));
+                })
+                $("#List_prov ._province").first().trigger("click");
+            }
+        }).fail(function () {
+            //...
+        });
+    };
+
+    function LoadProvince(id) {
+        $.ajax({
+            method: "POST",
+            url: "/shipping/LoadProvince",
+            data: { id },
+            dataType: "json"
+        }).done(function (data) {
+            if (data[0]) {
+                show_content("select_huyen");
+                $(".box-huyen").empty();
+                if (data[2] != null) {
+                    data[2].forEach(function (v, i) {
+                        var el = $(`<a class="huyen badge badge-pill badge-blue font-size-14 p-v-5 p-h-20 m-5" ondblclick="switch_huyen(this)" data-id="${v.districtid}" style="order:${i + 1}">${v.type} ${v.name}</a>`);
+                        if (data[3] != null && data[3].indexOf(v.districtid) != -1) {
+                            $("#huyen_noithanh").append(el);
+                        } else {
+                            $("#huyen_other").append(el);
+                        }
+                    })
+                }
+                //
+                setShippingfee($('#noithanh_fee'), (data[4] || 0));
+                setShippingfee($('#ngoaithanh_fee'), (data[5] || 0));
+                $(".province_showname").html($("._province[data-id='" + id + "']").text());
+                //set active class for province
+                $("._province.active").removeClass("active");
+                $("._province[data-id='" + id + "']").addClass("active");
+            }
+        }).fail(function () {
+            //...
+        });
+    }
+    function switch_huyen(el) {
+        $(el).addClass("active").appendTo($(".box-huyen").not($(el).closest(".box-huyen")));
+        setTimeout(function () { $(el).removeClass("active"); }, 200);
+    }
+    function setShippingfee(el, fee) {
+        if (fee == null) {
+            fee = prompt("Đặt phí giao hàng: ", ($(el).data("fee") || 0));
+        }
+        if (fee != null && fee >= 0) {
+            $(el).data("fee", fee);
+            $(el).html(toMoney(fee) + " @Constant.CURRENCY_SIGN");
+        }
+    }
+
+    function SaveShippingConfig() {
+        var ProvinceId = $("._province.active").data("id");
+        var HuyenNoiThanh = $.map($("#huyen_noithanh .huyen"), function (el) {
+            return $(el).data("id");
+        });
+        var noithanh_fee = $("#noithanh_fee").data("fee");
+        var ngoaithanh_fee = $("#ngoaithanh_fee").data("fee");
+        $.ajax({
+            method: "POST",
+            url: "/shipping/SaveShippingConfig",
+            data: { ProvinceId, HuyenNoiThanh, noithanh_fee, ngoaithanh_fee },
+            dataType: "json"
+        }).done(function (data) {
+            if (cnoty(data)) {
+
+            }
+        }).fail(function () {
+            //...
+        });
+    }
+    function setfeeDefault(fee) {
+        if (fee == null) {
+            var fee = prompt("Đặt phí giao hàng: ", ($('#default_fee').data("fee") || 0));
+        }
+        if (fee != null && fee >= 0) {
+            $.ajax({
+                method: "POST",
+                url: "/shipping/SaveShippingDefault",
+                data: { fee },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    $('#default_fee').data("fee", fee);
+                    $('#default_fee').html(toMoney(fee) + " @Constant.CURRENCY_SIGN");
+                }
+            }).fail(function () {
+                //...
+            });
+        }
+    }
+    function setFreeShip(fee) {
+        if (fee == null) {
+            fee = prompt("Miễn phí cho đơn hàng giá trị: ", ($('#free_ship').data("fee") || 0));
+        }
+        if (fee != null && fee >= 0) {
+            $.ajax({
+                method: "POST",
+                url: "/shipping/SaveShippingFree",
+                data: { fee },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    $('#free_ship').data("fee", fee);
+                    $('#free_ship').html(toMoney(fee) + " @Constant.CURRENCY_SIGN");
+                }
+            }).fail(function () {
+                //...
+            });
+        }
+    }
+    function show_content(name) {
+        $('.mail-content').addClass('d-none');
+        $(`#${name}`).removeClass('d-none');
+        $("._province.active").removeClass("active");
+        $("._" + name).addClass("active");
+    }
+</script>
+<!-- Content Wrapper END -->

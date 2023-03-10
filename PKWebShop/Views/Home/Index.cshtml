@@ -1,0 +1,308 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    var info = ViewBag.WebInfo as webconfiguration ?? new webconfiguration();
+    if (!string.IsNullOrEmpty(info.ImageShared))
+    {
+        ViewBag.og_image = info.ImageShared;
+    }
+    
+    // lấy đường đẫn tới trang sản phẩm
+    ViewBag.url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+
+    IDictionary<UserContent.Web_Feature, sFeatures_view> sFeatures = ViewBag.sFeatures;
+
+    popupad quangcao = ViewBag.quangcao;
+
+    // lấy địa chỉ kết nối với admin
+    var adminSite = UserContent.GetAdminSite();
+    //lấy danh sách các sản phẩm
+    var listcategorys = UserContent.GetWebCategoryProduct();
+    ViewBag.CateLv1 = listcategorys.Where(x => x.Level == 1).ToList();
+    ViewBag.CateLv2 = listcategorys.Where(x => x.Level == 2).ToList();
+    ViewBag.CateLv3 = listcategorys.Where(x => x.Level == 3).ToList();
+    ViewBag.Class = "home";
+}
+
+
+@foreach (var item in sFeatures)
+{
+    if (item.Key == UserContent.Web_Feature.trangchu_slide)
+    {
+        @Html.Partial("components/_Slide", item.Value)
+    }
+    else if (item.Key == UserContent.Web_Feature.trangchu_gioithieu)
+    {
+        @Html.Partial("components/_GioiThieu", item.Value)
+        if (sFeatures.ContainsKey(UserContent.Web_Feature.trangchu_sanpham))
+        {
+            @Html.Partial("components/_Menu", sFeatures[UserContent.Web_Feature.trangchu_sanpham])
+        }
+        if (sFeatures.ContainsKey(UserContent.Web_Feature.trangchu_sanpham2))
+        {
+            @Html.Partial("components/_SanPham", sFeatures[UserContent.Web_Feature.trangchu_sanpham2])
+        }
+        @*@Html.Partial("components/_Menu")
+            @Html.Partial("components/_SanPham")*@
+        if (sFeatures.ContainsKey(UserContent.Web_Feature.trangchu_hinhanh))
+        {
+            @Html.Partial("components/_HinhAnh", sFeatures[UserContent.Web_Feature.trangchu_hinhanh])
+        }
+        @Html.Partial("components/_DangKy")
+        if (sFeatures.ContainsKey(UserContent.Web_Feature.trangchu_tintuc))
+        {
+            @Html.Partial("components/_TinTuc", sFeatures[UserContent.Web_Feature.trangchu_tintuc])
+        }
+        @*@Html.Partial("components/_TinTuc")*@
+    }
+    @*else if (item.Key == UserContent.Web_Feature.trangchu_sanpham)
+        {
+            @Html.Partial("components/_Menu", item.Value)
+        }*@
+    @*else if (item.Key == UserContent.Web_Feature.trangchu_duannoibat)
+        {
+            @Html.Partial("components/product/_ProductFeatured", item.Value)
+        }
+        else if (item.Key == UserContent.Web_Feature.trangchu_loaibatdongsan)
+        {
+            @Html.Partial("components/product/_ProductType", item.Value)
+        }*@
+    @*else if (item.Key == UserContent.Web_Feature.trangchu_gioithieu)
+        {
+            @Html.Partial("components/about/_About-01", item.Value)
+        }
+        else if (item.Key == UserContent.Web_Feature.trangchu_tag)
+        {
+            @Html.Partial("components/tag/_Tag-01", item.Value)
+        }*@
+    @*else if (item.Key == UserContent.Web_Feature.trangchu_tintuc)
+        {
+            @Html.Partial("components/blog/_Blog-slide", item.Value)
+        }
+        else if (item.Key == UserContent.Web_Feature.trangchu_sanpham)
+        {
+            @Html.Partial("components/product/_Product-03", item.Value)
+        }*@
+    @*else if (item.Key == UserContent.Web_Feature.trangchu_tienich)
+        {
+            @Html.Partial("components/service/_Service-01", item.Value)
+        }*@
+    @*else if (item.Key == UserContent.Web_Feature.trangchu_lienhe)
+        {
+            @Html.Partial("components/cta/_Cta-01", item.Value)
+        }*@
+}
+
+
+<div class="modal fade" id="modal-ForgotPasswordNoty" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:500px; width: auto">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Thông báo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:15px">
+                <p class="mb-0">@(TempData["ForgotPasswordNoty"])</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*@if (quangcao != null)
+    {
+        <div class="modal fade popup-image" id="exampleModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document" style="width: fit-content;">
+                <div class="modal-content overflow-hidden" style="border-radius: 10px;">
+                    <div class="modal-body p-0">
+                        <div class="">
+                            <div style="">
+                                <a href="@quangcao.PopupAdsURL" target="_blank" title="@quangcao.Title"><img src="@($"{adminSite}{quangcao.PopupAdsPicture}")" loading="lazy" /></a><br />
+                                <a href="javascript:void(0)" data-dismiss="modal" onclick="sessionStorage.setItem('showad','0')" style="float:left;padding:5px 10px"><b style="font-size:1.3em">❏</b> Không hiển thị lại</a>
+                                <a href="javascript:void(0)" data-dismiss="modal" style="float:right;padding:5px 10px"><b style="font-size:1.3em">☒</b> Đóng</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }*@
+
+@*<div class="modal fade" id="modal_ung_tuyen" tabindex="-1" role="dialog" aria-labelledby="modal_ung_tuyen_Label" aria-hidden="true">
+        <form id="m_formtuyendung" action="/tuyendung/CustomerRequest" method="post" enctype="multipart/form-data">
+            <div class="modal-dialog" role="document" style="max-width:500px !important">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal_ung_tuyen_Label">ĐĂNG KÝ ỨNG TUYỂN</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body contact-from py-4">
+                        <div class="form-group">
+                            <input id="m_name" name="FullName" type="text" class="mb-0" placeholder="Họ &amp; Tên của bạn *" required="">
+                        </div>
+                        <div class="form-group">
+                            <input id="m_phone" name="Phone" type="tel" class="mb-0" placeholder="Số điện thoại của bạn *" required="">
+                        </div>
+                        <div class="form-group">
+                            <input id="m_4digit_cmnd" name="Email" type="text" class="mb-0" placeholder="4 số cuối CMND/CCCD *" required="">
+                        </div>
+                        <div class="form-group">
+                            <select id="m_location" name="location" class="mb-0" required>
+                                <option value="">-- Chọn khu vực ứng tuyển * --</option>
+                                <option value="Đà Nẵng">Đà Nẵng</option>
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="Sài Gòn">Sài Gòn</option>
+                            </select>
+                        </div>
+                        <div class="form-group text-center">
+                            <a id="m_msg_cv" href="javascript:void(0)" class="file-cv" onclick="$('#m_file-cv').trigger('click')"><i class="fas fa-folder-open"></i> Tải lên CV của bạn <span id="m_sp_fname" class="d-none">(file_name)</span></a>
+                            <input id="m_file-cv" class="file-cv" name="CV" type="file" required hidden />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="m_submit" hidden type="submit">Gửi thông tin</button>
+                        <button class="submit btn-view-more" type="button" style="padding: 10px 20px !important" onclick="submitRequest('m')">
+                            <span id="m_span-doOrder">Gửi thông tin</span>
+                            <i id="m_subReq-plane" class="fas fa-paper-plane"></i>
+                            <i id="m_subReq-loading" class="fa fa-spinner fa-pulse d-none" style="font-size:16px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>*@
+
+
+@section scripts{
+    <script>
+        var submiting = false;
+        $(function () {
+            @*var showpopup = sessionStorage.getItem("showad");
+            if (showpopup != '0') {
+                let time = (1000 * parseFloat("@(info.Instagram)"));
+                setTimeout(function () { $(".popup-image").modal('show'); }, time);
+            }*@
+            $("#tintuc .blog-content-title").matchHeight();
+            $("#tintuc .blog-dec").matchHeight();
+            $(".service-area .single-service-wrap").matchHeight();
+            $(".single-testimonial-2 .testimonial-content").matchHeight();
+
+            $(".tab-style-5 a").click(function () {
+                let _id = $(this).prop("href").split("#")[1];
+                setTimeout(function () {
+                    if (!$(`.tab-content div#${_id}`).hasClass("active")) {
+                        $('.tab-content .tab-pane').removeClass("active");
+                        $(`.tab-content div#${_id}`).addClass("active");
+                    }
+                }, 100);
+            })
+
+            //$("#4digit_cmnd").inputmask({ "mask": "9999" });
+            //$("#m_4digit_cmnd").inputmask({ "mask": "9999" });
+
+            setTimeout(function () {
+                $("#modal_ung_tuyen").modal({ backdrop: 'static', keyboard: false });
+                $("#modal_ung_tuyen").modal("show");
+            }, 5 * 1000);
+
+            $("#f_formtuyendung").ajaxForm(function (data) {
+                cnoty(data, "top-center");
+                $("#f_formtuyendung").resetForm();
+                submiting = false;
+                $("#f_span-doOrder").html("Gửi Thông Tin");
+                $("#f_subReq-loading").addClass("d-none");
+                $("#f_subReq-plane").removeClass("d-none");
+                $("#f_file-cv").trigger("change");
+            });
+
+            $("#m_formtuyendung").ajaxForm(function (data) {
+                cnoty(data, "top-center");
+                $("#m_formtuyendung").resetForm();
+                submiting = false;
+                $("#m_span-doOrder").html("Gửi Thông Tin");
+                $("#m_subReq-loading").addClass("d-none");
+                $("#m_subReq-plane").removeClass("d-none");
+                $("#m_file-cv").trigger("change");
+            });
+
+            $("#f_file-cv,#m_file-cv").change(function () {
+                let _key = $(this).prop("id").replace("_file-cv", "");
+                let _fname = $(this).val();
+                if (_fname == null || _fname == "") {
+                    $(`#${_key}_sp_fname`).addClass("d-none");
+                }
+                else {
+                    let sp_fname = _fname.split("\\");
+                    $(`#${_key}_sp_fname`).html(`(${sp_fname[sp_fname.length - 1]})`);
+                    $(`#${_key}_sp_fname`).removeClass("d-none");
+                }
+            })
+        })
+
+        //function submitRequest(key) {
+        //    if (submiting == false) {
+        //        if ($(`#${key}_name`).val() == "") {
+        //            msg_info("Vui lòng nhập Họ Tên", `${key}_name`);
+        //            return false;
+        //        }
+        //        if ($(`#${key}_phone`).val() == "") {
+        //            msg_info("Vui lòng nhập số điện thoại", `${key}_phone`);
+        //            return false;
+        //        }
+        //        if ($(`#${key}_4digit_cmnd`).val() == "") {
+        //            msg_info("Vui lòng nhập 4 số cuối CMND/CCCD", `${key}_4digit_cmnd`);
+        //            return false;
+        //        }
+        //        if ($(`#${key}_location`).val() == "") {
+        //            msg_info("Vui lòng chọn khu vực ứng tuyển", `${key}_location`);
+        //            return false;
+        //        }
+        //        if ($(`#${key}_file-cv`).val() == "") {
+        //            msg_info("Vui lòng tải lên CV của bạn", `${key}_msg_cv`);
+        //            return false;
+        //        }
+
+        //        submiting = true;
+        //        $(`#${key}_span-doOrder`).html("Đang gửi thông tin...");
+        //        $(`#${key}_subReq-plane`).addClass("d-none");
+        //        $(`#${key}_subReq-loading`).removeClass("d-none");
+        //        $(`#${key}_submit`).trigger('click');
+        //    }
+        //    else {
+        //        msg_info("Đang gửi thông tin. Vui lòng đợi...", "", "top center");
+        //    }
+        //};
+
+        //LoadListProduct();
+        //function LoadListProduct() {
+        //    $.ajax({
+        //        method: "GET",
+        //        url: "/home/LoadProductHome",
+        //        dataType: "html"
+        //    }).done(function (data) {
+        //        $('#ProductHomePartial').html(data);
+        //    });
+        //};
+        function LoadListProductPartial(PartialId, cateId, order, take, partialName) {
+            $.ajax({
+                method: "POST",
+                url: "/home/LoadProductPartial",
+                data: { cateId, order, take, partialName },
+                dataType: "html"
+            }).done(function (data) {
+                $(`#${PartialId} .item_list`).html(data);
+            });
+        };
+        @if (TempData["ForgotPasswordNoty"] != null)
+        {
+            <text>$("#modal-ForgotPasswordNoty").modal("show");</text>
+        }
+
+    </script>
+}
+

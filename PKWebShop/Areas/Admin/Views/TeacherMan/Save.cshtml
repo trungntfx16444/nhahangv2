@@ -1,0 +1,65 @@
+﻿@model PKWebShop.Models.giasu_teacher
+@using PKWebShop.Models
+
+@{
+    var arrData = ViewBag.ArrData as object[];
+    var _listOption = arrData[0] as List<giasu_option>;
+    var _uploadFiles = arrData[1] as List<uploadmorefile>;
+    var _key = arrData[2] as string;
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="/admin/teacherman">Thông tin Gia sư</a>
+        </li>
+        <li>
+            <a href="javascript:void(0)">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+@if (TempData["e"] != null)
+{
+    <div class="alert alert-danger">@TempData["e"]</div>
+}
+else if (TempData["s"] != null)
+{
+    <div class="alert alert-success">@TempData["s"]</div>
+}
+
+
+<p class="btn-group">
+    <a href="/admin/teacherman/" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+</p>
+
+
+<div class="row">
+    <input type="hidden" id="hd_key" value="@_key" />
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2>@ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                @Html.Partial("_TeacherRegisterPartial", Model, new ViewDataDictionary { { "listOption", _listOption }, { "moreFiles", _uploadFiles } })
+            </div>
+        </div>
+    </div>
+</div>
+
+<p class="btn-group">
+    <a href="/admin/teacherman/" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+</p>
+
+
+
+@section scripts
+{
+    <script src="~/Scripts/upload_and_review.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+}

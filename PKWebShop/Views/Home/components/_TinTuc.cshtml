@@ -1,0 +1,54 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    var adminSite = UserContent.GetAdminSite();
+}
+
+<section class="blog blog-article">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="title">
+                <img class="img-fluid" src="/Content/client/img/img-title.png"> Tin tức mới nhất
+            </h2>
+        </div>
+        <div class="entries">
+            <div class="swiper blogSwiper">
+                <div class="swiper-wrapper">
+                    @foreach (var item in Model.Details)
+                    {
+                        var img = item.Files.FirstOrDefault();
+                        <div class="swiper-slide">
+                            <article class="entry">
+                                <a href="#">
+                                    <div class="entry-img">
+                                        <img src="@($"{adminSite}{img.FileName}")" alt="" class="img-fluid">
+                                        <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+
+                                    </div>
+
+
+                                    <div class="entry-content">
+                                        <h3 class="entry-title">
+                                            @(item.Detail.Title)
+                                        </h3>
+                                        <p class="entry-decription">
+                                            @(item.Detail.Description)
+                                        </p>
+
+                                    </div>
+
+                                </a>
+                            </article>
+                        </div>
+                    }
+
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+
+        </div>
+    </div>
+</section>
+

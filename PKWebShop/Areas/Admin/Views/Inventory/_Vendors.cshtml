@@ -1,0 +1,19 @@
+﻿@using PKWebShop.Models
+@model IEnumerable<vendor>
+@foreach (var item in Model)
+{
+    <tr>
+        <td>@(item.CreatedAt?.ToString("dd/MM/yyyy HH:mm"))<br />@(item.CreatedBy)</td>
+        <td><b class="text-success">@(item.Name)</b></td>
+        <td>
+            Email: <b>@(item.Email)</b><br />
+            SĐT: <b>@(item.Phone)</b><br />
+        </td>
+        <td>@(item.Address)</td>
+        <td>@(item.RemainingDebt)</td>
+        <td>
+            <button title="Add new Vendors" class="btn btn-warning btn-sm title-tooltip" style=" padding: .5em .50em;" onclick="EditVendor('@item.Id')"> <i class="fas fa-edit" style="font-size: 1.5em; width:20px"></i></button>
+        </td>
+    </tr>
+}
+

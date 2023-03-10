@@ -1,0 +1,93 @@
+﻿@using PKWebShop.Models
+
+@{
+
+    ViewBag.Title = "Chi tiết mẫu thiết kế: " + Model.Code;
+    var pic_phu = ViewBag.pic as List<uploadmorefile>;
+
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="#">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/sample/" class="btn btn-default">< Trở lại</a>
+    <a href="/admin/sample/save/@Model.DesignsId" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Sửa</a>
+    <a onclick="return confirm('Bạn xác nhận muốn xóa?')" href="/admin/sample/delete/@Model.DesignsId" class="btn btn-default"><i class="glyphicon glyphicon-trash"></i> Xóa </a>
+</p>
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well">
+                <h2><i class="glyphicon glyphicon-leaf"></i> @Model.Code</h2>
+
+            </div>
+            <div class="box-content">
+                <p>
+                    <label style="width:200px">Mã code:</label>@Model.Code
+                </p>
+                <p>
+                    <label style="width:200px">Thuộc dịch vụ:</label>@Model.Service.Name
+                </p>
+                <p>
+                    <label style="width:200px">Show trang chủ:</label>
+                    @if (Model.ShowHomePage == true)
+                    {
+                        <span class="label label-success">Có</span>
+                    }
+                    else
+                    {
+                        <span class="label label-default">Không</span>
+                    }
+                </p>
+
+
+                <p>
+                    <label>Ảnh đại diện</label>
+                </p>
+
+                <div style="padding-left:0px;" class="col-md-12">
+                    <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                        <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.Picture" />
+                        <i style="padding-left:5px">@Model.Picture</i>
+
+                        <a style="padding-left:10px" href="@Model.Picture" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                            <i class="glyphicon glyphicon-zoom-in"></i>
+                        </a>
+                     
+                    </p>
+
+                </div>
+
+            <p><label>Ảnh khác cùng mẫu</label></p>
+            @Html.Partial("_UploadMoreFilesPartial", pic_phu, new ViewDataDictionary { { "upload", false } })
+
+
+            <h3>Nội dung</h3><hr />
+
+            @Html.Raw(Model.Description)
+
+        </div>
+    </div>
+</div>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/sample/" class="btn btn-default">< Trở lại</a>
+    <a href="/admin/sample/save/@Model.DesignsId" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Sửa</a>
+    <a onclick="return confirm('Bạn xác nhận muốn xóa?')" href="/admin/sample/delete/@Model.DesignsId" class="btn btn-default"><i class="glyphicon glyphicon-trash"></i> Xóa</a>
+
+</p>
+

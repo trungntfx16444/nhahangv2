@@ -1,0 +1,65 @@
+﻿@model IEnumerable<PKWebShop.Models.customer_request>
+@if (Model != null && Model.Count() > 0)
+{
+    foreach (var item in Model)
+    {
+
+
+        <tr>
+            <td class="font-weight-semibold" style="vertical-align:top">
+                <span>
+                    Ngày đăng ký:
+                    @if (item.FromDate != null)
+                    {
+                        <span class="@(item.FromDate >= DateTime.Now ? "text-success" : "text-danger")">
+                            @(item.FromDate?.ToString("dd/MM/yyyy"))
+                        </span>
+                    }
+                </span><br />
+                <span>
+                    Ngày hỗ trợ:
+                    @if (item.ToDate != null)
+                    {
+                        <span class="@(item.FromDate >= DateTime.Now ? "text-success" : "text-danger")">
+                            @(item.FromDate?.ToString("dd/MM/yyyy"))
+                        </span>
+                    }
+                </span>
+            </td>
+            <td>
+                <span class="font-weight-semibold">@(item.FullName?.ToUpper())</span><br />
+                <span><span class="font-weight-semibold">P:</span> @(item.Phone)</span><br />
+                <span><span class="font-weight-semibold">E:</span> @(item.Email?.ToLower())</span>
+            </td>
+            <td style="overflow-wrap:anywhere; vertical-align:top">
+                @Html.Raw(item.Note?.Replace("\r\n", "<br/>"))
+            </td>
+            <td style="vertical-align:top">
+                @if (item.Status == 0)
+                {
+                    <span class="badge badge-default">Đang chờ hỗ trợ</span>
+                }
+                else if (item.Status == 1)
+                {
+                    <span class="badge badge-primary">Đã hỗ trợ</span>
+                }
+                else if (item.Status == 2)
+                {
+                    <span class="badge badge-info">Đã trả phòng</span>
+                }
+                else if (item.Status == -1)
+                {
+                    <span class="badge badge-danger">Đã hủy</span>
+                }
+            </td>
+            <td style="vertical-align:top">
+                <button type="button" class="btn btn-primary btn-xs" onclick="Update('@(item.Id)')">
+                    <i class="anticon anticon-edit"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-xs" onclick="Delete('@(item.Id)')">
+                    <i class="anticon anticon-delete"></i>
+                </button>
+            </td>
+        </tr>
+    }
+}

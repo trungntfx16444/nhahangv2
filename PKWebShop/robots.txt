@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /notfound
+Sitemap: https://samdtldanang.com/sitemap.xml

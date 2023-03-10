@@ -1,0 +1,532 @@
+﻿@model PKWebShop.Models.webconfiguration
+@using PKWebShop.Models.CustomizeModels
+@{
+    ViewBag.Title = "Cấu hình thông tin web";
+
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+    var lang = Request["lang"]?.ToString() ?? PKWebShop.Services.SiteLang.GetDefault()?.Code;
+    var listSEO = ViewBag.ListSEO as List<SiteSEO.SEO_Meta>;
+    var SEO_trangchu = listSEO.FirstOrDefault(x => x.code == SiteSEO.code_SEO.TrangChu);
+    var SEO_sanpham = listSEO.FirstOrDefault(x => x.code == SiteSEO.code_SEO.SanPham);
+    var SEO_tintuc = listSEO.FirstOrDefault(x => x.code == SiteSEO.code_SEO.TinTuc);
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">Hệ thống</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+<div class="card">
+    @if (langs.Count > 1)
+    {
+        <div class="card-header row no-gutters px-0 card-header-sticky">
+            <div class="col-6">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==lang ?"active":"")" @*data-toggle="tab"*@ href="/admin/contact?lang=@l.Code"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="col-6 p-2">
+                <button id="quicksave" class="btn btn-sm btn-success float-right" style="display:none" onclick="quick_save()"><i class="fa fa-save"></i> Lưu nhanh</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card-header">
+            <h4 class="card-title">@ViewBag.Title</h4>
+        </div>
+    }
+
+    <div class="card-body pt-1" id="partial_content">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link text-uppercase active" id="webconfig-tab" data-toggle="tab" href="#webconfig" role="tab" aria-controls="webconfig" aria-selected="true">Cấu hình trang web</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-uppercase" id="seohome-tab" data-toggle="tab" href="#seohome" role="tab" aria-controls="seohome" aria-selected="false">SEO Trang chủ</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-uppercase" id="seoproduct-tab" data-toggle="tab" href="#seoproduct" role="tab" aria-controls="seoproduct" aria-selected="false">SEO Trang sản phẩm</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-uppercase" id="seonews-tab" data-toggle="tab" href="#seonews" role="tab" aria-controls="seonews" aria-selected="false">SEO Trang tin tức</a>
+            </li>
+        </ul>
+        <div class="tab-content m-t-15" id="myTabContent">
+            <div class="tab-pane fade show active" id="webconfig" role="tabpanel" aria-labelledby="webconfig-tab">
+                <form id="contact_update" role="form" action="/admin/contact/update" method="post" enctype="multipart/form-data" class="main-form">
+                    @Html.HiddenFor(m => m.Id)
+                    <div class="accordion" id="accordion-default">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <a data-toggle="collapse" href="#collapseOneDefault">
+                                        <b>Thông tin công ty</b>
+                                    </a>
+                                </h5>
+                            </div>
+                            <div id="collapseOneDefault" class="collapse show" data-parent="#accordion-default">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label>Tên công ty</label>
+                                        <input type="text" required name="CompanyName" class="form-control" placeholder="Tên công ty" value="@(Model?.CompanyName)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Copyright</label>
+                                        <input type="text" required name="Copyright" class="form-control" placeholder="Copyright" value="@(Model?.Copyright)">
+                                    </div>
+
+                                    <div class="row">
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Logo</label>
+                                            <input type="file" class="input-sm" name="LogoPicture" id="LogoPicture" onchange="reviewUpload(this)" />
+
+                                            <div style="padding-left:0;display:none" class="col-md-12" id="review_LogoPicture">
+                                                <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                    <img id="img_LogoPicture" style="height: auto;margin-left:0;width: auto;max-width: 100%;max-height:143px;" alt="xem trước" src="" />
+                                                    <i style="padding-left:5px; display: none" id="fname_LogoPicture"></i>
+                                                    <a onclick="upload_delete('LogoPicture')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                                        <i class="glyphicon glyphicon-trash"></i>
+                                                    </a>
+                                                </p>
+                                            </div>
+                                            @if (string.IsNullOrWhiteSpace(Model?.LogoPicture) == false)
+                                            {
+                                                <div style="padding-left:0;" class="col-md-12" id="rv_LogoPicture">
+                                                    <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                        <img style="height: auto; margin-left: 0; width: auto; max-width: 100%; max-height: 143px;" alt="hình ảnh" src="@Model.LogoPicture" />
+                                                        <a style="padding-left:10px" href="@Model.LogoPicture" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                                            <i class="glyphicon glyphicon-zoom-in"></i>
+                                                        </a>
+                                                        <a style="padding-left:10px" onclick="PicDelete('@Model.Id')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                                            <i class="glyphicon glyphicon-trash"></i>
+                                                        </a>
+                                                        &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_LogoPicture" style="display:none" alt="" />
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Hình ảnh khi chia sẻ trang web</label>
+                                            <input type="file" class="input-sm" name="ImageShared" id="ImageShared" onchange="reviewUpload(this)" />
+
+                                            <div style="padding-left:0;display:none" class="col-md-12" id="review_ImageShared">
+                                                <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                    <img id="img_ImageShared" style="height: auto;margin-left:0;width: auto;max-width: 100%;max-height:143px;" alt="xem trước" src="" />
+                                                    <i style="padding-left:5px; display: none" id="fname_ImageShared"></i>
+                                                    <a onclick="upload_delete('ImageShared')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                                        <i class="glyphicon glyphicon-trash"></i>
+                                                    </a>
+                                                </p>
+                                            </div>
+                                            @if (string.IsNullOrWhiteSpace(Model?.ImageShared) == false)
+                                            {
+                                                <div style="padding-left:0;" class="col-md-12" id="rv_ImageShared">
+                                                    <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                        <img style="height: auto; margin-left: 0; width: auto; max-width: 100%; max-height: 143px;" alt="hình ảnh" src="@Model.ImageShared" />
+                                                        <a style="padding-left:10px" href="@Model.ImageShared" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                                            <i class="glyphicon glyphicon-zoom-in"></i>
+                                                        </a>
+                                                        <a style="padding-left:10px" onclick="PicDelete('@Model.Id')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                                            <i class="glyphicon glyphicon-trash"></i>
+                                                        </a>
+                                                        &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_ImageShared" style="display:none" alt="" />
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Logo Header</label>
+                                            <input type="file" class="input-sm" name="LogoHeader" id="LogoHeader" onchange="reviewUpload(this)" />
+
+                                            <div style="padding-left:0;display:none" class="col-md-12" id="review_LogoHeader">
+                                                <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                    <img id="img_LogoHeader" style="height: auto; margin-left: 0; width: auto; max-width: 100%; max-height: 143px;" alt="xem trước" src="" />
+                                                    <i style="padding-left:5px; display: none" id="fname_LogoHeader"></i>
+                                                    <a onclick="upload_delete('LogoHeader')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                                        <i class="glyphicon glyphicon-trash"></i>
+                                                    </a>
+                                                </p>
+                                            </div>
+                                            @if (string.IsNullOrWhiteSpace(Model?.LogoHeader) == false)
+                                            {
+                                                <div style="padding-left:0px;" class="col-md-12" id="rv_LogoHeader">
+                                                    <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                        <img style="height: auto; margin-left: 0; width: auto; max-width: 100%; max-height: 143px;" alt="hình ảnh" src="@Model.LogoHeader" />
+                                                        <a style="padding-left:10px" href="@Model.LogoHeader" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                                            <i class="glyphicon glyphicon-zoom-in"></i>
+                                                        </a>
+                                                        <a style="padding-left:10px" onclick="PicDelete('@Model.Id')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                                            <i class="glyphicon glyphicon-trash"></i>
+                                                        </a>
+                                                        &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_LogoHeader" style="display:none" alt="" />
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Logo Footer</label>
+                                            <input type="file" class="input-sm" name="LogoFooter" id="LogoFooter" onchange="reviewUpload(this)" />
+
+                                            <div style="padding-left:0;display:none" class="col-md-12" id="review_LogoFooter">
+                                                <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                    <img id="img_LogoFooter" style="height: auto; margin-left: 0; width: auto; max-width: 100%; max-height: 143px;" alt="xem trước" src="" />
+                                                    <i style="padding-left:5px; display: none" id="fname_LogoFooter"></i>
+                                                    <a onclick="upload_delete('LogoFooter')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                                        <i class="glyphicon glyphicon-trash"></i>
+                                                    </a>
+                                                </p>
+                                            </div>
+                                            @if (string.IsNullOrWhiteSpace(Model?.LogoFooter) == false)
+                                            {
+                                                <div style="padding-left:0px;" class="col-md-12" id="rv_LogoFooter">
+                                                    <p class="col-md-12" style="border:1px dotted red; padding:3px">
+                                                        <img style="height: auto; margin-left: 0; width: auto; max-width: 100%; max-height: 143px;" alt="hình ảnh" src="@Model.LogoFooter" />
+                                                        <a style="padding-left:10px" href="@Model.LogoFooter" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                                            <i class="glyphicon glyphicon-zoom-in"></i>
+                                                        </a>
+                                                        <a style="padding-left:10px" onclick="PicDelete('@Model.Id')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                                            <i class="glyphicon glyphicon-trash"></i>
+                                                        </a>
+                                                        &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_LogoFooter" style="display:none" alt="" />
+                                                    </p>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="clearfix"></div>
+
+                                    <div class="form-group">
+                                        <label>Giới thiệu ngắn</label>
+                                        <textarea wrap="soft" required name="ShortAboutUs" class="form-control" placeholder="Giới thiệu ngắn này sẽ show ở trang chủ trong mục VỀ CHÚNG TÔI">@(Model?.ShortAboutUs)</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Địa chỉ</label>
+                                        <textarea name="Address" rows="3" class="form-control" placeholder="Địa chỉ công ty">@Html.Raw(Model.Address)</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            SĐT Công ty:
+                                            <span class="font-weight-normal text-primary">(Dùng dấu phẩy "<span class="text-danger">,</span>" để phân cách nhiều sđt. Vd: 0395478521, 0354865214)</span>
+                                        </label>
+                                        <input type="text" name="CompanyPhone" class="form-control" placeholder="Số điện thoại công ty" value="@(Model?.CompanyPhone)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            Hot line:
+                                        </label>
+                                        <input type="text" name="Hotline" class="form-control" placeholder="Số điện thoại hotline" value="@(Model?.Hotline)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Thời gian làm việc</label>
+                                        <textarea name="WorkTime" class="form-control" placeholder="Thời gian làm việc">@Html.Raw(Model?.WorkTime)</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email hổ trợ khách hàng</label>
+                                        <input type="email" name="ContactEmail" class="form-control" placeholder="Email hổ trợ khách hàng" value="@(Model?.ContactEmail)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Thời gian popup quảng cáo xuất hiện sau khi vào trang (đơn vị giây)</label>
+                                        <input type="number" name="Instagram" class="form-control" placeholder="Nhập số giây" value="@(Model?.Instagram)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <a class="collapsed" data-toggle="collapse" href="#collapseTwoDefault">
+                                        <b>Liên kết mạng xã hội</b>
+                                    </a>
+                                </h5>
+                            </div>
+                            <div id="collapseTwoDefault" class="collapse" data-parent="#accordion-default">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label>Đường dẫn fanpage facebook</label>
+                                        <input type="text" name="FacebookFanpage" class="form-control" placeholder="Facebook URL" value="@(Model?.FacebookFanpage)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đường dẫn Facebook liên hệ</label>
+                                        <input type="text" name="FacebookUrl" class="form-control" placeholder="Facebook URL" value="@(Model?.FacebookUrl)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đường dẫn Zalo</label>
+                                        <input type="text" name="ZaloUrl" class="form-control" placeholder="Zalo URL" value="@(Model?.ZaloUrl)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đường dẫn Goolge+</label>
+                                        <input type="text" name="GoogleUrl" class="form-control" placeholder="Google+ URL" value="@(Model?.GoogleUrl)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đường dẫn Youtube</label>
+                                        <input type="text" name="YoutubeUrl" class="form-control" placeholder="Youtube URL" value="@(Model?.YoutubeUrl)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đường dẫn Twitter</label>
+                                        <input type="text" name="TwitterUrl" class="form-control" placeholder="Twitter URL" value="@(Model?.TwitterUrl)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Đường dẫn Instagram</label>
+                                        <input type="text" name="InstagramUrl" class="form-control" placeholder="Instagram URL" value="@(Model?.InstagramUrl)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <a class="collapsed" data-toggle="collapse" href="#collapseThreeDefault">
+                                        <b>Cấu hình công cụ khác</b>
+                                    </a>
+                                </h5>
+                            </div>
+                            <div id="collapseThreeDefault" class="collapse" data-parent="#accordion-default">
+                                <div class="card-body">
+                                    @*<div class="form-group">
+                                            <label>SEO - Meta KeyWord</label>
+                                            <input type="text" name="SEO_MetaKeyWord" class="form-control" placeholder="từ khóa SEO, < 150 ký tự" value="@(Model?.SEO_MetaKeyWord)">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>SEO - Meta Decription</label>
+                                            <input type="text" name="SEO_MetaDescription" class="form-control" placeholder="Mô tả, giới thiệu website với google, < 300 ký tự" value="@(Model?.SEO_MetaDescription)">
+                                        </div>*@
+
+                                    <div class="form-group">
+                                        <label>Tich hợp Google Map </label>
+                                        <textarea rows="5" name="gm" class="form-control" placeholder="Tích hợp code embed Google Map">@(Model?.GoogleMap)</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Embed Header Code (mã sẽ được nhúng vào thẻ head của trang)</label>
+                                        <textarea rows="6" name="ga" class="form-control" placeholder="Embed Header Code">@(Model?.GoogleAnalytics)</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Embed Body Code (mã sẽ được nhúng vào đầu thẻ body của trang)</label>
+                                        <textarea rows="6" name="gos" class="form-control" placeholder="Embed Body Code">@(Model?.GoogleOrdersStatistic)</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tich hợp Chat Tool </label>
+                                        <textarea rows="5" name="ct" class="form-control" placeholder="Tích hợp code embed công cụ Chat">@(Model?.ChatToolEmbed)</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    @*
+                        <h4>CẤU HÌNH LOGIN FACEBOOK & GOOGLE</h4>
+                        <div class="form-group">
+                            <label>Facebook - ID ứng dụng</label>
+                            <input type="text" name="FacebookAppId" class="form-control" placeholder="Facebook AppId" value="@(Model?.FacebookAppId)">
+                        </div>
+                        <div class="form-group">
+                            <label>Facebook - Khóa bí mật của ứng dụng</label>
+                            <input type="text" name="FacebookClientToken" class="form-control" placeholder="Facebook Client Token" value="@(Model?.FacebookClientToken)">
+                        </div>
+                        <div class="form-group">
+                            <label>Facebook - Phiên bản</label>
+                            <input type="text" name="FacebookAppVersion" class="form-control" placeholder="Facebook AppVersion" value="@(Model?.FacebookAppVersion)">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Goolge - ID ứng dụng</label>
+                            <input type="text" name="GoogleClientId" class="form-control" placeholder="Google ClientId" value="@(Model?.GoogleClientId)">
+                        </div>
+                    *@
+
+                    @* ********************************************* *@
+                    @* Lưu *@
+                    @* ********************************************* *@
+                    <button type="submit" class="btn btn-primary mt-2 float-right">Lưu</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="seohome" role="tabpanel" aria-labelledby="seohome-tab">
+                <form id="frm-seohome" action="/admin/contact/UpdateMetaSEO" method="post">
+                    <div class="form-row">
+                        <input type="hidden" name="code" value="@(SEO_trangchu.code)" />
+                        <input type="hidden" name="langCode" value="@(Model.LangCode)" />
+                        <div class="form-group col-md-6">
+                            <label>SEO - Meta Title</label>
+                            <input type="text" class="form-control" name="meta_title" value="@(SEO_trangchu.meta_title)">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>SEO - Meta KeyWord</label>
+                            <input type="text" class="form-control" name="meta_keyword" value="@(SEO_trangchu.meta_keyword)">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>SEO - Meta Description</label>
+                        <textarea class="form-control" rows="5" name="meta_desc">@(SEO_trangchu.meta_desc)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>SEO - Meta Mở rộng</label>
+                        <textarea class="form-control" rows="5" name="meta_extend">@(SEO_trangchu.meta_extend)</textarea>
+                    </div>
+                    <div class="form-group d-none">
+                        <label>Url</label>
+                        <input type="text" class="form-control" name="url" value="@(SEO_trangchu.url)">
+                    </div>
+                    <button type="submit" class="btn btn-primary float-right">Lưu</button>
+                    <div class="clearfix"></div>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="seoproduct" role="tabpanel" aria-labelledby="seoproduct-tab">
+                <form id="frm-seoproduct" action="/admin/contact/UpdateMetaSEO" method="post">
+                    <div class="form-row">
+                        <input type="hidden" name="code" value="@(SEO_sanpham.code)" />
+                        <input type="hidden" name="langCode" value="@(Model.LangCode)" />
+                        <div class="form-group col-md-6">
+                            <label>SEO - Meta Title</label>
+                            <input type="text" class="form-control" name="meta_title" value="@(SEO_sanpham.meta_title)">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>SEO - Meta KeyWord</label>
+                            <input type="text" class="form-control" name="meta_keyword" value="@(SEO_sanpham.meta_keyword)">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>SEO - Meta Description</label>
+                        <textarea class="form-control" rows="5" name="meta_desc">@(SEO_sanpham.meta_desc)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>SEO - Meta Mở rộng</label>
+                        <textarea class="form-control" rows="5" name="meta_extend">@(SEO_sanpham.meta_extend)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Url</label>
+                        <input type="text" class="form-control urlRewrite" name="url" value="@($"/{SEO_sanpham.url}")">
+                    </div>
+                    <button type="submit" class="btn btn-primary float-right">Lưu</button>
+                    <div class="clearfix"></div>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="seonews" role="tabpanel" aria-labelledby="seonews-tab">
+                <form id="frm-seonews" action="/admin/contact/UpdateMetaSEO" method="post">
+                    <div class="form-row">
+                        <input type="hidden" name="code" value="@(SEO_tintuc.code)" />
+                        <input type="hidden" name="langCode" value="@(Model.LangCode)" />
+                        <div class="form-group col-md-6">
+                            <label>SEO - Meta Title</label>
+                            <input type="text" class="form-control" name="meta_title" value="@(SEO_tintuc.meta_title)">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>SEO - Meta KeyWord</label>
+                            <input type="text" class="form-control" name="meta_keyword" value="@(SEO_tintuc.meta_keyword)">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>SEO - Meta Description</label>
+                        <textarea class="form-control" rows="5" name="meta_desc">@(SEO_tintuc.meta_desc)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>SEO - Meta Mở rộng</label>
+                        <textarea class="form-control" rows="5" name="meta_extend">@(SEO_tintuc.meta_extend)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Url</label>
+                        <input type="text" class="form-control urlRewrite" name="url" value="@($"/{SEO_tintuc.url}")">
+                    </div>
+                    <button type="submit" class="btn btn-primary float-right">Lưu</button>
+                    <div class="clearfix"></div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+@section scripts
+{
+    <script src="~/Scripts/upload_and_review.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $("#frm-seohome, #frm-seoproduct, #frm-seonews").ajaxForm(function (data) {
+                if (data[1]) {
+                    success(data[1]);
+                }
+                else {
+                    error(data[1]);
+                }
+            })
+        })
+
+        function PicDelete(id) {
+            if (confirm("Xác nhận muốn xóa picture này?")) {
+                $("#floading").show();
+                $.ajax({
+                    url: "/admin/contact/deletelogo/",
+                    type: "post",
+                    datatype: "json",
+                    contenttype: "application/json",
+                    data: { id }
+                }).success(function (data) {
+                    if (data == true) {
+                        $("#rv_" + t).hide(500);
+                        alert("Delete successfully");
+                    }
+                }).error(function () {
+                    alert("Can not delete."); $("#loading_" + t).hide();
+                }).complete(function () {
+                    $("#loading_" + t).hide();
+                });
+            }
+        }
+
+        function quick_save(callback) {
+            var action = $("#contact_update").prop("action");
+            $("#contact_update").prop("action", action + "_ajax").ajaxSubmit(function (data) {
+                if (data[1]) {
+                    success(data[1]);
+                    $("#quicksave").hide();
+                    if (callback) { callback() };
+                } else {
+                    error(data[1]);
+                }
+            })
+            $("#contact_update").prop("action", action);
+        }
+
+        $(".urlRewrite").on("input", function () {
+            let _url = this.value.replace(/[^a-z0-9_-]/g, "");
+            if (_url != "") {
+                _url = `/${_url}`;
+            }
+            this.value = _url;
+        })
+    </script>
+
+}

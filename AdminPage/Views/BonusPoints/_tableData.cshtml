@@ -1,0 +1,85 @@
+﻿@model IEnumerable<AdminPage.Models.customer_score>
+@using AdminPage.Models;
+@using AdminPage.Utils
+
+@{
+    var lst_category = ViewBag.ProductCategory as List<category>;
+}
+@foreach (var item in Model)
+{
+    <tr>
+        <td class="align-top">
+            <span class="font-weight-semibold">@(item.Name?.ToUpper())</span><br />
+            <i>
+                <span>Điểm sử dụng: <span class="">@item.Score</span></span><br />
+                <span>Hóa đơn tối thiểu: <span class="">@(item.Order_GranTotal?.ToString("#,###")) @Constant.CURRENCY_SIGN</span></span><br />
+                @if (item.MultipleOnOrder)
+                {
+                    <span data-toggle="tooltip" data-placement="top" data-html="true" title="Áp dụng nhiều lần cho một đơn hàng"><i class="anticon anticon-shopping"></i></span>
+                }
+                @if (item.MultipleOnCustomer)
+                {
+                    <span data-toggle="tooltip" data-placement="top" data-html="true" title="Áp dụng nhiều lần cho một khách hàng"><i class="anticon anticon-user"></i></span>
+                }
+            </i>
+        </td>
+        <td class="align-top font-weight-semibold">
+            @if (item.FromDate != null)
+            {
+                <span>S: <span class="">@(item.FromDate?.ToString("dd/MM/yyyy"))</span></span>
+            }
+            @if (item.ToDate != null)
+            {
+                <br />
+                <span>E: <span class="">@(item.ToDate?.ToString("dd/MM/yyyy"))</span></span>
+            }
+        </td>
+        <td class="align-top font-weight-semibold">
+            @foreach (var cate in lst_category)
+            {
+                if (item.Products.Contains(cate.ReId))
+                {
+                    <span>- @cate.CategoryName</span><br />
+                }
+            }
+        </td>
+        <td class="align-top font-weight-semibold">
+            @if (item.Active != true)
+            {
+                <div class="d-flex align-items-center">
+                    <div class="badge badge-danger badge-dot m-r-10"></div>
+                    <div>Tạm ngưng</div>
+                </div>
+            }
+            else if (item.ToDate != null && DateTime.Now.Date > item.ToDate)
+            {
+                <div class="d-flex align-items-center">
+                    <div class="badge badge-danger badge-dot m-r-10"></div>
+                    <div>Hết hạn</div>
+                </div>
+            }
+            else if (item.FromDate != null && DateTime.Now.Date < item.FromDate)
+            {
+                <div class="d-flex align-items-center">
+                    <div class="badge badge-warning badge-dot m-r-10"></div>
+                    <div>Chưa bắt đầu</div>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center">
+                    <div class="badge badge-success badge-dot m-r-10"></div>
+                    <div>Hoạt động</div>
+                </div>
+            }
+        </td>
+        <td class="align-top" style="width:5%; min-width:90px">
+            <button type="button" class="btn btn-xs btn-warning m-1" onclick="add('@item.Id')" data-toggle="tooltip" title="Sửa">
+                <i class="anticon anticon-edit"></i>
+            </button>
+            <button class="btn btn-xs btn-danger m-1" onclick="del('@item.Id')" data-toggle="tooltip" title="Xóa">
+                <i class="anticon anticon-delete"></i>
+            </button>
+        </td>
+    </tr>
+}

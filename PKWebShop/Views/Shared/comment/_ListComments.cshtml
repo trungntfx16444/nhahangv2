@@ -1,0 +1,53 @@
+﻿@model IEnumerable<PKWebShop.Models.comments>
+
+@if (Model != null && Model.Count() > 0)
+{
+    <div id="star_select" class="p-1">
+        <button data-star="all" class="btn btn-xs btn-outline-secondary mb-1 active"> Tất cả </button>
+        <button data-star="5" class="btn btn-xs btn-outline-secondary mb-1"> 5 sao (@Model.Count(x => x.StarNumber == 5))</button>
+        <button data-star="4" class="btn btn-xs btn-outline-secondary mb-1"> 4 sao (@Model.Count(x => x.StarNumber == 4)) </button>
+        <button data-star="3" class="btn btn-xs btn-outline-secondary mb-1"> 3 sao (@Model.Count(x => x.StarNumber == 3)) </button>
+        <button data-star="2" class="btn btn-xs btn-outline-secondary mb-1"> 2 sao (@Model.Count(x => x.StarNumber == 2)) </button>
+        <button data-star="1" class="btn btn-xs btn-outline-secondary mb-1"> 1 sao (@Model.Count(x => x.StarNumber == 1)) </button>
+    </div>
+    <div id="list_comment">
+        @foreach (var item in Model)
+        {
+            int star_active = (int)(item.StarNumber ?? 0);
+            <div class="mt-4 comment star-@star_active">
+                <p class="mb-0"><span class="comm-name">@(item.PeopleName)</span> <span class="comm-time text-muted">@(item.CreateAt?.ToString("dd/MM/yyyy"))</span></p>
+                <p class="mb-1">
+                    @for (int i = 1; i <= star_active; i++)
+                    {
+                        <i class="fas fa-star" style="color:gold;"></i>
+                    }
+                    @for (int i = 1; i <= (5 - star_active); i++)
+                    {
+                        <i class="far fa-star" style="color:gold;"></i>
+                    }
+
+                </p>
+                <p class="comm-content">@Html.Raw(item.Content?.Replace("\n", "<br/>"))</p>
+            </div>
+        }
+    </div>
+}
+<style>
+    .list_comment{
+        max-height: 800px;
+        overflow-y: auto;
+    }
+</style>
+<script>
+    $('#star_select button').on("click", function () {
+        $(this).addClass("active");
+        $('#star_select button').not($(this)).removeClass("active");
+        if ($(this).data("star") == "all") {
+            $('#list_comment .comment').show();
+        }
+        else {
+            var s_comments = $('#list_comment .comment.star-' + $(this).data("star")).show();
+            $('#list_comment .comment').not(s_comments).hide();
+        }
+    })
+</script>

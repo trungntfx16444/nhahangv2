@@ -1,0 +1,116 @@
+﻿@model List<PKWebShop.Models.product>
+@using PKWebShop.Services
+@using PKWebShop.Utils
+@{
+    var listLang = SiteLang.GetListLangs();
+    string lang = "vi";
+    var webLicense = new PackageServices().WebPackInfo();
+}
+
+
+@if (Model == null || Model.Count == 0)
+{
+    <tr>
+        <td colspan="6" class="text-center">Không tìm thấy sản phẩm nào</td>
+    </tr>
+}
+else
+{
+    foreach (var item in Model)
+    {
+        var urlProduct = $"/{item.Url}-pd{item.ReId}";
+
+        <tr>
+            @if (webLicense.Warehouse)
+            {
+                <td>
+                    <input class="select cursor-pointer" type="checkbox" style="width:20px; height:20px" value="@item.ReId" />
+                </td>
+            }
+            <td class="align-top">
+                <a class="font-weight-bold text-primary pl-1" href="@($"/admin/ProductTMDT/detail/{item.ReId}?lang={lang}")">
+                    @(item.ProductName?.ToUpper())
+                </a>
+                <br />
+                <span class="badge badge-pill badge-default categories"><b>Nhóm SP:</b> @(item.CategoryName?.Replace(",", ", "))</span><br />
+                <span class="badge badge-pill badge-default">
+                    <b>Url:</b>
+                    <a href="@urlProduct" target="_blank">@urlProduct</a>
+                </span><br />
+                @foreach (var l in listLang)
+                {
+                    <i class="m-l-5 flag-icon @(l.Icon)" style="padding: 1px 11px" data-toggle="tooltip" data-placement="top" title="" data-original-title="Ngôn ngữ tiếng việt"></i>
+                }
+            </td>
+            <td class="align-top">
+                <img src="@(item.Picture)" alt="ảnh đại diện" style="width:100px" />
+            </td>
+            <td class="align-top">
+                <span class="@(item.SalePrice > 0 ? "sales" : "text-dark font-weight-semibold")">
+                    @((item.Price ?? 0).ToString("#,###") ?? "0") @Constant.CURRENCY_SIGN
+                </span><br />
+                @if (item.SalePrice > 0)
+                {
+                    <span class="text-dark font-weight-semibold">
+                        @((item.SalePrice ?? 0).ToString("#,###") ?? "0") @Constant.CURRENCY_SIGN
+                    </span><br />
+                }
+                @if (item.Quantity == 0)
+                {
+                    <span class="badge badge-danger m-t-5">Hết hàng</span>
+                }
+                else if (item.WarningQuantity > item.Quantity)
+                {
+                    <span class="badge badge-warning m-t-5">Sắp hết hàng: @item.Quantity</span>
+                }
+                else
+                {
+                    <span class="badge badge-info m-t-5">Còn hàng: @item.Quantity</span>
+                }
+            </td>
+            <td class="align-top">
+                <div class="d-flex align-items-center">
+                    <div class="badge badge-@(item.ShowHomePage == true ? "success" : "danger") badge-dot m-r-10"></div>
+                    <div>@(item.ShowHomePage == true ? "Có hiển thị" : "Không hiển thị")</div>
+                </div>
+            </td>
+            <td class="align-top lang_col">
+                <a href="@($"/admin/ProductTMDT/detail/{item.ReId}?lang={lang}")" class="btn btn-info btn-xs m-b-5" data-toggle="tooltip" title="Xem chi tiết" data-placement="left">
+                    <i class="anticon anticon-search"></i>
+                </a>
+                <a href="@($"/admin/ProductTMDT/save/{item.ReId}?lang={lang}")" class="btn btn-warning btn-xs m-b-5" data-toggle="tooltip" title="Chỉnh sửa" data-placement="left">
+                    <i class="anticon anticon-edit"></i>
+                </a>
+                <a href="@($"/admin/ProductTMDT/delete/{item.ReId}")" onclick="return confirm('Bạn muốn xóa sản phẩm này?')" class="btn btn-danger btn-xs" data-toggle="tooltip" title="Xóa" data-placement="left">
+                    <i class="anticon anticon-delete"></i>
+                </a>
+            </td>
+        </tr>
+    }
+}
+
+<style>
+    .stop_link a {
+        pointer-events: none;
+    }
+
+    .sales {
+        text-decoration-line: line-through;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#product_table tr').click(function (event) {
+            if (event.target.type !== 'checkbox' && $(event.target).closest(".dropdown").length == 0) {
+                //$(':checkbox', this).trigger('click');
+            } else if (event.target.checked == true && $('#product_table :checkbox:checked').length == 1) {
+                $('#product_table').addClass("stop_link"); $(".create_import_ticket").show(200);
+            } else if (event.target.checked != true && $('#product_table :checkbox:checked').length == 0) {
+                $('#product_table').removeClass("stop_link"); $(".create_import_ticket").hide(200);
+            }
+        });
+
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

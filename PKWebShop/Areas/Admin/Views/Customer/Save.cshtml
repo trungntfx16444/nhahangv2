@@ -1,0 +1,153 @@
+﻿@model PKWebShop.Models.loyalcustomer
+@using PKWebShop.Models
+@{
+    
+    if (Model?.Id > 0)
+    {
+        ViewBag.Title = "Sửa thông tin khách hàng";
+    }
+    else
+    {
+        ViewBag.Title = "Thêm khách hàng";
+    }
+
+
+}
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <a href="/admin/" class="breadcrumb-item">Khách hàng tiêu biểu</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+
+<p class="btn-group">
+    <a href="/admin/customer/" class="btn btn-default">< Trở lại</a>
+</p>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header well" data-original-title="">
+                <h2 class="card-title">@ViewBag.Title</h2>
+            </div>
+            <div class="card-body">
+                <form role="form" action="/admin/customer/save" method="post" enctype="multipart/form-data">
+                    @Html.HiddenFor(m => m.Id)
+
+                    <div class="form-group">
+                        <label>Tên khách hàng</label>
+                        <input type="text" name="CustomerName" class="form-control" value="@Model.CustomerName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Logo khách hàng</label>
+                        <input type="file" @if (Model.Id == 0) { @Html.Raw("required") } class="input-sm" name="pic0" id="pic0" onchange="reviewUpload(this)" />
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_pic0">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_pic0" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_pic0"></i>
+                                <a onclick="upload_delete('pic0')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.LogoPicture))
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="pic_@Model.Id">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.LogoPicture" />
+                                    <i style="padding-left:5px">@Model.LogoPicture</i>
+
+                                    <a style="padding-left:10px" href="@Model.LogoPicture" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete('@Model.Id')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="floading" style="display:none" />
+                                </p>
+
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" name="URL" class="form-control" placeholder="URL website của khách" value="@Model.URL" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<p class="btn-group">
+    <a href="/admin/customer/" class="btn btn-default">< Trở lại</a>
+</p>
+
+@section scripts
+{
+
+    <script src="~/Scripts/upload_and_review.js"></script>
+
+    <script type="text/javascript">
+        function PicDelete(id) {
+            if (confirm("Xác nhận muốn xóa tập tin này?")) {
+                $("#floading").show();
+                $.ajax({
+                    url: "/admin/customer/picdelete/",
+                    type: "post",
+                    datatype: "json",
+                    contenttype: "application/json",
+                    data: { "id": id }
+
+                })
+                    .success(function (data) {
+                        if (data == true) {
+                            $("#pic_" + id).hide(500);
+                            alert("Xóa thành công.");
+                        }
+                        else {
+                            alert("Xóa thất bại");
+                        }
+                    })
+                    .error(function () { alert("Can not delete."); $("#floading").hide(); })
+                    .complete(function () { $("#floading").hide(); });
+
+            }
+
+        }
+
+    </script>
+
+}

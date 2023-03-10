@@ -1,0 +1,57 @@
+﻿
+<table class="table table-striped table-bordered responsive">
+    <thead>
+        <tr>
+            <th>#ID</th>
+            <th>Tên khách hàng</th>
+            <th>Số điện thoại</th>
+            <th>Địa chỉ</th>
+            <th>Ngày tạo</th>
+            <th>Tổng tiền</th>
+            <th>Thuế (VAT)</th>
+            <th>Tiền ship</th>
+            <th>Tổng cộng</th>
+            <th>Trạng thái</th>
+            <th>Hình thức thanh toán</th>
+            <th style="width:150px">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@PKWebShop.AppLB.CommonFunc.GetIDStr(item.Id)</td>
+                <td>@item.CustomerName</td>
+                <td>@item.CustomerPhone</td>
+                <td>@item.Customer_Address</td>
+                <td>@(item.CreatedAt?.ToString("dd/MM/yyyy"))</td>
+                <td>@(item.SubTotal?.ToString("#,###"))</td>
+                <td>@(item.TaxPercent + "%")</td>
+                <td>@(item.Shipping?.ToString("#,###"))</td>
+                <td>@(item.GrandTotal?.ToString("#,###"))</td>
+                <td class="center">
+                    @if (item.Status == "Đã thanh toán")
+                    {
+                        <span class="label-success label">Đã thanh toán</span>
+                    }
+                    else
+                    {
+                        <span class="label-default label">Chưa thanh toán</span>
+                    }
+                </td>
+                <td>@item.PaymentMethod</td>
+                <td class="center">
+                    <a class="btn btn-xs btn-success" href="/admin/order/detail/@item.Id" data-toggle="tooltip" title="Xem chi tiết">
+                        <i class="glyphicon glyphicon-eye-open icon-white"></i>
+                    </a>
+                    <a class="btn btn-xs btn-success" href="/admin/order/save/@item.Id" data-toggle="tooltip" title="Sửa hóa đơn">
+                        <i class="glyphicon glyphicon-edit icon-white"></i>
+                    </a>
+                    <a class="btn btn-xs btn-danger" href="/admin/order/delete/@item.Id" data-toggle="tooltip" title="Xóa hóa đơn" onclick="return confirm('Bạn xác nhận muốn xóa?')">
+                        <i class="glyphicon glyphicon-trash icon-white"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

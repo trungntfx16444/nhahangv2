@@ -1,0 +1,195 @@
+﻿@model AdminPage.Models.n_news
+@using AdminPage.Models
+@{
+    if (!string.IsNullOrEmpty(Model.NewsId))
+    {
+        ViewBag.Title = "Sửa bài viết";
+    }
+    else
+    {
+        ViewBag.Title = "Thêm bài viết";
+    }
+    var arrData = ViewBag.ArrData as object[];
+    var ptop = ViewBag.ptopic as n_parent_topic;
+    var langs = ViewBag.exitsLangs as List<AdminPage.Services.SiteLang.Language>;
+    var lang = ViewData["LangCode"]?.ToString() ?? "vi";
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title @ptop.Name</span>
+        </nav>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="#" onclick="window.history.back()" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+    @if (!string.IsNullOrEmpty(Model.ReId))
+    {
+        <a href="/news/detail/@Model.ReId" class="btn btn-success"><i class="fa fa-search"></i> Xem bài viết</a>
+        <a href="#" onclick="News_newLang('@Model.ReId')" class="btn btn-primary add_lang"><i class="fa fa-globe"></i> Thêm Ngôn ngữ cho bài viết</a>
+    }
+</p>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-close-circle"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check-circle"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+
+
+<div class="card">
+    @if (!string.IsNullOrEmpty(Model.NewsId) && langs.Count > 1)
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-md-12">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code == lang ? "active" : "")" data-toggle="tab" href="#anticon-tab" onclick="LoadLang('@Model.ReId', '@l.Code', this)"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            @*<div class="col-6 p-2">
+                    <button id="quicksave" class="btn btn-sm btn-success float-right" style="display:none" onclick="quick_save()"><i class="fa fa-save"></i> Lưu nhanh</button>
+                </div>*@
+        </div>
+    }
+    else
+    {
+        <div class="card-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <h4 class="card-title">@(ViewBag.Title)</h4>
+            </div>
+        </div>
+    }
+
+    <div class="card-body pt-1" id="partial_content">
+        @Html.Partial("_Save", Model)
+    </div>
+</div>
+
+<p class="btn-group">
+    <a href="#" onclick="window.history.back()" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+    @if (!string.IsNullOrEmpty(Model.NewsId))
+    {
+        <a href="/news/detail/@Model.NewsId" class="btn btn-success"><i class="fa fa-search"></i> Xem bài viết</a>
+    }
+    <button type="button" id="btn-save" class="btn btn-primary"><i class="fa fa-check"></i> Lưu bài viết</button>
+</p>
+
+<!--Modal SEO-->
+@*@Html.Partial("_ResultSEO_Partial")*@
+
+
+@section scripts
+{
+    <script src="~/Content/admin/ckfinder/ckfinder_v1.js"></script>
+    @*<script src="~/Scripts/news_tags.js"></script>*@
+
+    <script type="text/javascript">
+        function uploadpic() {
+            var finder = new CKFinder();
+            finder.BasePath = '/Content/admin/ckfinder/';
+            finder.SelectFunction = SetFileField;
+            finder.Popup();
+        }
+
+        function News_newLang(id) {
+            if ($('#quicksave').is(":visible")) {
+                if (confirm("Bạn có muốn lưu lại bài viết đang chỉnh sửa không?")) {
+                    return quick_save(News_newLang);
+                }
+            }
+
+            $.ajax({
+                method: "POST",
+                url: "/news/_NewsAddLang_Modal",
+                data: { id },
+                dataType: "html"
+            }).done(function (data) {
+                $("body").append(data);
+            }).fail(function () {
+                //...
+            }).always(function () {
+                //...
+            });
+        }
+
+        function delpic() {
+            $("#hdPicture").val("").trigger("change");
+            $("#showPicture").attr("src", "/Content/admin/img/no_image.jpg");
+        }
+
+        function SetFileField(fileUrl, data) {
+            $("#hdPicture").val(fileUrl).trigger("change");
+            $("#showPicture").attr("src", fileUrl);
+        }
+
+        function LoadLang(id, LangCode, el) {
+            if (el == null || !$(el).hasClass('active')) {
+                $.ajax({
+                    method: "POST",
+                    url: "/news/_Save",
+                    data: {
+                        id: id,
+                        lang: LangCode
+                    },
+                    dataType: "html"
+                }).done(function (data) {
+                    $("#partial_content").html(data);
+                }).fail(function () {
+                    //...
+                }).always(function () {
+                    //...
+                });
+            }
+        }
+
+
+        //$("#TopicId").change(function () {
+        //    if ($(this).find('option:selected').data('url')) {
+        //        $('#url-toppic').html($(this).find('option:selected').data('url') + '/');
+        //    } else {
+        //        $('#url-toppic').html('');
+        //    }
+        //})
+        //$("#TopicId").trigger("change");
+        function quick_save(callback) {
+            var action = $("#news_form").prop("action");
+            $("#news_form").prop("action", "/news/SaveJson").ajaxSubmit(function (data) {
+                if (data[1]) {
+                    success(data[1]);
+                    $("#quicksave").hide();
+                    if (callback) { callback(); }
+                } else {
+                    error(data[1]);
+                }
+            })
+            $("#news_form").prop("action", action);
+        }
+    </script>
+}

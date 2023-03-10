@@ -1,0 +1,202 @@
+﻿@model IEnumerable< AdminPage.Models.user>
+@{
+    ViewBag.Title = "Index";
+}
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">Home</a>
+        </li>
+        <li>
+            <a href="javascript:void(0)">Nhật ký</a>
+        </li>
+    </ul>
+</div>
+
+
+@*<p class="btn-group">
+        <a href="/users/save" class="btn btn-primary"><i class="fa fa-plus"></i> Thêm thành viên</a>
+    </p>*@
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["error"]
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["success"]
+    </div>
+}
+
+
+
+
+
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-user"></i> Nhật ký hoạt động thành viên</h2>
+
+            </div>
+            <div class="box-content">
+                <div class="table-responsive">
+                    <div class="input-group pull-right" style="max-width: 300px">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                        <select id="member" class="form-control">
+                            <option value="">--- Tất cả ---</option>
+                            @if (Model != null)
+                            {
+                                foreach (var mem in Model)
+                                {
+                                    <option value="@mem.UserId">@mem.UserName</option>
+                                }
+                            }
+
+                        </select>
+                    </div>
+                    <table id="log_table" class="table table-striped table-bordered bootstrap-datatable responsive">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Thành viên</th>
+                                <th>Hành động</th>
+                                <th>Nội dung</th>
+                                <th>xem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h3 style="padding:0; margin:0">Xem chi tiết</h3>
+            </div>
+            <div class="modal-body">
+                <div id="changed">
+                    <label>Chỉnh sửa</label><br />
+                    <div id="changed_detail" style="margin-bottom:-1px">
+
+                    </div>
+                </div>
+                <div style="background-color: #fff">
+                    <label>Thông tin</label>
+                    <pre id="json-renderer"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link href="~/Content/css/jquery.json-viewer.css" rel="stylesheet" />
+<script src="~/Content/js/jquery.json-viewer.js"></script>
+<script>
+    $(function () {
+
+
+        var table = $('#log_table').DataTable({
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false,
+            "order": [[0, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }
+            ],
+
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<img src="/Content/admin/img/loading.gif" width="60px">'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/memberlog/Load_table",
+                "data": function (d) {
+                    d.member = $("#member").val();
+                    return d;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    //console.log(json);
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#log_table tbody").html(json.responseJSON.data);
+                        $("#member").off().on("change", function () {
+                            table.draw();
+                        })
+                    }
+                }
+            },
+            //"stateSave": true,
+            //"stateSaveParams": function (settings, d) {
+            //    d.Tags = $("#ticket_tags_filter").val();
+            //    localStorage.setItem("tiket_filter_default", JSON.stringify(d));
+            //},
+            //"stateLoadParams": function (settings, d) {
+            //    var current = localStorage.getItem("tiket_filter_default");
+            //    if (current) {
+            //        d = JSON.parse(current); current = null;
+            //        $("#ticket_tags_filter").val(d.Tags);
+            //    }
+            //    return d;
+            //}
+        });
+        table.on('draw', function () {
+            //alert('Table redrawn');
+
+
+            // initialCheck();
+        });
+    })
+    function viewdetail(id) {
+        var c = JSON.parse($("#changed_" + id).val());
+        $("#changed_detail").empty();
+        if (c.length) {
+            for (var i in c) {
+                $("#changed_detail").append($(`<div style='border-bottom: 1px solid lightgray; padding:10px'><span>${c[i].Name}:</span> <span class="text-danger">${c[i].Old}</span> <i class='glyphicon glyphicon-arrow-right' style='padding: 0 10px'></i> <span class="text-success">${c[i].New}</span><br/></div>`));
+            }
+            $("#changed").show();
+        } else {
+            $("#changed").hide();
+        }
+        var a = JSON.parse($("#entity_" + id).val());
+        $('#json-renderer').jsonViewer(a);
+        $("#myModal").modal("show");
+    }
+</script>
+<style>
+    .json-string {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-inline-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        padding-bottom: 0px;
+        margin-bottom: -5px;
+        vertical-align: top;
+    }
+</style>

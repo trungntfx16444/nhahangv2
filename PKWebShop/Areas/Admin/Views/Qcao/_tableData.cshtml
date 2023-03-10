@@ -1,0 +1,86 @@
+﻿@*@model IEnumerable<(popupad ads, List<string> langs)>*@
+@model IEnumerable<popupad>
+@using PKWebShop.Models
+@{
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+}
+
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td class="align-top">
+            <span class="@(langs.Count > 1 ? "" : "p-l-5")">
+                @if (langs.Count > 1)
+                {
+                    <i class="flag-title m-l-5 flag-icon @(langs.Find(_l=>_l.Code==(item.LangCode ?? "vi"))?.Icon)" style="padding: 1px 11px" data-toggle="tooltip" data-placement="top" title="@(langs.FirstOrDefault(x => x.Code == (item.LangCode ?? "vi"))?.FullName?.ToLower())"></i>
+                }
+                <b class="text-primary text-uppercase"> @(item.Title)</b>
+            </span><br />
+            <span class="badge badge-pill badge-default">
+                <b>Url:</b>
+                <a href="@item.PopupAdsURL" target="_blank">@item.PopupAdsURL</a>
+            </span>
+        </td>
+        <td class="align-top text-dark">
+            <span>
+                <span class="font-weight-semibold">Từ:</span>
+                @(item.PopupAdsFrom != null ? item.PopupAdsFrom.Value.ToString("dd/MM/yyyy HH:mm") : "---")
+            </span><br />
+            <span>
+                <span class="font-weight-semibold">Đến:</span>
+                @(item.PopupAdsTo != null ? item.PopupAdsTo.Value.ToString("dd/MM/yyyy HH:mm") : "---")
+            </span>
+        </td>
+        <td class="align-top">
+            @Html.Raw(item.Description?.Replace("\r\n", "<br/>"))
+        </td>
+        <td class="align-top">
+            <img height="75" src="@item.PopupAdsPicture" />
+        </td>
+        <td class="align-top">
+            @if (DateTime.Now > item.PopupAdsTo)
+            {
+                <span class="badge badge-pill badge-default">Hết hạn</span>
+            }
+            else
+            {
+                <span class="badge badge-pill @(item.Active == true ? "badge-geekblue" : "badge-red")">@(item.Active == true ? "Hoạt động" : "không hoạt động")</span>
+            }
+        </td>
+        <td class="align-top text-center">
+            @if (langs.Count > 1)
+            {
+                <div class="dropdown dropdown-animated scale-left btn-block">
+                    <button class="btn btn-primary btn-sm btn-block dropdown-toggle m-b-5" data-toggle="dropdown">
+                        <i class="anticon anticon-edit"></i> Chỉnh sửa
+                    </button>
+                    <div class="dropdown-menu">
+                        @foreach (var l in langs)
+                        {
+                            <a class="dropdown-item" href="@($"/admin/qcao/save/{item.ReId}?lang={l.Code}")">
+                                <i class="flag-icon @(l.Icon) m-r-5" style="padding:1px 11px"></i>@(l.FullName)
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a href="@($"/admin/qcao/save/{item.ReId}?lang={(string.IsNullOrEmpty(item.LangCode) ? "vi" : item.LangCode)}")" class="btn btn-primary btn-block btn-sm m-b-5">
+                    <i class="anticon anticon-edit"></i>  Chỉnh sửa
+                </a>
+            }
+
+            <button type="button" class="btn btn-danger btn-block btn-sm m-b-5" onclick="Delete('@item.ReId')">
+                <i class="anticon anticon-delete"></i> Xóa
+            </button>
+        </td>
+    </tr>
+}
+
+<script type="text/javascript">
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    })
+</script>

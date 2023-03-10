@@ -1,0 +1,353 @@
+﻿@{
+    ViewBag.Title = "Quản lý khách hàng";
+    var pkg = new AdminPage.Services.PackageServices().packageInfoSS();
+}
+
+
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+<div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h4 class="card-title">Danh sách khách hàng</h4>
+                       
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!--Search-->
+                    <div class="form-row">
+                        <div class="col-lg-6 col-md-8 col-sm-8 m-t-5">
+                            <div class="input-affix">
+                                <i class="prefix-icon anticon anticon-search"></i>
+                                <input type="text" id="input-search" class="form-control" placeholder="Nhập tên khách hàng hoặc số điện thoại" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-2 col-sm-2 m-t-5">
+                            <button type="button" id="btn_search" class="btn btn-primary btn-tone" onclick="LoadListCustomer()">
+                                Tìm kiếm
+                                <img id="search-loading" src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" style="display:none" />
+                            </button>
+                           
+                        </div>
+                        <div class="col-lg-4 col-md-2 col-sm-2 m-t-5 text-right">
+                            <button type="button" class="btn btn-success" data-toggle="tooltip" title="Tạo tài khoản khách hàng" onclick="LoadCustomer('')">
+                                <i class="anticon anticon-plus"></i> Tạo tài khoản khách hàng
+                            </button>
+                        </div>
+                    </div>
+
+                    <!--Table list customer and order of customer-->
+                    <div id="dataTableCustomer" class="table-responsive">
+                        <!--Append list customer using ajax-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Add Customer-->
+    <div class="modal fade" id="ModalCustomer">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <form id="frm-customer" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Cập nhật thông tin khách hàng</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="Id" name="Id" value="" />
+                    <div class="form-group">
+                        <label class="font-weight-semibold required">Tên khách hàng</label>
+                        <input type="text" class="form-control" id="FullName" name="FullName" placeholder="Nhập tên KH" required autocomplete="off">
+                    </div>
+                    <div class="form-row" id="Password_group">
+                        <div class="form-group col-md-12">
+                            <label class="font-weight-semibold required">Mật khẩu</label>
+                            <input type="text" class="form-control" id="Password" name="Password" placeholder="Tạo mật khẩu">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-semibold required">Email</label>
+                            <input type="email" class="form-control" id="Email" name="Email" placeholder="Nhập email" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-semibold ">Số điện thoại</label>
+                            <input type="text" class="form-control" id="Phone" name="Phone" placeholder="Nhập số điện thoại" oninput="this.value = this.value.replace(/[^0-9,]/g, '');" >
+                        </div>
+
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-semibold">Tỉnh/TP</label>
+                            <select id="Province" name="Province" class="form-control" onchange="LoadDistrict()">
+                                <option value="">--- Chọn Tỉnh/TP ---</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-semibold">Quận/Huyện</label>
+                            <select id="District" name="District" class="form-control" onchange="LoadWard()">
+                                <option value="">--- Chọn Quận/Huyện ---</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-semibold">Xã/Phường</label>
+                            <select id="Ward" name="Ward" class="form-control">
+                                <option value="">--- Chọn Xã/Phường ---</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-semibold">Số nhà, tên đường</label>
+                            <input type="text" class="form-control" id="Address" name="Address">
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <div class="checkbox">
+                            <input id="Active" name="Active" type="checkbox" value="true" checked>
+                            <label for="Active" class="font-weight-semibold">Đang hoạt động</label>
+                        </div>
+                        <div class="checkbox">
+                            <input id="isPartner" name="isPartner" type="checkbox" value="true" checked>
+                            <label for="isPartner" class="font-weight-semibold">Nhà phân phối</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveCustomer()">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal List Orders-->
+    <div class="modal fade" id="ModalOrders">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Lịch sử đơn hàng</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mã ĐH</th>
+                                <th>Tổng tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody id="div_orders">
+                            <!--[_ListOrder] Append list orders using ajax-->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-resetpass">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-resetpass-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="reset-msg">
+                    <!--Append content-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <script src="~/Content/admin/js/load-full-address.js"></script>
+
+    <script type="text/javascript">
+        $("#btn_search").trigger("click");
+
+        function LoadListCustomer() {
+            $("#search-loading").show();
+            $.ajax({
+                method: "POST",
+                url: "/customerman/LoadListCustomer",
+                data: { searchText: $("#input-search").val() },
+                dataType: "html"
+            }).done(function (data) {
+                $("#dataTableCustomer").html(data);
+            }).fail(function () {
+                msg_error("Tải dữ liệu. Vui lòng thử lại.", "", "top right");
+            }).always(function () {
+                $("#search-loading").hide();
+            });
+        };
+
+        $("#input-search").keypress(function () {
+            if (event.keyCode == 13) {
+                LoadListCustomer();
+            }
+        });
+
+        function LoadCustomer(cusId = "") {
+            if (cusId != "") {
+                $("#Password_group").hide();
+                $("#exampleModalLabel").html("Cập nhật thông tin khách hàng");
+                $.ajax({
+                    method: "POST",
+                    url: "/customerman/LoadCustomer",
+                    data: { id: cusId },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        $("#Id").val(data[1].Id);
+                        $("#FullName").val(data[1].FullName);
+                        $("#Phone").val(data[1].Phone);
+                        $("#Email").val(data[1].Email);
+                        $("#Address").val(data[1].Address);
+                        $("#Active").prop("checked", data[1].Active ?? false);
+                        $("#isPartner").prop("checked", (data[1].Role == "Partner"));
+
+                        $("#District").append(`<option value='${data[1].District}' selected>Quận/Huyện</option>`);
+                        $("#Ward").append(`<option value='${data[1].Ward}' selected>Xã/Phường</option>`);
+                        $("#Province").val(data[1].Province).trigger("change");
+
+                        $("#ModalCustomer").modal("show");
+                    }
+                    else {
+                        msg_error(data[1], "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Tải dữ liệu thất bại. Vui lòng thử lại.", "", "top right");
+                });
+            } else {
+                $("#frm-customer").resetForm();
+                $("#Id").val("");
+                $("#Province").trigger("change")
+                $("#ModalCustomer").modal("show");
+                $("#exampleModalLabel").html("Tạo tài khoản khách hàng");
+                $("#Password_group").show();
+            }
+        };
+
+        function SaveCustomer() {
+            if ($("#FullName").val() == "") {
+                msg_info("Tên khách hàng không được trống.", "FullName", "");
+                return false;
+            }
+            else if ($("#Email").val() == "") {
+                msg_info("Email không được trống.", "Email", "");
+                return false;
+            }
+
+            $.ajax({
+                method: "POST",
+                url: "/customerman/SaveCustomer",
+                data: $("#frm-customer").serialize(),
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    msg_success(data[1], "", "top center");
+                    $("#ModalCustomer").modal("hide");
+                    LoadListCustomer();
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Lưu thất bại. Đã có sự cố xảy ra.", "", "top right");
+            });
+        };
+
+        function DeleteCustomer(cusId) {
+            if (confirm("Bạn có chắc muốn xóa khách hàng này?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/customerman/DeleteCustomer",
+                    data: { Id: cusId },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        msg_success(data[1], "", "top right");
+                        LoadListCustomer();
+                    }
+                    else {
+                        msg_error(data[1], "", "top right");
+                    }
+                }).fail(function () {
+                    msg_error("Xóa thất bại. Vui lòng thử lại.", "", "top right");
+                });
+            }
+        };
+
+        function GetListOrder(cusId) {
+            $.ajax({
+                method: "POST",
+                url: "/customerman/GetListOrder",
+                data: { id: cusId },
+                dataType: "html"
+            }).done(function (data) {
+                $("#ModalOrders").modal("show");
+                $("#div_orders").html(data);
+            }).fail(function () {
+                msg_error("Tải dữ liệu thất bại. Vui lòng thử lại.", "", "top right");
+            });
+        };
+
+        function ResetPassword(cusId) {
+            var newpass = prompt("Nhập mật khẩu mới cho khách hàng?");
+            var Sendemail = confirm("Bạn có muốn gửi mật khẩu mới cho khách hàng?");
+            if (newpass) {
+                $.ajax({
+                    method: "POST",
+                    url: "/customerman/ResetPassword",
+                    data: { Id: cusId, newpass, Sendemail },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        msg_success("Đổi mật khẩu thành công", "", "top right");
+                        $("#modal-resetpass-title").html("Reset mật khẩu thành công");
+                    }
+                    else {
+                        msg_error("Đổi mật khẩu thất bại.", "", "top right");
+                        $("#modal-resetpass-title").html("Reset mật khẩu thất bại");
+                    }
+                    $("#reset-msg").html(data[1]);
+                    $("#modal-resetpass").modal({ backdrop: 'static', keyboard: false });
+                }).fail(function () {
+                    msg_error("Reset thất bại. Vui lòng thử lại.", "", "top right");
+                });
+            }
+        };
+    </script>
+}

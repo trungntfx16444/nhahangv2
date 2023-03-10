@@ -1,0 +1,83 @@
+﻿@model IEnumerable<PKWebShop.Models.n_news>
+@using PKWebShop.AppLB
+@using PKWebShop.Models
+
+@{
+    var top3_product = ViewData["list_product"] as List<product>;
+}
+
+
+<div class="col-sm-4 col-xs-12">
+    <div class="blogSidebar">
+        @*<form id="search_form" action="/bai-viet">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="Name" value="@TempData["Name"]" placeholder="Tìm kiếm..." aria-describedby="basic-addon2">
+                    <a href="#" class="input-group-addon" onclick="$('#search_form').submit()" id="basic-addon2"><i class="fa fa-search"></i></a>
+                    <button name="search" value="search" style="display:none"></button>
+                </div>
+            </form>*@
+
+        @*<div class="panel panel-default">
+                <div class="panel-heading">Chủ đề</div>
+                <div class="panel-body">
+                    <ul class="list-unstyle categoryList text-capitalize">
+                        @foreach (var item in ViewBag.ListTopic as List<n_toppic>)
+                        {
+                            <li><a href="/blog/@item.TopicId">@item.Name</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>*@
+
+
+        @if (Model != null && Model.Count() > 0)
+        {
+            <div class="panel panel-default recentBlogPosts">
+                <div class="panel-heading">Bài viết mới nhất</div>
+                <div class="panel-body" style="padding:15px">
+                    @foreach (var item in Model)
+                    {
+                        <div class="media" style="padding-bottom: 0px">
+                            <a class="media-left" href="/blog/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId">
+                                <img class="media-object" src="@(item.Picture ?? "/Content/admin/img/no_image.jpg")" alt="Image">
+                            </a>
+                            <div class="media-body">
+                                <h4 class="media-heading"><a href="/blog/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId">@(item.Name)</a></h4>
+                                <ul class="list-inline">
+                                    <li><a href="javascript:void(0)"><i class="fa fa-clock-o" aria-hidden="true"></i>@(item.CreatedAt?.ToString("dd/MM/yyyy hh:mm tt"))</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                    <div class="text-center"><a href="/blog">Xem tất cả</a></div>
+                </div>
+            </div>
+        }
+
+
+        @if (top3_product != null && top3_product.Count() > 0)
+        {
+            <div class="panel panel-default recentBlogPosts">
+                <div class="panel-heading">Sản phẩm mới nhất</div>
+                <div class="panel-body" style="padding:15px">
+                    @foreach (var item in top3_product)
+                    {
+                        <div class="media" style="padding-bottom: 0px">
+                            <a class="media-left" href="/@CommonFunc.ConvertNonUnicodeURL(item.ProductName)-@item.Id">
+                                <img class="media-object" src="@(item.Picture ?? "/Content/admin/img/no_image.jpg")" alt="Image">
+                            </a>
+                            <div class="media-body">
+                                <h4 class="media-heading"><a href="/@CommonFunc.ConvertNonUnicodeURL(item.ProductName)-@item.Id">@(item.ProductName)</a></h4>
+                                @*<ul class="list-inline">
+                                        <li><a href="javascript:void(0)">Xem chi tiết</a></li>
+                                    </ul>*@
+                            </div>
+                        </div>
+                    }
+                    <div class="text-center"><a href="/san-pham">Xem tất cả</a></div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

@@ -1,0 +1,35 @@
+﻿@using PKWebShop.Utils
+@model IEnumerable<PKWebShop.Models.gift_code>
+@foreach (var gc in Model)
+{
+    <tr>
+        <td><b>@gc.code</b><br />@gc.name</td>
+        <td>S: @(gc.start_date.HasValue ? gc.start_date.Value.ToString("dd/MM/yyyy") : "---") <br />E: @(gc.end_date.HasValue ? gc.end_date.Value.ToString("dd/MM/yyyy") : "---")</td>
+        <td>
+            @(gc.price > 0 ? gc.price?.ToString("#,###") + " "+ Constant.CURRENCY_SIGN : "")
+            @(gc.percent >0 ? gc.percent + "%" : "")
+        </td>
+        <td>@(gc.GrandTotalFrom != null ? gc.GrandTotalFrom?.ToString("#,###") + $" {Constant.CURRENCY_SIGN}" : "")</td>
+        <td>
+            @if (gc.active == true)
+            {
+                if (gc.end_date < DateTime.Now.Date)
+                {
+                    <span class="badge badge-pill badge-default">Hết hạn</span>
+                }
+                else
+                {
+                    <span class="badge badge-pill badge-primary">Kích hoạt</span>
+                }
+            }
+            else
+            {
+                <span class="badge badge-pill badge-warning">Không kích hoạt</span>
+            }
+        </td>
+        <td style="width:5%; min-width:90px">
+            <a class="btn btn-xs btn-success text-white m-1" onclick="edit_giftcode('@gc.code')"><i class="anticon anticon-edit"></i></a>
+            <a class="btn btn-xs btn-danger text-white m-1" onclick="delete_giftcode('@gc.code')"><i class="anticon anticon-delete"></i></a>
+        </td>
+    </tr>
+}

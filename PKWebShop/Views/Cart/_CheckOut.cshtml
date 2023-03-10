@@ -1,0 +1,232 @@
+﻿@using PKWebShop.Utils
+@using PKWebShop.Models
+@using PKWebShop.Services
+@using PKWebShop.Enums
+@using Inner.Libs.Helpful
+@model List<(product prd, orders_detail prdItem)>
+@{
+    var sub_total = Model.Sum(p => (p.prdItem.Price ?? 0) * p.prdItem.Quantity) ?? 0;
+    var listProp = ViewBag.ListProp as List<product_properties> ?? new List<product_properties>();
+    gift_code gf = ViewBag.giftcode ?? new gift_code();
+    var webLicense = new PackageServices().WebPackInfo();
+    shipping_config shippingfee = ViewBag.Shippingfee;
+    Int64 free_ship = Convert.ToInt64(ViewBag.free_ship);
+    vn_district selected_district = ViewBag.selected_district;
+}
+
+@functions
+{
+    public bool checkFreeShip(double total, Int64 free_ship)
+    {
+        return free_ship > 0 && total >= free_ship;
+    }
+}
+<div class="your-order-wrap gray-bg-4">
+    <div class="your-order-info-wrap">
+        <div class="your-order-info">
+            <ul>
+                <li>Sản phẩm <span>Tổng tiền</span></li>
+            </ul>
+        </div>
+        <div class="your-order-middle">
+            <ul>
+                @foreach (var p in Model)
+                {
+                    <li style="display:grid">
+                        <span>
+                            @(p.prdItem.ProductName)
+                            @if (!string.IsNullOrEmpty(p.prdItem.PropertiesId))
+                            {
+                                @*<br />*@
+                                foreach (var item in p.prdItem.PropertiesId.TrimEnd('|').Split('|'))
+                                {
+                                    <span class="badge badge-pill badge-info bg-f4 text-dark text-capitalize mr-1" style="font-size:small; font-weight:inherit; width:fit-content; float:initial">
+                                        @(listProp.FirstOrDefault(x => x.ReId == item)?.name)
+                                    </span>
+                                }
+                            }
+                        </span>
+                        <p style="font-size:14px;">
+                            @(p.prdItem.Quantity) x @((p.prdItem.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN
+                            <span class="float-right">@(((p.prdItem.Price ?? 0) * p.prdItem.Quantity)?.ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                        </p>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="your-order-info order-subtotal">
+            <ul>
+                <li>Tạm tính <span class="text-lowercase">@sub_total.ToString("0,###") @Constant.CURRENCY_SIGN</span></li>
+            </ul>
+        </div>
+        @{double discount = 0;}
+        @if (!string.IsNullOrEmpty(gf.code) && gf.GrandTotalFrom <= (decimal?)sub_total)
+        {
+            <div class="your-order-info order-shipping">
+                <ul>
+                    @if (gf.percent.HasValue && gf.percent.Value > 0)
+                    {
+                        discount = (gf.percent ?? 0) / 100f * sub_total;
+                        <li>
+                            Giảm giá (@gf.percent%)<br /><text class="text-success">Code: @(gf.code)</text>
+                            <p class="text-success" style="font-weight:500"> -@discount.ToString("0,###") @Constant.CURRENCY_SIGN</p>
+                        </li>
+                    }
+                    else if (gf.price.HasValue && gf.price.Value > 0)
+                    {
+                        discount = (double)(gf.price ?? 0);
+                        <li>
+                            Giảm giá<br /><text class="text-success">Code: @(gf.code)</text>
+                            <p class="text-success" style="font-weight:500"> -@discount.ToString("0,###") @Constant.CURRENCY_SIGN</p>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @{double grandTotal = sub_total - discount;}
+        @if (webLicense.ShippingFee)
+        {
+            <div class="your-order-info order-shipping" @(shippingfee?.ShippingFee > 0 ? "" : "style=display:none")>
+                <ul>
+                    <li>
+                        Phí vận chuyển
+                        <p style="font-weight:500">
+                            <span id="show_shippingfee" class="@(checkFreeShip(grandTotal,free_ship) ? "free-ship" : "")">+ @((shippingfee?.ShippingFee??0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        }
+
+        <div class="your-order-info order-total">
+            <ul>
+                <li>
+                    <p class="text-success point-rate-content" style="display:none; font-size:14px; font-weight:500">
+                        Sử dụng điểm tích lũy giảm
+                        <span class="r-money text-success">0</span>
+                    </p>
+                </li>
+                <li class="color-gold">
+                    Tổng cộng
+                    <span id="show_grand" class="text-lowercase" data-sub_dis="@(grandTotal)">@((grandTotal + (checkFreeShip(grandTotal,free_ship) ? 0 : (double)(shippingfee?.ShippingFee ?? 0))).ToString("0,###")) @Constant.CURRENCY_SIGN </span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="your-order-info order-total">
+            <ul>
+                <li>Phương thức thanh toán :</li>
+            </ul>
+            <div class="payment-method" style="margin: unset;">
+                <div class="pay-top sin-payment">
+                    <input id="payment-method-1" class="input-radio" type="radio" value="@(PaymentMethod.COD.Code<string>())" name="PaymentMethod" checked>
+                    <label for="payment-method-1">Thanh toán khi nhận hàng </label>
+                    @if (webLicense.PaymentOnline)
+                    {
+                        <input id="payment-method-2" class="input-radio" type="radio" value="@(PaymentMethod.VNPAY.Code<string>())" name="PaymentMethod">
+                        <label for="payment-method-2">Thanh toán với VNPAY </label>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (grandTotal > 0)
+{
+    <div class="Place-order">
+        <button id="submit" hidden type="submit"></button>
+        <a class="btn btn-theme" onclick="doOrder()">
+            <span id="span-doOrder">Đặt hàng</span>
+            <i id="doOrder-loading" class="fa fa-spinner fa-pulse d-none" style="font-size:16px;"></i>
+        </a>
+    </div>
+}
+
+
+<script type="text/javascript">
+    $(function () {
+        const CURRENCY = '@(Constant.CURRENCY_SIGN)';
+
+        $("#province").on("change", function () {
+            if (!$("#district-form").is(":visible")) {
+                $("#district-form").slideDown("200");
+            }
+            var show = $('#district-template option[data-province=' + $(this).val() + ']').clone();
+            $('#district option:not([hidden])').remove('');
+            $('#district').append(show);
+        });
+
+        $("#district").on("change", function () {
+            $.ajax({
+                method: "POST",
+                url: "/cart/loadWards",
+                data: { id: $(this).val() },
+                dataType: "json"
+            }).done(function (data) {
+                $("#ward").empty();
+                $("#ward").append($(new Option("Chọn Xã/Phường", "", true, true)).prop("hidden", true));
+                data.forEach(function (t, i) {
+                    $("#ward").append(new Option(t[1], t[0]));
+                });
+                $("#ward").val(localStorage.getItem('wardid'));
+                if (!$("#ward-form").is(":visible")) {
+                    $("#ward-form").slideDown("200");
+                }
+            }).fail(function () {
+                //...
+            });
+
+            @if (webLicense.ShippingFee == true)
+            {
+                <text>getShippingFee($(this).val());</text>
+            }
+        });
+
+        function getShippingFee(Id) {
+            $.ajax({
+                    method: "POST",
+                    url: "/cart/getShippingFee",
+                    data: { id: Id},
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0]) {
+                        var nf = Intl.NumberFormat("vi");
+                        let grandTotal = parseInt($("#show_grand").data("sub_dis"));
+                        $("#show_shippingfee").html(` + ${nf.format(data[1])} ${CURRENCY}`).removeClass("free-ship").css("font-size", "14px");
+                        $("#show_shippingfee").data("shipping_fee", data[1] || 0);
+                        let grand = grandTotal + (data[1] || 0);
+                        @if (free_ship > 0)
+                        {<text>
+                        if (grandTotal >= @free_ship) {
+                            $("#show_shippingfee").html("Miễn phí").addClass("free-ship").css("font-size", "14px");
+                            grand = grandTotal;
+                        }
+                        </text>}
+
+                        if ($.cookie("PointRate") == null) { $.cookie("PointRate", Encrypt("0"), { expires: 1, path: "/" }); }
+                        let PointRate = Decrypt($.cookie("PointRate"));
+                        if (PointRate > 0) {
+                            $(".r-money").html(`-${nf.format(PointRate)} ${CURRENCY}`);
+                            $(".point-rate-content").show();
+                            grand = grand - parseInt(PointRate);
+                        }
+
+                        $("#show_grand").html(`${nf.format(grand)} ${CURRENCY}`);
+                        $(".your-order-info.order-shipping").slideDown("");
+                    }
+                }).fail(function () {
+                    alert("Oops! Something went wrong");
+                });
+        };
+
+        @if (selected_district != null)
+        {
+            <text>
+                $("#province").val('@selected_district.provinceid').trigger('change');
+                $("#district").val('@selected_district.districtid').trigger('change');
+            </text>
+        }
+        $("#cart").val(JSON.stringify(cart()));
+    })
+</script>

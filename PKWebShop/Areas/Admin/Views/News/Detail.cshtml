@@ -1,0 +1,208 @@
+﻿@model PKWebShop.Models.n_news
+@using PKWebShop.Models
+
+@{
+    var listlangs = PKWebShop.Services.SiteLang.GetListLangs();
+    var arrData = ViewBag.ArrData as object[];
+    var list_parentTopics = arrData[0] as List<n_parent_topic>;
+    var list_topics = arrData[1] as List<n_toppic>;
+    WebShopEntities db = new WebShopEntities();
+    var langs = ViewBag.exitsLangs as List<PKWebShop.Services.SiteLang.Language>;
+    var link = $"/{Model.UrlCode}-nd{Model.ReId}";
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <a href="/admin/" class="breadcrumb-item">Quản lý bài viết</a>
+            <span class="breadcrumb-item active">@Model.Name</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["error"]
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["success"]
+    </div>
+}
+@if (TempData["warning"] != null)
+{
+    <div class="alert alert-warning" data-delay="1">
+        @Html.Raw(TempData["warning"])
+    </div>
+}
+
+<p class="btn-group">
+    <a href="javascript:history.back()" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+    <a href="/admin/news/save/@Model.ReId?LangCode=@Model.LangCode" class="btn btn-warning"><i class="anticon anticon-edit"></i> Sửa bài viết</a>
+    @if (listlangs.Count > 1)
+    {
+        <a href="#" onclick="News_newLang('@Model.ReId')" class="btn btn-primary add_lang"><i class="fa fa-globe"></i> Thêm Ngôn ngữ cho bài viết</a>
+    }
+    <a onclick="return confirm('Bạn muốn xóa bài viết này?')" href="/admin/news/delete/@Model.NewsId" class="btn btn-danger"><i class="anticon anticon-delete"></i> Xóa bài viết</a>
+</p>
+
+<div class="card">
+    @if (listlangs.Count > 1)
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-12">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==Model.LangCode ?"active":"")" @*data-toggle="tab"*@ href="/admin/news/detail/@Model.ReId?lang=@l.Code"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+
+    <div class="card-body" id="partial_content">
+
+        <div class="row">
+            <div class="col-md-8">
+                <fieldset>
+                    <legend class="font-weight-semibold text-dark" style="width:unset; padding: 0 10px">@Model.Name</legend>
+                    <table class="table table-hover mb-0">
+                        <tr>
+                            <th style="width:150px">Thuộc chủ đề:</th>
+                            <td>
+                                @if (string.IsNullOrEmpty(Model.ParentTopicId) && string.IsNullOrEmpty(Model.TopicId))
+                                {
+                                    <span>Không chủ đề</span>
+                                }
+                                else
+                                {
+                                    @Html.Raw(string.Join(", ", (Model.ToppicNames ?? new List<string>()).Select(t => "<span>" + t + "</span>")));
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Lượt xem:</th>
+                            <td>@(Model.ViewCount == null ? 0 : Model.ViewCount)</td>
+                        </tr>
+                        <tr>
+                            <th>Tạo bởi:</th>
+                            <td>@Model.CreatedBy -  @(Model.CreatedAt?.ToString("dd/MM/yyyy hh:mm tt"))</td>
+                        </tr>
+                        @if (string.IsNullOrWhiteSpace(Model.UpdateBy) == false)
+                        {
+                            <tr>
+                                <th>Cập nhật bởi:</th>
+                                <td>@Model.UpdateBy - @(Model.UpdateAt?.ToString("dd/MM/yyyy hh:mm tt"))</td>
+                            </tr>
+                        }
+                        <tr>
+                            <th style="line-height:31px">URL:</th>
+                            <td><a href="@(link)" target="_blank">@(link)</a> <a class="btn btn-default" onclick="copy_text('@( Request.Url.GetLeftPart(UriPartial.Authority) + link)')"><i class="fa fa-copy"></i></a></td>
+                        </tr>
+                        <tr>
+                            <th class="align-top">Mô tả ngắn:</th>
+                            <td>@Html.Raw(Model.ShortDescription?.Replace("\r\n", "<br/>"))</td>
+                        </tr>
+                        <tr>
+                            <th>Tags:</th>
+                            <td>
+                                <div>
+                                    @if (!string.IsNullOrEmpty(Model.Tags))
+                                    {
+                                        foreach (var tag in Model.Tags.Split(','))
+                                        {
+                                            <a class="badge badge-pill badge-primary " href="/tin-tuc?tag=@tag">@tag</a>
+                                        }
+                                    }
+
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+
+                <fieldset class="m-t-20">
+                    <legend class="font-size-16 font-weight-semibold text-dark" style="width:auto">Xem trước kết quả tìm kiếm</legend>
+                    <h4 class="mb-0">
+                        <a href="@(link)" target="_blank" style="color:#1a0dab">@(Model.TitleWebsite)</a>
+                    </h4>
+                    <p class="mb-0">
+                        <a href="@(link)" target="_blank" style="color:green">@($"{Request.Url.Scheme}://{Request.Url.Authority}{link}")</a>
+                    </p>
+                    <p class="mb-0 text-justify">@Html.Raw(Model.SEODescription?.Replace("\r\n", "<br/>"))</p>
+                </fieldset>
+            </div>
+            <div class="col-md-4">
+                <div style="width: 100%; padding-top:16px">
+                    @if (string.IsNullOrWhiteSpace(Model.Picture))
+                    {
+                        <img class="img-thumbnail" src="~/Content/admin/img/no_image.jpg" alt="@(Model.ImageAlt)" />
+                    }
+                    else
+                    {
+                        <img class="img-thumbnail" src="@Model.Picture" alt="@(Model.ImageAlt)" />
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 col-xs-12 mt-3" style="margin-bottom:30px">
+                <fieldset>
+                    <legend class="font-weight-semibold" style="width:unset; padding: 0 10px">NỘI DUNG BÀI VIẾT</legend>
+                    <div style="padding:10px; margin-bottom:10px">
+                        @Html.Raw(Model.Decription?.Replace("<img ", "<img class='img-thumbnail' "))
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="javascript:history.back()" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+    <a href="/admin/news/save/@Model.NewsId?LangCode=@Model.LangCode" class="btn btn-warning"><i class="anticon anticon-edit"></i> Sửa bài viết</a>
+    @if (listlangs.Count > 1)
+    {
+        <a href="#" onclick="News_newLang('@Model.ReId')" class="btn btn-primary add_lang"><i class="fa fa-globe"></i> Thêm Ngôn ngữ cho bài viết</a>
+    }
+    <a onclick="return confirm('Bạn muốn xóa bài viết này?')" href="/admin/news/delete/@Model.NewsId" class="btn btn-danger"><i class="anticon anticon-delete"></i> Xóa bài viết</a>
+</p>
+
+<style type="text/css">
+    fieldset {
+        border: 1px solid #3f87f5;
+        padding: 5px 11px 9px;
+        margin: 0px 2px;
+        border-radius: 4px;
+    }
+</style>
+
+<script type="text/javascript">
+    function News_newLang(id) {
+        $.ajax({
+            method: "POST",
+            url: "/admin/news/_NewsAddLang_Modal",
+            data: { id },
+            dataType: "html"
+        })
+            .done(function (data) {
+                $("body").append(data);
+            })
+            .fail(function () {
+            })
+            .always(function () {
+            });
+
+    }
+</script>

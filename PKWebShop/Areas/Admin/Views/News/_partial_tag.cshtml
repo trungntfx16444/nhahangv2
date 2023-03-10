@@ -1,0 +1,131 @@
+﻿@using PKWebShop.Models
+@{
+    var tagOpt = ViewBag.TagOpt as string ?? "";
+    var tagsNews = ViewBag.TagsNews as List<(n_news_tags tag, bool used)> ?? new List<(n_news_tags tag, bool used)>();
+    var tagsProduct = ViewBag.TagsProduct as List<(tag tag, bool used)> ?? new List<(tag tag, bool used)>();
+    string url = $"{Request.Url.Scheme}://{Request.Url.Authority}";
+}
+
+
+@if (tagOpt == "news")
+{
+    <!--List tags news-->
+    <table id="table-news-tags" class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Tag</th>
+                <th>SEO</th>
+                <th class="no-sort">URL</th>
+                <th>Sử dụng</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in tagsNews)
+            {
+                <tr>
+                    <td>Code: @(item.tag.tag_code)<br />Name: @(item.tag.tag_name)</td>
+                    <td>Title: @(item.tag.seo_title)<br />Description: @(item.tag.seo_desc)</td>
+                    <td>
+                        @($"/tin-tuc?tag={item.tag.tag_code}")
+                    </td>
+                    <td>
+                        @if (item.used)
+                        {
+                            <span class="badge badge-success badge-pill">Đã sử dụng</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-default badge-pill">Chưa sử dụng</span>
+                        }
+                    </td>
+
+                    <td>
+                        <div class="float-right">
+                            <a class="btn btn-success text-white m-1" style="padding:4px 7px" onclick="copy_text('@(url)/tin-tuc?tag=@(item.tag.tag_code)')">
+                                <i class="fa fa-copy"></i>
+                            </a>
+                            <a class="btn btn-warning text-white m-1" style="padding:4px 7px" onclick="EditTag('@item.tag.id','news')">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <a class="btn btn-danger btn-sm text-white m-1" onclick="RemoveTag('@item.tag.id')">
+                                <i class="fa fa-trash"></i> Xóa
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <!--List tags product-->
+    <table id="table-product-tags" class="table table-bordered table-hover" style="width:100%;">
+        <thead>
+            <tr>
+                <th>Tag</th>
+                <th>SEO</th>
+                <th class="no-sort">URL</th>
+                <th>Sử dụng</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in tagsProduct)
+            {
+                <tr>
+                    <td>Code: @(item.tag.TagCode)<br />Name: @(item.tag.TagName)</td>
+                    <td>Title: @(item.tag.seo_title)<br />Description: @(item.tag.seo_desc)</td>
+                    <td>
+                        @($"/san-pham?tag={item.tag.TagCode}")
+
+                    </td>
+                    <td>
+                        @if (item.used)
+                        {
+                            <span class="badge badge-success badge-pill">Đã sử dụng</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-default badge-pill">Chưa sử dụng</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="float-right">
+                            <a class="btn btn-success text-white m-1" style="padding:4px 7px" onclick="copy_text('@(url)/san-pham?tag=@(item.tag.TagCode)')">
+                                <i class="fa fa-copy"></i>
+                            </a>
+                            <a class="btn btn-warning text-white m-1" style="padding:4px 7px" onclick="EditTag('@item.tag.Id','product')">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <a class="btn btn-danger btn-sm text-white m-1" onclick="RemoveTag('@item.tag.Id')">
+                                <i class="fa fa-trash"></i> Xóa
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+<script type="text/javascript">
+    $(function () {
+        if ('@(tagOpt)' == "news") {
+            $('#table-news-tags').DataTable({
+                "lengthChange": false,
+                "searching": false,
+                "order": [[0, "asc"]]
+            });
+        }
+        else {
+            $('#table-product-tags').DataTable({
+                "lengthChange": false,
+                "searching": false,
+                "order": [[0, "asc"]]
+            });
+        }
+    })
+</script>

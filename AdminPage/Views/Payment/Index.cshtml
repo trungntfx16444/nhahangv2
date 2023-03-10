@@ -1,0 +1,236 @@
+﻿@using Inner.Libs.Helpful
+@using AdminPage.AppLB
+@using AdminPage.Enums
+@using AdminPage.Models
+@using AdminPage.Services
+@{
+    var webLicense = new PackageServices().WebPackInfo();
+    if (webLicense.PaymentOnline == false)
+    {
+        Response.Redirect("");
+    }
+    ViewBag.Title = "Quản lý thanh toán online";
+    webconfiguration info = UserContent.GetWebInfomation(true);
+    List<PaymentMethod> payType = Enum.GetValues(typeof(PaymentMethod)).OfType<PaymentMethod>()
+        .Where(x => x != PaymentMethod.COD).Select(x => x).ToList();
+}
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@Html.Partial("partial/_PackageDisplayMessage")
+
+<div class="card">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="testemail-tab" data-toggle="tab" href="#testemail" role="tab" aria-controls="testemail" aria-selected="false">Danh sách thanh toán</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Cài đặt thông tin thanh toán</a>
+        </li>
+    </ul>
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="testemail" role="tabpanel" aria-labelledby="testemail-tab">
+                <div class="card-body">
+                    <!--Search-->
+                    <div class="form-group row">
+                        <div class="col-md-4 col-xs-12 m-t-5">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Từ ngày</span>
+                                </div>
+                                <input type="date" id="From" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="fDate" value="@(ViewBag.From)" />
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12 m-t-5">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Đến ngày</span>
+                                </div>
+                                <input type="date" id="To" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="tDate" value="@(ViewBag.To)" />
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12 m-t-5">
+                            <div class="input-group">
+                                <input type="text" id="search" class="form-control" value="" placeholder="Nhập tên KH hoặc mã ĐH" autocomplete="off" />
+                                <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                                    <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-xs-12 m-t-5 text-right">
+                            <a target="_blank" class="btn btn-success" href="https://sandbox.vnpayment.vn/merchantv2/Home/Dashboard.htm">
+                                Chi tiết giao dịch
+                            </a>
+                        </div>
+                    </div>
+
+                    <!--Table list customer and order of customer-->
+                    <div class="table-responsive">
+                        <table id="table_order" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="align-top" style="width:20%">Thông tin Đơn hàng</th>
+                                    <th class="align-top" style="width:20%">Thông tin thanh toán</th>
+                                    <th class="align-top" style="width:80px">Tổng tiền</th>
+                                    <th class="align-top">Nội dung thanh toán</th>
+                                    <th class="align-top">Kết quả</th>
+                                    <th class="no-sort" style="width: 100px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!--Append data using dataTable-->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
+                @if (webLicense.PayType == PaymentMethod.VNPAY)
+                {
+                    if (payType.Count > 1)
+                    {
+                        <div class="row" style="padding: 0 25px 25px;">
+                            @foreach (var type in payType)
+                            {
+                                <input class="pay_online_type" name="pay_online_type" id="pay_online_type_@(type.Code<string>())" type="radio"
+                                       @(type == webLicense.PayType ? "checked" : "") style="visibility: hidden"
+                                       value="@(type.Code<string>())" />
+                                <label class="pay_online_type badge badge-pill badge-primary @(type == webLicense.PayType ? "" : "badge-geekblue")" for="pay_online_type_@(type.Code<string>())">
+                                    @(type.Text())
+                                </label>
+                            }
+                        </div>
+                    }
+
+                    <form id="update_payment" role="form" action="/payment/PaymentConfigUpdate" method="post" class="main-form">
+                        <input type="hidden" name="Id" value="@(info.Id)">
+                        <input type="hidden" name="pay_online_type" value="@(webLicense.PayType.Code<string>())">
+
+                        <div class="payment_online_tag pay_type_@(PaymentMethod.VNPAY.Code<string>())" style="display:@(webLicense.PayType == PaymentMethod.VNPAY ? "" : "none")">
+                            <div class="form-group">
+                                <label>VNPay Terminal Id :</label>
+                                <input type="text" name="vnp_TmnCode" class="form-control" placeholder="Terminal Id" value="@(info.vnp_TmnCode)">
+                            </div>
+                            <div class="form-group">
+                                <label>VNPay Secret Key:</label>
+                                <input type="text" name="vnp_HashSecret" class="form-control" placeholder="Secret Key" value="@(info.vnp_HashSecret)">
+                            </div>
+                            <div class="form-group">
+                                <label>VNPay Version:</label>
+                                <input type="text" name="vnp_Version" class="form-control" placeholder="Version" value="@(info.vnp_Version)">
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h4></h4>
+                        <div class="card-toolbar">
+                            <button class="btn btn-success" onclick="save()">
+                                <i class="fa fa-check"></i> Lưu cấu hình
+                            </button>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <i class="font-weight-semibold">Tính năng chưa được hỗ trợ</i>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(".update_payment").addClass("active");
+        function save() {
+            $("#update_payment").ajaxSubmit(function (data) {
+                cnoty(data);
+            })
+        }
+
+        let table = $('#table_order').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            "order": [[0, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/payment/PaymentList",
+                "data": function (data) {
+                    data.From = $("#From").val();
+                    data.To = $("#To").val();
+                    data.search = $("#search").val();
+                    return data;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#table_order tbody").html(json.responseJSON.data);
+                    }
+                }
+            }
+        });
+        table.on('draw', function () {
+            //...
+        });
+
+        $("#search").keypress(function () {
+            if (event.keyCode == 13) {
+                $("#btn_search").trigger("click");
+            }
+        });
+
+        $("#btn_search").click(function () {
+            table.draw();
+        });
+    </script>
+}
+
+<script>
+    $(document).ready(() => {
+        $("input.pay_online_type").change((ev) => {
+            $("label.pay_online_type").addClass("badge-geekblue");
+            let nextLabel = $(ev.currentTarget.nextElementSibling);
+            nextLabel.removeClass("badge-geekblue");
+            $("div.payment_online_tag").hide();
+            $(`div.payment_online_tag.pay_type_${$(ev.currentTarget).val()}`).show();
+
+        });
+    });
+</script>
+
+<style>
+    label.pay_online_type {
+        cursor: pointer;
+    }
+</style>

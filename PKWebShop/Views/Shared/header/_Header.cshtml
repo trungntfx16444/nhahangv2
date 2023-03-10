@@ -1,0 +1,425 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@using PKWebShop.Services
+@{
+    var menus = UserContent.GetWebMenu();
+    string url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+    var info = UserContent.GetWebInfomation();
+    //var left = new PKWebShop.DataAsset.DA_SectionFeatures().getViewFeature(UserContent.Web_Feature.chung_dongdautrang_trai);
+    //var right = new PKWebShop.DataAsset.DA_SectionFeatures().getViewFeature(UserContent.Web_Feature.chung_dongdautrang_phai);
+    //var cur_cus = UserContent.getCurrentCustomer();
+    var cates = UserContent.GetWebCategoryProduct();
+    var pkg = new PackageServices().packageInfoSS();
+
+    if (pkg.IsExpired)
+    {
+        Response.Redirect("/Expired");
+    }
+    var adminSite = UserContent.GetAdminSite();
+    var pro_cates = UserContent.GetWebCategoryProduct(true);
+}
+
+<header id="header" class="">
+    
+    <div class="header-large-device">
+        <div id="topbar" class="header-top">
+            <div class="container">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-lg-6">
+                        <div class="contact-info d-flex align-items-center">
+                            <i class="bi bi-geo-alt-fill d-flex align-items-center"><a href="mailto:contact@example.com">V84, KDC Văn Thánh 2, Phú Tài, Phan Thiết</a></i>
+                            <i class="bi bi-envelope d-flex align-items-center ms-4"><span>webphukhang.support@gmail.com</span></i>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="social-links d-flex align-items-center align-content-center justify-content-end">
+                            <a href="#" class="facebook">
+                                <img class="img-fluid" src="~/Content/client/img/social-facebook.png" />
+                            </a>
+                            <a href="#" class="twitter">
+                                <img class="img-fluid" src="~/Content/client/img/social-twitter.png" />
+                            </a>
+                            <a href="#" class="youtube">
+                                <img class="img-fluid" src="~/Content/client/img/social-youtube.png" />
+                            </a>
+                            <a href="#" class="zalo">
+                                <img class="img-fluid" src="~/Content/client/img/social-zalo.png" />
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="login border-start">
+                            <i class="fa fa-user mx-2 text-danger"></i>
+                            @Html.ActionLink("Đăng nhập", "Index", "Home", new {area = "AdminPage"}, null)/
+                            <a href="#" class="text-white"> Đăng ký </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="header-menu">
+            <div class="container d-flex align-items-center justify-content-between">
+
+                <div class="logo">
+                    <a href="/" class="logo me-auto"><img class="img-fluid" src="@($"{adminSite}{(info.LogoHeader??info.LogoPicture)}")" alt="@info.CompanyName"></a>
+                </div>
+                <nav id="navbar" class="navbar">
+                    <ul>
+                        <li><a class="nav-link active" href="/trang-chu">Trang chủ</a></li>
+                        <li><a class="nav-link" href="#about">Giới thiệu</a></li>
+                        <li class="dropdown">
+                            <a href="#"><span>Menu</span> <i class="bi bi-chevron-down"></i></a>
+                            <ul>
+                                @foreach (var menu in cates.Where(menu => menu.ParentId == null))
+                                {
+                                    <li><a href="#">@menu.CategoryName</a></li>
+                                }
+                                @*
+                                <li><a href="#">Drop Down 1</a></li>
+                                <li class="dropdown">
+                                    <a href="#"><span>Deep Drop Down</span> <i class="bi bi-chevron-right"></i></a>
+                                    <ul>
+                                        <li><a href="#">Deep Drop Down 1</a></li>
+                                        <li><a href="#">Deep Drop Down 2</a></li>
+                                        <li><a href="#">Deep Drop Down 3</a></li>
+                                        <li><a href="#">Deep Drop Down 4</a></li>
+                                        <li><a href="#">Deep Drop Down 5</a></li>
+                                    </ul>
+                                </li>
+                                <li><a href="#">Drop Down 2</a></li>
+                                <li><a href="#">Drop Down 3</a></li>
+                                <li><a href="#">Drop Down 4</a></li>
+                                *@
+                            </ul>
+                        </li>
+                        <li><a class="nav-link" href="#services">Món ăn nổi bật</a></li>
+                        <li><a class="nav-link" href="#portfolio">Đặt bàn</a></li>
+                        <li><a class="nav-link" href="/tin-tuc">Tin tức</a></li>
+
+                        <li><a class="nav-link" href="/lien-he">Liên hệ</a></li>
+                        <li>
+                            <div class="header-search">
+                                <div class="search-toggle">
+                                    <i class="bi bi-search s-open"></i>
+                                    <i class="bi bi-x-lg s-close"></i>
+                                </div>
+                                <div class="search-wrap">
+                                    <form action="#">
+                                        <input type="text" name="name" class="form-control" id="name" placeholder="Tìm kiếm" required="">
+                                        <button class="button-search"><i class="bi bi-search"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="header-cart">
+                                <div class="cart-toggle">
+                                    <i class="bi bi-cart3"></i>
+                                </div>
+                            </div>
+                        </li>
+                       
+                    </ul>
+
+                </nav><!-- .navbar -->
+                <div class="header-hotline">
+                    <img class="img-fluid" src="~/Content/client/img/phone.png" />
+                    Hotline: 0123.456.789
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <div class="header-mobile-device py-2">
+        <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
+            <div class="logo me-auto">
+                <a href="/" class="logo me-auto"><img class="img-fluid" src="@($"{adminSite}{(info.LogoHeader??info.LogoPicture)}")" alt="@info.CompanyName"></a>
+            </div>
+            <div class="menu-btn"><i class="bi bi-list mobile-nav-toggle"></i></div>
+            <nav id="navbar" class="navbar navbar-mobile">
+
+                <ul>
+                    <li>
+                        <div class="menu-btn text-end"><i class="bi bi-x mobile-nav-toggle"></i></div>
+                    </li>
+                    <li><a class="nav-link active" href="#hero">Trang chủ</a></li>
+                    <li><a class="nav-link" href="#about">Giới thiệu</a></li>
+                    <li class="dropdown">
+                        <a href="#"><span>Menu</span> <i class="bi bi-chevron-down"></i></a>
+                        <ul>
+                            <li><a href="#">Drop Down 1</a></li>
+                            <li class="dropdown">
+                                <a href="#"><span>Deep Drop Down</span> <i class="bi bi-chevron-right"></i></a>
+                                <ul>
+                                    <li><a href="#">Deep Drop Down 1</a></li>
+                                    <li><a href="#">Deep Drop Down 2</a></li>
+                                    <li><a href="#">Deep Drop Down 3</a></li>
+                                    <li><a href="#">Deep Drop Down 4</a></li>
+                                    <li><a href="#">Deep Drop Down 5</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#">Drop Down 2</a></li>
+                            <li><a href="#">Drop Down 3</a></li>
+                            <li><a href="#">Drop Down 4</a></li>
+                        </ul>
+                    </li>
+                    <li><a class="nav-link" href="#services">Món ăn nổi bật</a></li>
+                    <li><a class="nav-link" href="#portfolio">Đặt bàn</a></li>
+                    <li><a class="nav-link" href="/tin-tuc">Tin tức</a></li>
+
+                    <li><a class="nav-link" href="/lien-he">Liên hệ</a></li>
+
+                </ul>
+
+            </nav><!-- .navbar -->
+
+        </div>
+    </div>
+</header><!-- End Header -->
+
+<header class="header-area d-none">
+    <div class="header-large-device">
+        <div class="header-top py-1">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="header-offer-wrap">
+                            <p><i class="fas fa-phone-alt"></i> @info.Hotline</p>
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="header-offer-wrap">
+                            <p class="text-right"><i class="far fa-envelope"></i> @info.ContactEmail</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-bottom navbar_top">
+            <div class="container">
+                <div class="row align-items-center no-gutters">
+                    <div class="col-xl-3 col-lg-3">
+                        <div class="header-action-flex d-flex align-items-center">
+                            <div class="logo">
+                                <a href="/"><img class="img-fluid" src="@($"{adminSite}{(info.LogoHeader??info.LogoPicture)}")" /></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9">
+                        <div class="main-menu">
+                            <nav>
+                                <ul>
+                                    @foreach (var item in menus.OrderBy(m => m.menu.Order))
+                                    {
+                                        <li class="menu-list_item has-dropdown">
+                                            <a class="menu@(item.menu.URL?.Replace("/", "_"))" href="@item.menu.URL">
+                                                <item>
+                                                    @item.menu.Name
+                                                    @if (item.child?.Count() > 0)
+                                                    {
+                                                        <i class="fas fa-angle-down"></i>
+                                                    }
+                                                </item>
+                                            </a>
+                                            @if (item.child?.Count() > 0)
+                                            {
+                                                <ul class="submenu has-dropdown-wrapper">
+                                                    @foreach (var i in item.child.OrderBy(m => m.menu.Order))
+                                                    {
+                                                        <li class="has-dropdown">
+                                                            <a href="@i.menu.URL" title="@i.menu.Name">@i.menu.Name</a>
+                                                            @if (i.child?.Count() > 0)
+                                                            {
+                                                                <span><i class="fas fa-angle-right"></i></span>
+                                                                <ul class="submenu has-dropdown">
+                                                                    @foreach (var j in i.child)
+                                                                    {
+                                                                        <li><a href="@j.menu.URL" title="@j.menu.Name">@j.menu.Name</a></li>
+                                                                    }
+                                                                </ul>
+                                                            }
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
+                                    }
+                                    <li>
+                                        <div class="button-deposit" onclick="$('#modal_ky_gui_dbs').modal('show')">
+                                            <div class="icon">
+                                                <img class="img-fluid" src="~/Content/client/images/icon/fact_check.png" />
+                                            </div>
+                                            <div class="text">
+                                                <div class="font-weight-bold">Ký gửi</div>
+                                                <div>Bất Động Sản</div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-small-device small-device-ptb-1 navbar_top bg-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-10">
+                    <div class="mobile-logo d-flex align-items-center">
+                        <div class="mr-10">
+                            <a href="/">
+                                <img class="img-fluid" src="@($"{adminSite}{(info.LogoHeader??info.LogoPicture)}")" />
+                            </a>
+                        </div>
+                        @*<div class="header-title-wrap text-center">
+                                <h3 class="title-wrap-1">
+                                    @(info.CompanyName)
+                                </h3>
+                            </div>*@
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="header-action header-action-flex">
+                        @*<div class="same-style-2 same-style-2-font-inc">
+                                <a href="#"><i class="icon-heart"></i><span class="pro-count red">03</span></a>
+                            </div>*@
+                        @*<div class="same-style-2 same-style-2-font-inc header-cart">
+                                <a class="cart-active" href="#">
+                                    <span class="cart-icon"><i class="fas fa-shopping-bag"></i></span>
+                                    <span class="pro-count red  pro-count_cart">0</span>
+                                </a>
+                            </div>*@
+                        @*<div class="same-style-2 same-style-2-font-dec dang-tin">
+                                <a href="#">
+                                    <span>Đăng tin <i class="far fa-plus-square"></i></span>
+                                </a>
+                            </div>*@
+                        <div class="same-style-2 main-menu-icon">
+                            <a class="mobile-header-button-active" href="#"><i class="icon-menu"></i> </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="mobile-header-active mobile-header-wrapper-style d-none">
+    <div class="clickalbe-sidebar-wrap">
+        <a class="sidebar-close"><i class="icon_close"></i></a>
+        <div class="mobile-header-content-area">
+            <div class="mobile-search mobile-header-padding-border-2">
+                <form class="search-form" action="@($"/{url_product}")">
+                    <input type="text" name="search" placeholder="Tìm kiếm nhanh...">
+                    <button class="button-search"><i class="icon-magnifier"></i></button>
+                </form>
+            </div>
+            <div class="main-categori-wrap mobile-menu-wrap mobile-header-padding-border-2">
+                <a class="categori-show black d-flex justify-content-between" href="#" onclick="$(this).closest('.main-categori-wrap').find('.categori-hide-2').slideToggle(200)">
+                    <span><i class="lnr lnr-menu"></i> Tất cả danh mục</span> <i class="fas fa-angle-down m-0"></i>
+                </a>
+                <div class="categori-hide-2">
+                    <nav class="pl-3">
+                        <ul class="mobile-menu">
+                            @*@foreach (var item in cates.OrderBy(m => m.Order))
+                                {
+                                    <li class="has-dropdown">
+                                        <a href="@item.UrlCode"><i class="fas fa-caret-right"></i> @item.CategoryName</a>
+                                    </li>
+                                }*@
+                            @foreach (var cate in cates.Where(c => string.IsNullOrEmpty(c.ParentId)))
+                            {
+                                var child = cates.Where(c => c.ParentId == cate.ReId);
+                                <li class="has-dropdown @(child.Count()>0 ? "menu-item-has-children" : "")">
+                                    @if (child.Count() > 0)
+                                    {
+                                        <span class="menu-expand"><i></i></span>
+                                    }
+                                    <a class="menu_@cate.UrlCode" href="@cate.UrlCode-pc@(cate.ReId)">
+                                        <i class="fas fa-caret-right"></i> @cate.CategoryName
+                                    </a>
+                                    @if (child.Count() > 0)
+                                    {
+                                        <ul class="submenu dropdown pl-3">
+                                            @foreach (var c in child)
+                                            {
+                                                <li><a href="@c.UrlCode-pc@(c.ReId)"><i class="fas fa-caret-right"></i> @c.CategoryName</a></li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="mobile-menu-wrap">
+                <!-- mobile menu start -->
+                <nav>
+                    <ul class="mobile-menu">
+                        @foreach (var item in menus.OrderBy(m => m.menu.Order))
+                        {
+                            <li class="has-dropdown">
+                                <div class="d-flex justify-content-between">
+                                    <a class="menu@(item.menu.URL?.Replace("/", "_")) d-flex justify-content-between" href="@item.menu.URL">
+                                        @item.menu.Name
+
+                                    </a>
+                                    @if (item.child?.Count > 0)
+                                    {
+                                        <i class="fas fa-angle-down" onclick="$(this).closest('.has-dropdown').find('.submenu').slideToggle(200)"></i>
+                                    }
+                                </div>
+
+                                @if (item.child?.Count > 0)
+                                {
+                                    <ul class="submenu has-dropdown-wrapper">
+                                        @if (item.child?.Count > 0)
+                                        {
+                                            foreach (var i in item.child.OrderBy(m => m.menu.Order))
+                                            {
+                                                <li><a href="@i.menu.URL">@i.menu.Name</a></li>
+                                            }
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                        <li>
+                            <div class="button-deposit" onclick="$('#modal_ky_gui_dbs').modal('show')">
+                                <div class="icon">
+                                    <img class="img-fluid" src="/Content/client/images/icon/fact_check.png">
+                                </div>
+                                <div class="text">
+                                    <div class="font-weight-bold">Nhận ký gửi</div>
+                                    <div>Bất Động Sản</div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- mobile menu end -->
+            </div>
+            @*<div class="mobile-contact-info mobile-header-padding-border-4">
+                    <ul>
+                        <li>
+                            <i class="icon-phone "></i> @Html.Raw(string.Join(" - ", info.CompanyPhone?.Split(',').Select(p => $"<a href=\"tel:{CommonFunc.CleanPhoneNumber(p)}\">{p}</a>")))
+                        </li>
+                        <li>
+                            <i class="icon-envelope-open "></i> <a href="mailto:@info.ContactEmail">@info.ContactEmail</a>
+                        </li>
+                        <li><i class="icon-home"></i> @info.Address</li>
+                    </ul>
+                </div>
+                <div class="mobile-social-icon">
+                    <a class="facebook" href="@info.FacebookUrl" target="_blank"><i class="icon-social-facebook"></i></a>
+                    <a class="twitter" href="@info.TwitterUrl" target="_blank"><i class="icon-social-twitter"></i></a>
+                    <a class="instagram" href="@info.InstagramUrl" target="_blank"><i class="icon-social-instagram"></i></a>
+                    <a class="youtube" style="background-color:red" href="@info.YoutubeUrl" target="_blank"><i class="icon-social-youtube"></i></a>
+                </div>*@
+        </div>
+    </div>
+</div>

@@ -1,0 +1,591 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@using PKWebShop.Services
+@{
+    var pkg = new PackageServices().packageInfoSS();
+    if (pkg.IsExpired)
+    {
+        Response.Redirect("/Expired");
+    }
+    webconfiguration info = UserContent.GetWebInfomation(true);
+    ViewBag.url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+
+    var og_image = info.ImageShared ?? UserContent.GetOgImage();
+    var ListLang = SiteLang.GetListLangs();
+
+    string lang = Request.Cookies["culture"]?.Value ?? ListLang.FirstOrDefault().Code;
+    Session["culture"] = lang;
+    var listcategorys = UserContent.GetWebCategoryProduct(true);
+    var adminSite = UserContent.GetAdminSite();
+    //var cur_cus = UserContent.getCurrentCustomer();
+}
+<!DOCTYPE html>
+<html class="no-js" lang="vi">
+<head>
+    <meta charset="utf-8">
+    <!-- SEO Meta Tags-->
+    <meta name="author" content="Webphukhang">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="@($"{adminSite}{(info.LogoPicture ?? info.LogoHeader ?? info.LogoFooter)}")">
+    <!-- Viewport-->
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="geo.region" content="VN" />
+    <title>@Html.Raw(string.IsNullOrEmpty(ViewBag.Title) ? info.CompanyName : ViewBag.Title)</title>
+    <link rel="canonical" href="@Request.Url.Scheme://@Request.Url.Authority@Request.Url.AbsolutePath" />
+    <link rel="alternate" hreflang="vi-vn" href="@(Request.Url.Scheme + "://" + Request.Url.Authority)" />
+    <meta name="description" content="@Html.Raw(ViewBag.SEO_Description ?? info.SEO_MetaDescription)" />
+    <meta name="image" content="@($"{adminSite}{info.LogoPicture}")" />
+    <meta name="robots" content="ALL">
+    @*<meta name="GOOGLEBOT" content="NOARCHIVE">*@
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:url" content="@(Request.Url.AbsoluteUri)" />
+    <meta property="og:site_name" content="@(Request.Url.Scheme + "://" + Request.Url.Authority)" />
+    <meta itemprop="name" content="@(Request.Url.Scheme + "://" + Request.Url.Authority)">
+    <meta property="og:title" content="@Html.Raw(string.IsNullOrEmpty(ViewBag.Title) ? info.CompanyName : ViewBag.Title)" />
+    <meta property="og:description" content="@Html.Raw(string.IsNullOrEmpty(ViewBag.SEO_Description)? info.SEO_MetaDescription : ViewBag.SEO_Description)" />
+    <meta itemprop="description" content="@Html.Raw(string.IsNullOrEmpty(ViewBag.SEO_Description)? info.SEO_MetaDescription : ViewBag.SEO_Description)">
+    <meta name="keywords" content="@Html.Raw(string.IsNullOrEmpty(ViewBag.SEO_MetaKeyWord) ? info.SEO_MetaKeyWord : ViewBag.SEO_MetaKeyWord)" />
+
+    @if (!string.IsNullOrWhiteSpace(ViewBag.og_image))
+    {
+        <meta property="og:image:alt" content="@Html.Raw(ViewBag.Title ?? info.CompanyName)" />
+        <meta property="og:image" content="@($"{adminSite}{ViewBag.og_image}")" />
+        <meta itemprop="image" content="@($"{adminSite}{ViewBag.og_image}")">
+    }
+    else if (!string.IsNullOrWhiteSpace(og_image))
+    {
+        <meta property="og:image:alt" content="@og_image" />
+        <meta property="og:image" content="@($"{adminSite}{og_image}")" />
+        <meta itemprop="image" content="@($"{adminSite}{og_image}")">
+    }
+    else
+    {
+        <meta property="og:image:alt" content="@info.ShortAboutUs" />
+        <meta property="og:image" content="@($"{adminSite}{info.LogoPicture}")" />
+        <meta itemprop="image" content="@($"{adminSite}{info.LogoPicture}")">
+    }
+    @*<link rel="preconnect" href="https://www.facebook.com/" />
+        <link rel="dns-prefetch" href="https://connect.facebook.net/" />
+        <link rel="dns-prefetch" href="https://apis.google.com/" />
+        <link rel="dns-prefetch" href="https://ssl.gstatic.com/" />*@
+    <link href="~/Content/client/vendor/aos/aos.css" rel="stylesheet">
+    <link href="~/Content/client/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Content/client/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="~/Content/client/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="~/Content/client/vendor/fancybox/jquery.fancybox.min.css" rel="stylesheet" />
+    <link href="~/Content/client/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+    <link href="~/Content/client/vendor/skitter/skitter.css" rel="stylesheet" />
+    <link href="~/Content/client/css/style.css" rel="stylesheet" />
+
+    <link href="~/Content/css/phone.css" rel="stylesheet" />
+    <link href="~/Content/css/custom.css" rel="stylesheet" />
+    <script src="~/Content/client/js/jquery-3.5.1.min.js"></script>
+
+    @if (!string.IsNullOrEmpty(info.GoogleAnalytics))
+    {
+        @Html.Raw(info.GoogleAnalytics)
+    }
+
+    <style type="text/css">
+        #m_msg_cv, #m_msg_cv:focus {
+            color: #ff3c00 !important;
+        }
+
+        .contact-from select {
+            background: #FFF none repeat scroll 0 0;
+            color: #000;
+            height: 50px;
+            padding: 2px 20px;
+            margin-bottom: 30px;
+            position: relative;
+            border: 1px solid var(--themes-color);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body style="position:relative">
+    @if (!string.IsNullOrEmpty(info.GoogleOrdersStatistic))
+    {
+        @Html.Raw(info.GoogleOrdersStatistic)
+    }
+
+
+    <div class="main-wrapper @ViewBag.Class">
+
+        @Html.Partial("header/_Cart")
+        @Html.Partial("header/_Header")
+
+        @RenderBody()
+        <footer id="footer">
+            <div class="footer-top">
+                <div class="container">
+                    <div class="row justify-content-between">
+                        <div class="col-lg-4 col-md-6 footer-contact">
+                            <div class="footer-widget">
+                                <div class="logo mb-3">
+                                    <img class="img-fluid" src="@($"{adminSite}{info.LogoFooter}")" />
+                                </div>
+                                <div class="decription">
+                                    Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+                                </div>
+                                <div class="social-links d-flex align-items-center align-content-center">
+                                    <a href="#" class="facebook">
+                                        <img class="img-fluid" src="~/Content/client/img/social-facebook.png" />
+                                    </a>
+                                    <a href="#" class="twitter">
+                                        <img class="img-fluid" src="~/Content/client/img/social-twitter.png" />
+                                    </a>
+                                    <a href="#" class="youtube">
+                                        <img class="img-fluid" src="~/Content/client/img/social-youtube.png" />
+                                    </a>
+                                    <a href="#" class="zalo">
+                                        <img class="img-fluid" src="~/Content/client/img/social-zalo.png" />
+                                    </a>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-lg-4 col-md-6 footer-contact">
+                            <h4 class="footer-title">Liên hệ</h4>
+                            <div class="footer-widget">
+
+                                <p><i class="fas fa-map-marker-alt"></i> Địa chỉ dự án: Xã Long Hậu, Huyện Cần Giuộc, Tỉnh Long An</p>
+                                <p><i class="fas fa-envelope"></i> Email: contact.htland@gmail.com</p>
+                                <p><i class="fas fa-phone"></i> Hotline: 0902 99 38 99</p>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-lg-4 col-md-6 footer-links">
+                            <h4 class="footer-title">Về chúng tôi</h4>
+                            <ul>
+                                <li><a href="#">Giới thiệu</a></li>
+                                <li><a href="#">Menu</a></li>
+                                <li><a href="#">Món ăn nổi bật</a></li>
+                                <li><a href="#">Đặt bàn</a></li>
+                                <li><a href="#">Tin tức</a></li>
+                                <li><a href="#">Liên hệ</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="container footer-bottom clearfix">
+                <div class="copyright">
+                    © Copyright <strong><span>Arsha</span></strong>. All Rights Reserved
+                    <div class="credits">
+                        Thiết kế bởi <a href="#">Webphukhang</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <!--Holine-->
+    @if (!string.IsNullOrEmpty(info.Hotline))
+    {
+        <div class="hotline-phone-ring-wrap phone">
+            <div class="hotline-phone-ring">
+                <div class="hotline-phone-ring-circle"></div>
+                <div class="hotline-phone-ring-circle-fill"></div>
+                <div class="hotline-phone-ring-img-circle">
+                    <a href="tel:@CommonFunc.CleanPhoneNumber(info.Hotline)" class="pps-btn-img">
+                        <img src="@adminSite/Upload/icon/phone.png" alt="Số điện thoại" width="50" height="50" />
+                    </a>
+                </div>
+            </div>
+            <div class="hotline-bar">
+                <a id="phone-button" href="tel:@CommonFunc.CleanPhoneNumber(info.Hotline)">
+                    <span class="text-hotline">@info.Hotline</span>
+                </a>
+            </div>
+        </div>
+        <div class="hotline-phone-ring-wrap zalo">
+            <div class="hotline-phone-ring">
+                <div class="hotline-phone-ring-circle"></div>
+                <div class="hotline-phone-ring-circle-fill"></div>
+                <div class="hotline-phone-ring-img-circle">
+                    <a href="@(string.IsNullOrEmpty(info.ZaloUrl) ? "javascript:void(0)" : info.ZaloUrl)" class="pps-btn-img" target="_blank">
+                        <img src="/Upload/images/icon/zalo.png" alt="Zalo" width="50" height="50" />
+                    </a>
+                </div>
+            </div>
+            <div class="hotline-bar">
+                <a id="phone-button" href="tel:@CommonFunc.CleanPhoneNumber(info.Hotline)">
+                    <span class="text-hotline">@info.Hotline</span>
+                </a>
+            </div>
+        </div>
+    }
+    @if (TempData["s"] != null)
+    {
+        <div style="position: fixed; top: 30%; right: 50%; min-width: 300px; color:#fff; z-index: 99999;">
+            <!-- Success -->
+            <div id="alert" style="margin-left: 50%; margin-right: -50%;" class="toast title-white bg-green" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="false">
+                <div class="toast-header">
+                    <strong class="mr-auto"><b class="lnr lnr-checkmark-circle text-green" style="font-size:2em"></b> <span style="font-size:1.3em">Hoàn tất</span></strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="toast-body">
+                    @TempData["s"].ToString()
+                </div>
+            </div>
+        </div>
+    }
+    <!-- All JS is here  ============================================ -->
+
+    <script src="~/Content/client/vendor/aos/aos.js"></script>
+    <script src="~/Content/client/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Content/client/vendor/fancybox/jquery.fancybox.min.js"></script>
+    <script src="~/Content/client/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script src="~/Content/client/vendor/swiper/swiper-bundle.min.js"></script>
+
+    <script src="~/Content/client/js/main.js"></script>
+    <script src="~/Content/js/jquery.matchHeight-min.js"></script>
+    <script src="~/Content/admin/js/jquery.form.min.js"></script>
+    <script src="~/Content/admin/js/jquery.cookie.js"></script>
+    <script src="~/Content/admin/js/notify/notify.min.js"></script>
+    <script src="~/Content/js/noty-cfg.js"></script>
+    <script src="~/Content/js/aes.js"></script>
+    <script src="~/Scripts/store.legacy.min.js"></script>
+    <script src="~/Content/admin/js/input-mask/mask.js"></script>
+    @RenderSection("scripts", required: false)
+    <script type="text/javascript">
+        let key = CryptoJS.enc.Utf8.parse('4619E97E56E34E5A');
+        let iv = CryptoJS.enc.Utf8.parse('BA11F6FB70424C3F');
+
+        function Encrypt(cipher) {
+            try {
+                let encrypted = CryptoJS.AES.encrypt(
+                    CryptoJS.enc.Utf8.parse(cipher),
+                    key, {
+                    keySize: 128 / 8,
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                }
+                );
+                // console.log("Encrypt from - ", cipher);
+                // console.log("to - ", encrypted.toString());
+                return encrypted.toString();
+            } catch (e) {
+                return "";
+            }
+        }
+        function Decrypt(cipher) {
+            try {
+                let decrypted = CryptoJS.AES.decrypt(
+                    { ciphertext: CryptoJS.enc.Base64.parse(cipher) },
+                    key, {
+                    keySize: 128 / 8,
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                }
+                );
+                // console.log("Decrypt from - ", cipher);
+                // console.log("to - ", decrypted.toString(CryptoJS.enc.Utf8));
+                return decrypted.toString(CryptoJS.enc.Utf8);
+            } catch (e) {
+                return "";
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        //$(".product-content-left h4").matchHeight();
+        var sum = 0;
+        $(function () {
+
+
+            $("#login").ajaxForm(function (data) {
+
+                if (cnoty(data)) {
+                    var callback = $("#login").data("callback");
+                    if (callback) { window[callback]() } else {
+                        location.reload();
+                    }
+                }
+            });
+            if ($(".main-menu .active").length == 0) {
+                set_active_menu();
+            }
+
+            setActive_leftMenu();
+
+            var footer_menu = sessionStorage.getItem("footer_menu");
+            if (footer_menu) {
+                $(footer_menu).insertAfter('#footer-menu');
+            } else {
+                $.ajax({
+                    method: "GET",
+                    url: "/home/getFooterMenu",
+                    dataType: "html"
+                })
+                    .done(function (data) {
+                        $(data).insertAfter('#footer-menu');
+                        sessionStorage.setItem("footer_menu", data);
+                    })
+                    .fail(function () {
+
+                    });
+            }
+
+            window.onbeforeunload = function (event) {
+                if (document.activeElement.href.indexOf('http://') == 0) {
+                    $("#loader").show().css("opacity", "1");
+                }
+            };
+
+            //***************** CHECK CARD ********************
+            $('.cart-active').on("click", function () {
+                loadCartPartial();
+            });
+            //.End CHECK CARD
+        });
+
+        $(document).ready(function () {
+            $(document).scroll(function () {
+                var st = $(this).scrollTop();
+                if (st > 200) {
+                    $(".navbar_top").addClass('fixed-top');
+                } else {
+                    $(".navbar_top").removeClass('fixed-top');
+                }
+            });
+
+            //$.ajax({
+            //    method: "GET",
+            //    url: "/home/_AccountAuth",
+            //    dataType: "html"
+            //})
+            //    .done(function (data) {
+            //        $('#_AccountAuth').html(data);
+            //    });
+            setTimeout(function () {
+                $('.pure_css').prop("disabled", true);
+            }, 500);
+            $("#loader").removeClass("loadpage");
+
+
+            //$("ul.mobile-menu li a").click(function () {
+            //    $("i.icon_close").trigger("click");
+            //});
+        })
+
+        //new update tmdt
+        function addtocart(productId, el) {
+            $(el).prop("disabled", true);
+            $.ajax({
+                method: "POST",
+                url: "/cart/addtocart",
+                data: { productId },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    loadCartPartial(data[2]);
+                }
+                else {
+
+                }
+                $(el).removeAttr("disabled");
+            }).fail(function () {
+                alert("Oops! Something went wrong");
+            });
+        }
+        function RemoveFromCart(Id) {
+            $.ajax({
+                method: "POST",
+                url: "/cart/RemoveFromCart",
+                data: { Id },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    loadCartPartial(data[2]);
+                }
+                else {
+
+                }
+            }).fail(function () {
+                alert("Oops! Something went wrong");
+            });
+        }
+        function loadCartPartial(data) {
+            if (data) {
+                $("#cart-content").html(data);
+                $(".cart-checkout-btn").toggle(($("#cart-content .single-product-cart").length > 0));
+            } else {
+                $.ajax({
+                    method: "POST",
+                    url: "/cart/_CartView",
+                    dataType: "html"
+                }).done(function (data) {
+                    $("#cart-content").html(data);
+                    $(".cart-checkout-btn").toggle(($("#cart-content .single-product-cart").length > 0));
+                }).fail(function () {
+                    alert("Oops! Something went wrong");
+                });
+            }
+            $(".sidebar-cart-active").addClass("inside");
+            $('.main-wrapper').addClass('overlay-active')
+        }
+
+
+        function set_active_menu(url = location.pathname.split('/')) {
+            var active = $(".menu" + url.join("_"));
+            if (active.length > 0) {
+                active.addClass("active");
+            }
+            else if (url.length > 1) {
+                url.pop();
+                set_active_menu(url);
+            }
+        }
+
+        function setActive_leftMenu() {
+            let url = window.location.pathname;
+            if (url.search("-cte") != -1) {
+                url = url.split("-").pop();
+                let el = $(`li#${url}`);
+                if (el.hasClass("lv2")) {
+                    let id_parent = el.parent().parent().prop("id");
+                    $(`#toggle-${id_parent}`).trigger("click");
+                }
+                el.addClass("choose");
+            }
+        }
+
+        //background loading khi submit
+        function bg_loading(show = true) {
+            if (show) {
+                $("#loader").addClass("loadpage-submit");
+            }
+            else {
+                $("#loader").removeClass("loadpage-submit");
+            }
+        }
+
+        //dinh dang tien vnd
+        function toMoney(str) {
+            let _char = str.toString().search("-") != -1 ? "-" : "";
+
+            let _number = $.isNumeric(str) ? str.toString().replace(/[^0-9]/g, '') : str.toString().replace(/[^0-9]/g, '');
+            if (_number != "") {
+                let vnd = Number(_number).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+                return `${_char}${vnd.substring(0, vnd.length - 2)}`;
+            }
+            return _number;
+        }
+
+
+        function changelang(code) {
+            location.href = "/home/ChangeLanguage?lang=" + code + "&url=" + location.href;
+        }
+
+        $.fn.changeVal = function (v) {
+            return this.val(v).trigger("change");
+        }
+
+        function DirectChatPopup() {
+            try {
+                FB.CustomerChat.show(true);
+            } catch ($e) {
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        class OrderDetail {
+            constructor(ProductId, ProductName, PropertiesId, PriceOptId, Price, Quantity) {
+                this.ProductId = ProductId;
+                this.ProductName = ProductName;
+                this.PropertiesId = PropertiesId;
+                this.PriceOptId = PriceOptId;
+                this.Price = Price;
+                this.Quantity = Quantity;
+            }
+        }
+    </script>
+
+
+    @if (!string.IsNullOrEmpty(info.ChatToolEmbed))
+    {
+        <div id="chat_tool">
+            @Html.Raw(info.ChatToolEmbed)
+        </div>
+    }
+    <div id="_AccountAuth">
+        @Html.Partial("_AccountAuth", (pkg, info))
+    </div>
+
+    <script type="text/javascript">
+        let interval = null;
+        (function () {
+            interval = setInterval(function () {
+                $.get('/KeepAlive.ashx', function (d) {
+                    console.log(d);
+                });
+            }, 1 * 60 * 1000);
+        })();
+    </script>
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v13.0" nonce="yQCgbt5r"></script>
+    <div id="google_translate_element"></div>
+    <style>
+        .skiptranslate {
+            display: none;
+        }
+
+        body {
+            top: 0 !important;
+        }
+
+        #goog-gt-tt {
+            display: none !important;
+        }
+
+        .goog-text-highlight {
+            background-color: transparent;
+            box-shadow: none;
+        }
+    </style>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'vi', layout: google.translate.TranslateElement.FloatPosition.TOP_LEFT }, 'google_translate_element');
+        }
+        $(function () {
+            let l = $.cookie('lang');
+            if (l) {
+                let act = $('.lang_show[data-lang=' + l + ']').show();
+                $('.lang_show').not(act).hide();
+            }
+        });
+        function changelang(theLang) {
+            $.cookie('lang', theLang);
+            if ($('#lang_select_modal').is(":visible")) {
+                $('#lang_select_modal').modal('hide');
+            }
+            $('.goog-te-combo').val(theLang)[0].dispatchEvent(new Event('change'));
+            if (sessionStorage.getItem('lang_selected')) {
+                $('.goog-te-combo').val(theLang)[0].dispatchEvent(new Event('change'));
+            }
+            sessionStorage.setItem('lang_selected', true);
+            let act = $('.lang_show[data-lang=' + theLang + ']').show();
+            $('.lang_show').not(act).hide();
+
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>

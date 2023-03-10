@@ -1,0 +1,144 @@
+﻿@model IEnumerable<AdminPage.Models.n_toppic>
+@using AdminPage.Models
+@using AdminPage.AppLB
+@{
+    var parent_topic = ViewBag.ParentTopic as List<n_parent_topic>;
+    var parent_id = Request["parentId"]?.ToString() ?? "all";
+    var textSearch = ViewBag.Search as string ?? "";
+    var clientSite = CommonFunc.GetClientSite();
+}
+
+<div class="file-manager-content-header">
+    <h4 class="mb-0" id="topic_header">
+        <span class="text-uppercase">@(ViewBag.Header)</span>
+        @if (ViewBag.ParentUrl != null)
+        {
+            <br />
+            <span class="badge badge-pill badge-default pill-url" style="margin-left:-5px; font-size:13px">
+                <b>Url:</b>
+                <a href="@($"{clientSite}/{ViewBag.ParentUrl}")" target="_blank">@($"/{ViewBag.ParentUrl}")</a>
+            </span>
+        }
+    </h4>
+    <div class="float-right" style="@(parent_id=="all"?"display:none":"")">
+        <span class="mr-2 btn btn-success btn-tone btn-sm font-size-20 " onclick="EditParentTopic('@parent_id')"><i class="fa fa-pencil-alt"></i></span>
+        <span class="btn btn-danger btn-tone btn-sm font-size-20" onclick="DeleteParentTopic('@parent_id')"><i class="fa fa-trash-alt"></i></span>
+
+    </div>
+</div>
+
+<div class="file-manager-content-body p-2">
+    <div class="table-responsive">
+        <p class="btn-group float-left" style="margin-bottom:0; @(parent_id=="all"?"display:none":"")" id="btn_newptopic">
+            <a class="btn btn-primary text-white" onclick="new_toppic()"><i class="fa fa-plus"></i> Thêm Mới Chủ Đề</a>
+        </p>
+        <div class="input-group col-lg-4 col-md-6 col-sm-12 col-xs-12 float-right">
+            <input type="text" class="form-control" name="search" value="@(textSearch)" autocomplete="off" placeholder="Nhập từ khóa tìm kiếm" />
+            <div class="input-group-append">
+                <a class="btn btn-default" style="cursor: pointer" onclick="Search()">
+                    <i class="fa fa-search"></i> Tìm kiếm
+                </a>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <table id="topics_table" class="table table-hover" style="margin:0 !important">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tên chủ đề</th>
+                    <th>Thông tin khác</th>
+                    <th>URL</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@(item.TopicId)</td>
+                        <td>
+                            <b>@(item.Name)</b><br />
+                            <i>- <u>Nhóm chủ đề</u>: @(item.ParentTopicName)</i><br />
+                            <i>- <u>Chủ đề liên quan</u>: @(item.RelatedTopicName)</i>
+                        </td>
+                        <td>
+                            <!--
+                            <span>
+                                Hiện trên Menu:
+                                @if (item.ShowMenu == true)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                }
+                            </span><br />
+                            -->
+                            <span>
+                                Hiện trên Tin tức:
+                                @if (item.ShowNews == true)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                }
+                            </span>
+                        </td>
+                        <td>
+                            @{
+                                var parentTopicUrl = parent_topic.Where(x => x.Id == item.ParentTopicId).FirstOrDefault()?.URL;
+                                var link = (string.IsNullOrEmpty(parentTopicUrl) ? "" : $"/{parentTopicUrl}") + "?topic=" + item.URL;
+                            }
+                            <span>@link</span>
+                            <a class="btn btn-success float-right text-white" style="padding:4px 7px" onclick="copy_text('@($"{clientSite}{link}")')">
+                                <i class="fa fa-copy"></i>
+                            </a>
+                        </td>
+                        <td>
+                            @if (item.IsDefault == true)
+                            {
+                                <div style="cursor:no-drop">
+                                    <center><button type="button" class="btn btn-success btn-sm" disabled><i class="fa fa-edit"></i> Sửa</button></center>
+                                </div>
+                                <div style="cursor:no-drop">
+                                    <center><button type="button" class="btn btn-danger btn-sm" disabled><i class="fa fa-trash"></i> Xóa</button></center>
+                                </div>
+                            }
+                            else
+                            {
+                                <center>
+                                    <a class="btn btn-success btn-sm text-white" style="width:30px;padding:5px;margin:2px" onclick="EditToppic('@item.TopicId')"><i class="fa fa-edit"></i></a>
+                                    <a class="btn btn-danger btn-sm text-white" style="width:30px;padding:5px;margin:2px" onclick="DeleteToppic('@item.TopicId')"><i class="fa fa-trash"></i></a>
+                                </center>
+                            }
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<input type="hidden" name="topic_errMsg" value="@ViewBag.ErrMsg" />
+<script type="text/javascript">
+    $(function () {
+        $('#topics_table').DataTable({
+            "searching": false,
+            "paging": true,
+            "lengthChange": false
+        });
+        $("input[name='search']").keypress(function (event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                Search();
+            }
+        });
+    });
+
+</script>
+
+
+

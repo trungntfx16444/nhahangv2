@@ -1,0 +1,380 @@
+﻿@model PKWebShop.Models.n_news
+@using PKWebShop.Resources
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using Newtonsoft.Json;
+@using PKWebShop.Models.CustomizeModels;
+@{
+    var adminSite = UserContent.GetAdminSite();
+    ViewBag.Title = string.IsNullOrEmpty(Model.TitleWebsite) ? Model.Name : Model.TitleWebsite;
+    if (!string.IsNullOrEmpty(Model.SEODescription))
+    {
+        ViewBag.SEO_Description = Model.SEODescription;
+    }
+
+    webconfiguration info = UserContent.GetWebInfomation(true);
+    if (!string.IsNullOrEmpty(Model.Picture))
+    {
+        ViewBag.og_image = Model.Picture;
+    }
+    else
+    {
+        if (!string.IsNullOrEmpty(info.ImageShared))
+        {
+            ViewBag.og_image = info.ImageShared;
+        }
+    }
+
+    var list_SEO = JsonConvert.DeserializeObject<List<SiteSEO.SEO_Meta>>(info.SEO_Meta);
+    var SEO_tintuc = list_SEO.FirstOrDefault(x => x.code == SiteSEO.code_SEO.TinTuc);
+    if (Model.ParentTopicId == "2")
+    {
+        ViewBag.UrlPage = SEO_tintuc.url;
+    }
+
+    var relat = ViewBag.RelateNews as List<n_news>;
+    List<n_toppic> topics = ViewBag.topics;
+    n_news_tags tag = ViewBag.tag;
+    //List<product> ListProducts = ViewBag.ListProducts ?? new List<product>();
+    ViewBag.Class = "blog";
+}
+
+<style type="text/css">
+    .blog-details-content_Decription h2, .blog-details-content_Decription h3 {
+        scroll-margin-top: 150px;
+    }
+
+    #collapseOne h2 {
+        font-size: 17px;
+        font-weight: bold !important;
+    }
+
+        #collapseOne h2:before {
+            content: "\25A3";
+            color: #58aa40;
+            margin-right: 5px;
+        }
+
+    #collapseOne h3 {
+        font-size: 16px;
+        font-weight: initial !important;
+        text-indent: 20px;
+    }
+
+        #collapseOne h3:before {
+            content: "\25FE";
+            color: #58aa40;
+            margin-right: 5px;
+        }
+
+    #collapseOne strong {
+        font-weight: unset;
+    }
+
+    .dec-tag a {
+        color: white !important;
+        padding: 3px 7px;
+        background-color: #009cd7;
+        border-radius: 3px;
+        font-size: 14px;
+    }
+
+    .breadcrumb-content ul li.active > a {
+        color: var(--color-theme-primary) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        margin-top: 15px;
+    }
+
+    .blog-wrap .blog-content h3 a {
+        font-size: 16px;
+    }
+
+    .fb-like.fb_iframe_widget iframe {
+        width: 150px !important;
+    }
+
+    .blog-meta {
+        font-weight: 300;
+    }
+
+    .blog-details-content, .blog-details-content p {
+        font-weight: 300;
+    }
+</style>
+
+
+<section class="breadcrumbs">
+    <div class="container">
+
+        <ol>
+            <li><a href="/">Trang chủ</a></li>
+            <li>
+                <a href="/">Trang chủ</a>
+            </li>
+            <li>
+                <a href="/@ViewBag.UrlPage">@Model.ParentTopicName</a>
+            </li>
+            <li class="active">
+                <a href="@($"/{Model.UrlCode}-nd{Model.ReId}")">@Model.Name</a>
+            </li>
+        </ol>
+
+    </div>
+</section>
+
+<section class="blog">
+    <div class="container">
+        <div class="entries">
+
+            <article class="entry entry-single">
+
+                <h1 class="entry-title">
+                    @Model.Name
+                </h1>
+
+
+
+                <div class="entry-content">
+
+                    @if (!string.IsNullOrEmpty(Model.Decription))
+                    {
+                        @Html.Raw(Model.Decription)
+                    }
+                    else
+                    {
+                        <i>Nội dung bài viết đang được cập nhật</i>
+                    }
+
+
+                </div>
+                <div class="blog-share">
+                    <div class="fb-like" data-href="@Request.Url.AbsoluteUri" data-width="" data-layout="button" data-action="like" data-size="large" data-share="true"></div>
+                </div>
+
+
+            </article>
+
+        </div>
+
+    </div>
+</section>
+@if (relat != null && relat.Count > 0 && ViewBag.UrlPage != "gioi-thieu")
+{
+    <section class="blog blog-article">
+
+        <div class="container">
+            <div class="section-title">
+                <h2 class="title text-center">
+                    Xem thêm <span>@ViewBag.pTitle</span>
+                </h2>
+            </div>
+            <div class="entries">
+                @foreach (var m in relat)
+                {
+                    <article class="entry">
+                        <a href="/@(m.UrlCode)-nd@(m.ReId)" class="row">
+                            <div class="col-md-4">
+                                <div class="entry-img">
+                                    <img class="img-fluid" src="@($"{adminSite}{m.Picture}")" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" alt="@(m.ImageAlt)" loading="lazy">
+                                    <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="entry-content">
+                                    <h3 class="entry-title">
+                                        @m.Name
+                                    </h3>
+                                    <p class="entry-decription">
+                                        @Html.Raw(m.ShortDescription)
+                                    </p>
+
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+
+                }
+            </div>
+        </div>
+
+
+    </section>
+}
+
+<div class="blog-area pt-10 pb-50 position-relative d-none">
+    <div class="container bg-white p-3">
+        <div class="row flex-row-reverse">
+            @*<div class="col-lg-4 col-md-4 d-none d-md-inline-block">
+                    @Html.Partial("_Right")
+                </div>*@
+            <div class="col-lg-12 col-md-12">
+                <div class="blog-details-wrapper">
+                    <div class="blog-details-top">
+                        <div>
+                            <h1 class="mb-2 mt-0">@Model.Name</h1>
+                            <div class="blog-meta">
+                                <ul class="d-inline-flex">
+                                    @{var tops = Model.TopicIds.Join(Model.ToppicNames, id => Model.TopicIds.IndexOf(id), name => Model.ToppicNames.IndexOf(name), (id, name) => new { id, name }).ToList(); }
+                                    @foreach (var top in tops)
+                                    {
+                                        <li>
+                                            <a href="/@ViewBag.UrlPage?topic=@(topics.FirstOrDefault(t=>t.TopicId==top.id)?.URL)">@top.name</a>
+                                            @Html.Raw(top != tops.Last() ? ",&nbsp;" : " |&nbsp;")
+                                        </li>
+                                    }
+                                    <li><i class="glyphicon glyphicon-time"></i> @((Model.CreatedAt??DateTime.Now).ToString("dd MMM"))</li>
+                                </ul>
+                            </div>
+                            @*<div class="blog-details-img">
+                                    <img src="@Model.Picture" alt="@(Model.ImageAlt)" onerror="this.parent.style.display='none'" loading="lazy">
+                                </div>*@
+                            <br />
+                            <div class="blog-details-content">
+                                @if (!string.IsNullOrEmpty(Model.Decription))
+                                {
+                                    @Html.Raw(Model.Decription)
+                                }
+                                else
+                                {
+                                    <i>Nội dung đang được cập nhật</i>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tag-share">
+                        <div class="dec-tag">
+                            <ul>
+                                <li style="margin-right: 5px;">
+                                    <a href="javascript:void(0)" style="background-color: #1877f2;">
+                                        <i class="fas fa-tags" style="font-size: 11px;"></i> Tags:
+                                    </a>
+                                </li>
+                                @if (!string.IsNullOrEmpty(Model.Tags))
+                                {
+                                    foreach (var item in Model.Tags?.Trim(',')?.Split(','))
+                                    {
+                                        <li class="mr-0 ml-1">
+                                            <a class="text-lowercase" href="@($"/{ViewBag.UrlPage}?tag={item}")">@(item)</a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                        <div class="blog-share">
+                            <div class="fb-like" data-href="@Request.Url.AbsoluteUri" data-width="" data-layout="button" data-action="like" data-size="large" data-share="true"></div>
+                        </div>
+                    </div>
+                    <div class="blog-comment-wrapper mt-55">
+                        @Html.Partial("comment/_CommentPartial", Model.ReId, new ViewDataDictionary { { "comment", true }, { "type", "news" } })
+                        @*<h4 class="blog-dec-title">Bình luận:</h4>
+                            <div class="fb-comments" data-href="@Request.Url.AbsoluteUri" data-width="100%" data-numposts="5"></div>*@
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@*@if (relat != null && relat.Count > 0 && ViewBag.UrlPage != "gioi-thieu")
+{
+    <div id="relate" class="padding-bottom over-hide">
+        <div class="container bg-white py-3">
+            <div class="section-title-tab-wrap align-items-inherit mb-20">
+                <div class="section-title-3">
+                    <h2>Xem thêm @(ViewBag.pTitle.ToLower())</h2>
+                </div>
+            </div>
+            <div class="row">
+                @foreach (var m in relat)
+                {
+                    <div class="col-lg-4 col-md-6 col-12 col-sm-6">
+                        <div class="blog-wrap mb-40">
+                            <div class="blog-img mb-20 blog-video">
+                                <a href="/@(m.UrlCode)-nd@(m.ReId)">
+                                    <img src="@($"{adminSite}{m.Picture}")" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" alt="@(m.ImageAlt)" loading="lazy">
+                                </a>
+                                <span class="icon-video @(m.ParentTopicId == "3" ? "" : "d-none")" onclick="window.location.href='@($"/{m.UrlCode}-nd{m.ReId}")'">
+                                    <img class="img-fluid" src="~/Content/client/images/icon/video.png" />
+                                </span>
+                            </div>
+                            <div class="blog-content">
+                                <div class="blog-content-title">
+                                    <h3><a href="/@(m.UrlCode)-nd@(m.ReId)">@m.Name</a></h3>
+                                </div>
+                                <div class="blog-meta mt-2 d-none">
+                                    <ul>
+                                        @{var _tops = m.TopicIds.Join(m.ToppicNames, id => m.TopicIds.IndexOf(id), name => m.ToppicNames.IndexOf(name), (id, name) => new { id, name }).ToList(); }
+                                        @foreach (var top in _tops)
+                                        {
+                                            <li>
+                                                <a href="/@ViewBag.UrlPage?topic=@(topics.FirstOrDefault(t=>t.TopicId==top.id)?.URL)">@top.name</a>
+                                            </li>
+                                        }
+                                       
+                                    </ul>
+                                </div>
+                                <div class="blog-s_desc mt-2">
+                                    @Html.Raw(m.ShortDescription)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+}*@
+@*else
+    {
+        @Html.Partial("_MoreProducts", ListProducts);
+    }*@
+
+@section scripts{
+    <script>
+        $(function () {
+            $("#relate .room-box-in").matchHeight();
+            $(".blog-content-title").matchHeight();
+
+            resizeImg(0);
+            $(window).resize(function () {
+                resizeImg();
+            });
+        })
+
+        var w_default = [];
+        function resizeImg(first) {
+            let w_div = $("div.blog-details-content").width();
+            $("div.blog-details-content img").each(function (i, el) {
+                if (first == 0) {
+                    w_default.push($(el).width());
+                    $(el).height("auto");
+                }
+
+                if ($(el).width() >= w_div) {
+                    $(el).width(w_div);
+                }
+                else {
+                    $(el).width(w_default[i]);
+                }
+            });
+        };
+    </script>
+
+}
+
+@*<script type="text/javascript">
+        $(document).scroll(function () {
+            var st = $(this).scrollTop();
+            var toc = $("#toc").offset().top + $("#toc").outerHeight(true)
+            if (st > toc) {
+                $(".toc-menu-icon").addClass('d-block');
+            } else {
+                $(".toc-menu-icon").removeClass('d-block');
+            }
+        });
+    </script>*@

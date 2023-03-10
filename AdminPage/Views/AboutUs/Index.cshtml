@@ -1,0 +1,61 @@
+﻿@model AdminPage.Models.introduce
+@{
+    ViewBag.Title = "Nội dung giới thiệu";
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header well" data-original-title="">
+                <h2 class="card-title"> @ViewBag.Title</h2>
+            </div>
+            <div class="card-body">
+                <form role="form" action="/aboutus/update" method="post">
+                    <div class="form-group">
+                        <textarea rows="10" name="IntrodueContent" class="form-control ckeditor" placeholder="Nội dung giới thiệu">@(Model?.Content)</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+
+    <script src="~/Content/admin/ckeditor/ckeditor.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder.js"></script>
+}

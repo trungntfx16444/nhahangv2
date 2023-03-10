@@ -1,0 +1,317 @@
+﻿@model PKWebShop.Models.product
+@using PKWebShop.Models
+@using PKWebShop.Utils
+@{
+    ViewBag.Title = Model.ProductName;
+    var langs = ViewBag.ListLangs as List<PKWebShop.Services.SiteLang.Language>;
+    var lang = Request["lang"]?.ToString() ?? "vi";
+    var more_picture = ViewBag.uploadFiles as List<uploadmorefile>;
+    var listPriceOpt = ViewBag.ListPriceOpt as List<ProductOptionPrice> ?? new List<ProductOptionPrice>();
+    var urlProduct = $"/{Model.Url}-pd{Model.ReId}";
+    var urlProduct_full = $"{Request.Url.Scheme}://{Request.Url.Authority}{urlProduct}";
+}
+
+<style type="text/css">
+    .media-body > h6 > span > i {
+        display: none;
+    }
+
+    .media {
+        min-width: 180px;
+    }
+
+    .border-primary {
+        border-color: #3f87f5 !important;
+    }
+
+    #desc img {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .border-dee2e6 {
+        border-color: #dbe7f1 !important;
+        background-color: aliceblue;
+    }
+
+    .p-7 {
+        padding: 7px !important;
+    }
+
+    .sales {
+        text-decoration-line: line-through;
+    }
+
+    fieldset {
+        border: 1px solid #3f87f5;
+        padding: 5px 11px 9px;
+        margin: 0px 2px;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <a class="breadcrumb-item" href="/admin/productman">Sản phẩm</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<p class="btn-group">
+    <a href="/admin/productman" class="btn btn-default">
+        <i class="anticon anticon-arrow-left"></i> Trở lại
+    </a>
+    <a href="@($"/admin/productman/save/{Model.ReId}?lang={lang}")" class="btn btn-warning">
+        <i class="anticon anticon-edit"></i> Chỉnh sửa
+    </a>
+    <a href="@($"/admin/productman/delete/{Model.ReId}")" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">
+        <i class="anticon anticon-delete"></i> Xóa
+    </a>
+</p>
+
+
+<div class="card">
+    @if (langs.Count > 1)
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-6">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==lang ? "active" : "")" href="/admin/productman/detail/@Model.ReId?lang=@l.Code"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+    <div class="card-body">
+        <input type="hidden" id="langCode" name="langCode" value="@(lang)" />
+        <div class="row">
+            <div class="col-md-7 col-xs-12">
+                <h2>@ViewBag.Title</h2>
+                <h5>
+                    Giá bán:
+                    @if (Model.SalePrice > 0)
+                    {
+                        <span class="font-weight-semibold text-primary m-r-5">@(Model.SalePrice?.ToString("#,###")) @Constant.CURRENCY_SIGN</span>
+                        <span class="font-weight-semibold text-danger sales font-size-13">@(Model.Price?.ToString("#,###")) @Constant.CURRENCY_SIGN</span>
+                    }
+                    else
+                    {
+                        <span class="font-weight-semibold text-primary">@(Model.Price?.ToString("#,###")) @Constant.CURRENCY_SIGN</span>
+                    }
+                </h5>
+                <p class="border"></p>
+                <!--Option giá bán-->
+                @if (listPriceOpt != null && listPriceOpt.Count > 0)
+                {
+                    <div class="m-t-20">
+                        <h6 class="text-uppercase">Giá bán tùy chọn</h6>
+                        @foreach (var item in listPriceOpt.OrderBy(x => x.Price))
+                        {
+                            <p class="m-b-0 m-t-10">
+                                <label class="w-100 mb-0 p-7 border border-dee2e6">
+                                    <span class="font-weight-semibold text-dark label_name">@(item.LabelName)</span>
+                                    <span class="float-right">
+                                        <span class="text-primary font-weight-semibold m-r-25 price_value">@(item.Price?.ToString("#,###")) @Constant.CURRENCY_SIGN</span>
+                                    </span>
+                                </label>
+                            </p>
+                        }
+                    </div>
+                    <p class="border m-t-10"></p>
+                }
+                <!--/End-->
+                <ul class="nav nav-tabs m-t-20" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="true">
+                            THÔNG TIN SẢN PHẨM
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="desc-tab" data-toggle="tab" href="#desc" role="tab" aria-controls="desc" aria-selected="false">
+                            MÔ TẢ SẢN PHẨM
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content m-t-15" id="myTabContent">
+                    <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <div>
+                                    <table class="table table-bordered mb-0">
+                                        <tbody class="text-dark">
+                                            <tr>
+                                                <td class="align-top" style="width:180px;">
+                                                    <h6 class="m-b-0">Danh mục sản phẩm</h6>
+                                                </td>
+                                                <td class="text-justify align-top">
+                                                    @(Model.CategoryName?.Replace(",", ", "))
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="align-top">
+                                                    <h6 class="m-b-0">Link sản phẩm</h6>
+                                                </td>
+                                                <td class="text-justify align-top">
+                                                    <a href="@urlProduct" target="_blank">@urlProduct</a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="align-top">
+                                                    <h6 class="m-b-0">Giới thiệu ngắn</h6>
+                                                </td>
+                                                <td class="text-justify align-top">
+                                                    @Html.Raw(Model.ShortDescription?.Replace("\r\n", "<br/>"))
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="align-top">
+                                                    <h6 class="m-b-0">Trạng thái</h6>
+                                                </td>
+                                                <td class="text-justify align-top">
+                                                    <span>
+                                                        @((Model.Quantity == null || Model.Quantity > 0) ? "Sản phẩm còn hàng" : "hết")
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="align-top">
+                                                    <h6 class="m-b-0">Hiển thị trang chủ</h6>
+                                                </td>
+                                                <td class="text-justify align-top">
+                                                    @(Model.ShowHomePage == true ? "Có" : "Không")
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="align-top">
+                                                    <h6 class="m-b-0">Ngày tạo</h6>
+                                                </td>
+                                                <td class="text-justify align-top">
+                                                    @($"{Model.CreateAt:dd/MM/yyyy HH:mm} bởi {Model.CreateBy}")
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="align-top">
+                                                    <h6 class="m-b-0">Cập nhật lần cuối</h6>
+                                                </td>
+                                                <td class="text-justify align-top">
+                                                    @(Model.UpdateAt != null ? $"{Model.UpdateAt:dd/MM/yyyy HH:mm} bởi {Model.UpdateBy}" : "")
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="desc" role="tabpanel" aria-labelledby="desc-tab">
+                        <div class="card">
+                            <div class="card-body text-justify">
+                                <div class="p-r-15" style="overflow-y:auto; max-height:500px;">
+                                    @Html.Raw(Model.Description)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Thuộc tính sản phẩm-->
+                @if (!string.IsNullOrEmpty(Model.list_parent_properties))
+                {
+                    <div class="form-group mb-0">
+                        <h6 class="text-uppercase">Thuộc tính sản phẩm</h6>
+                        <div id="div_product_prop" class="file-wrapper m-t-10">
+                            <!--Append _PropertyPartial using ajax-->
+                        </div>
+                        <select id="list_parent_prop" class="d-none"><option value=""></option></select>
+                        <input type="hidden" id="list_parent_properties" name="list_parent_properties" value="@(Model.list_parent_properties)" />
+                        <input type="hidden" id="list_properties" name="list_properties" value="@(Model.list_properties)" />
+                    </div>
+                }
+                <!--/End-->
+                <!--Xem trước kết quả SEO-->
+                <fieldset class="m-t-10">
+                    <legend class="font-size-16 font-weight-semibold text-dark" style="width:auto">Xem trước kết quả tìm kiếm</legend>
+                    <h4 class="mb-0">
+                        <a href="@(urlProduct_full)" target="_blank" style="color:#1a0dab">@(Model.SEO_Title)</a>
+                    </h4>
+                    <p class="mb-0">
+                        <a href="@(urlProduct_full)" target="_blank" style="color:green">@(urlProduct_full)</a>
+                    </p>
+                    <p class="mb-0">@Html.Raw(Model.SEO_Desc?.Replace("\r\n", "<br/>"))</p>
+                </fieldset>
+                <!--/End-->
+            </div>
+            <div class="col-md-5 col-xs-12">
+                <div class="mb-2">
+                    <h5 style="margin-bottom:18px">Hình ảnh</h5>
+                    <img class="img-thumbnail" src="@Model.Picture" style="height:200px" alt="@Model.ImageAlt" />
+                </div>
+                <div>
+                    @if (more_picture != null && more_picture.Count() > 0)
+                    {
+                        <h5>Hình ảnh khác</h5>
+                        foreach (var pic in more_picture)
+                        {
+                            <img class="img-thumbnail" src="@pic.FileName" style="height:100px" alt="image" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/productman" class="btn btn-default">
+        <i class="anticon anticon-arrow-left"></i> Trở lại
+    </a>
+    <a href="@($"/admin/productman/save/{Model.ReId}?lang={lang}")" class="btn btn-warning">
+        <i class="anticon anticon-edit"></i> Chỉnh sửa
+    </a>
+    <a href="@($"/admin/productman/delete/{Model.ReId}")" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">
+        <i class="anticon anticon-delete"></i> Xóa
+    </a>
+</p>
+
+
+@section scripts
+{
+    <script src="~/Content/admin/js/product-properties.js"></script>
+
+    <script type="text/javascript">
+        LoadProductProperties();
+    </script>
+}

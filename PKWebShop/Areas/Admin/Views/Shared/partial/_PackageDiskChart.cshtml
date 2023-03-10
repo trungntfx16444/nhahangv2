@@ -1,0 +1,133 @@
+﻿@using PKWebShop.Models.DTO
+@model PackageInfo
+@{
+    string Color = "#62B58F";
+    if (50 <= Model.DiskUsePercent && Model.DiskUsePercent < 75) { Color = "#FFC533"; }
+    if (Model.DiskUsePercent >= 75) { Color = "#F2726F"; }
+}
+
+<div id="div-chart" class="m-2 mx-4">
+    <div class="d-flex justify-content-between">
+        <span class="text-gray font-weight-bold"> Dung lượng đã dùng @(Model.DiskUsePercent)%</span>
+        <span class="text-gray"></span>
+    </div>
+    <div class="progress progress-sm m-t-10" style="margin-bottom:5px">
+        <div class="progress-bar" role="progressbar" style="width: @(((Model.DiskUsePercent+20)/(decimal)1.2).ToString("#"))%" aria-valuenow="@(Model.DiskUsePercent)" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="d-flex justify-content-between">
+        <span class="text-gray"> @(Model.DiskUsing) MB</span>
+        <span class="text-gray"> @(Model.DiskCapacity) MB</span>
+    </div>
+    @*<div class="m-t-15">
+        <button class="btn btn-default w-100">
+            <i class="anticon anticon-upload"></i>
+            <span class="m-l-5">Upgrade</span>
+        </button>
+    </div>*@
+</div>
+@*<script type="text/javascript" src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
+<script type="text/javascript" src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
+
+<div id="div-chart" class="side-nav-inner disk-use" style="height: 100px">
+    <div id="chart-container"></div>
+    <p style="position: absolute;bottom: -5px;width: 100%;text-align: center;border-bottom: 1px dashed #ddd; background-color: white;">
+        Dung lượng ổ đĩa sử dụng<br />
+        <b style="color:@(Color)">@(Model.DiskUsing)</b>/<b>@(Model.DiskCapacity)</b> (MB)
+        <i id="icon-toggle" class="anticon anticon-arrow-up float-right font-size-25 m-r-15" style="cursor: pointer;"></i>
+    </p>
+</div>
+
+<script>
+    $(function () {
+        if ($.cookie("is-folded") != "true") {
+            diskchart_load();
+        };
+
+        $("#icon-toggle").click(function () {
+            if ($("#chart-container").css("display") == "block") {
+                $("#chart-container").hide(500, function () {
+                    $("#div-chart").css("flex", "0 0 70px");
+                    $("#icon-toggle").removeClass("anticon-arrow-up").addClass("anticon-arrow-down");
+                })
+            }
+            else {
+                $("#chart-container").show(500);
+                $("#div-chart").css("flex", "0 0 200px");
+                $("#icon-toggle").removeClass("anticon-arrow-down").addClass("anticon-arrow-up");
+            }
+        });
+
+        setTimeout(function () {
+            $("#icon-toggle").trigger("click");
+        }, 300);
+    });
+
+    var loaded = false;
+    function diskchart_load() {
+        if (!loaded) {
+            const dataSource = {
+                chart: {
+                    lowerlimit: "0",
+                    upperlimit: "100",
+                    showvalue: "1",
+                    numbersuffix: "%",
+                    theme: "fusion",
+                    showtooltip: "0"
+                },
+                colorrange: {
+                    color: [{
+                        minvalue: "0",
+                        maxvalue: "50",
+                        code: "#62B58F"
+                    },
+                    {
+                        minvalue: "50",
+                        maxvalue: "75",
+                        code: "#FFC533"
+                    },
+                    {
+                        minvalue: "75",
+                        maxvalue: "100",
+                        code: "#F2726F"
+                    }
+                    ]
+                },
+                dials: {
+                    dial: [{
+                        value: "@(Model.DiskUsePercent)"
+                    }]
+                }
+            };
+
+            FusionCharts.ready(function () {
+                var myChart = new FusionCharts({
+                    type: "angulargauge",
+                    renderAt: "chart-container",
+                    width: "100%",
+                    height: "100%",
+                    dataFormat: "json",
+                    dataSource
+                }).render();
+            });
+            loaded = true;
+        }
+    }
+</script>
+
+<style>
+    #chart-container svg {
+        top: -25px;
+    }
+
+    .raphael-group-4-parentgroup ~ g {
+        display: none;
+    }
+
+    .is-folded #left-menu .disk-use {
+        display: none;
+    }
+
+    #icon-toggle:hover {
+        color: #3f87f5;
+    }
+</style>*@

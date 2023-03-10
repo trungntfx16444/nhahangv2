@@ -1,0 +1,69 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@model sFeatures_view
+@{
+    //var info = ViewBag.WebInfo as webconfiguration ?? new webconfiguration();
+    //var cates = UserContent.GetWebCategoryProduct();
+    //string url_product = ViewBag.url_product;
+    string url_sanpham = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+    var adminSite = UserContent.GetAdminSite();
+    //Constant.CURRENCY_SIGN = "đ";
+    var firstData = Model.Details?.FirstOrDefault();
+    string imgTitle1 = "/Content/client/images/icon/icon_nhadat.png";
+    string imgTitle2 = "/Content/client/images/icon/icon_chothue.png";
+    int i = 0; int y = 1;
+}
+
+<div class="product-catelogy">
+    <div class="container">
+        <div class="section-title text-center">
+            <h2 class="title">@Html.Raw(Model.Feature.Title?.Replace("[", "<span>").Replace("]", "</span>"))</h2>
+        </div>
+    </div>
+    <div class="product-catelogy-wrap">
+        <div class="container">
+            <div class="row justify-content-center align-items-start">
+                @if (firstData != null)
+                {
+                    var data = firstData.Data[0] as List<(category Key, List<category> Value)>;
+                    foreach (var item in data)
+                    {
+                        <div class="col-lg-3 col-md-5 col-8">
+                            <div class="product-catelogy-item">
+                                <div class="title">
+                                    <img class="img-fluid" src="@(i % 2 == 0 ? imgTitle1 : imgTitle2)" /> @(item.Key.CategoryName)
+                                </div>
+                                <div class="content">
+                                    <ul>
+                                        @foreach (var cate in item.Value)
+                                        {
+                                            <li>
+                                                <a href="@($"/{cate.UrlCode}-pc{cate.ReId}")">
+                                                    @if (y == 1){<img class="img-fluid" src="~/Content/client/images/icon/icon-datnen.png" />}
+                                                    else if (y == 2){<img class="img-fluid" src="~/Content/client/images/icon/icon-nhapho.png" />}
+                                                    else if (y == 3){<img class="img-fluid" src="~/Content/client/images/icon/icon-canho.png" />}
+                                                    else if (y == 4){<img class="img-fluid" src="~/Content/client/images/icon/icon-bietthu.png" />}
+                                                    else if (y == 5)
+                                                    {
+                                                        y = 0;
+                                                        <img class="img-fluid" src="~/Content/client/images/icon/icon-shophouse.png" />
+                                                    }
+                                                    @(cate.CategoryName)
+                                                </a>
+                                            </li>
+                                            y++;
+                                        }
+                                    </ul>
+                                    <a href="@($"/{item.Key.UrlCode}-pc{item.Key.ReId}")" class="btn btn-view-more d-block">Xem tất cả</a>
+                                </div>
+                            </div>
+                        </div>
+                        i++;
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

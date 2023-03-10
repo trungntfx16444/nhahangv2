@@ -1,0 +1,71 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@model sFeatures_view
+@{
+    var adminSite = UserContent.GetAdminSite();
+}
+@if (Model?.Feature != null)
+{
+    <div class="blog-area blog-categories bg-img ptb-40" style="background-image: url('../../../../content/client/images/bg/bg-product-tag.jpg');">
+        <div class="section-header">
+            <div class="container">
+                <div class="section-title-tab-wrap align-items-inherit justify-content-center">
+                    <div class="section-title">
+                        <h2 class="title text-white">@Model.Feature.Title</h2>
+                    </div>
+                </div>
+                <div class="tabs-category mb-3 mt-40">
+                    <ul class="nav" id="pills-tab" role="tablist">
+                        @foreach (var item in Model.Details)
+                        {
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="pills-@item.Detail.Id-tab" data-toggle="pill" data-target="#pills-@item.Detail.Id" type="button" role="tab" aria-controls="pills-@item.Detail.Id" aria-selected="true">
+                                    @item.Detail.Title
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="tab-content" id="pills-tabContent">
+                @foreach (var item in Model.Details)
+                {
+                    <div class="tab-pane fade" id="pills-@item.Detail.Id" role="tabpanel" aria-labelledby="pills-@item.Detail.Id-tab">
+                        <div class="row product-row">
+                            @foreach (var news in item.Data as List<n_news>)
+                            {
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-12 px-2">
+                                    <div class="blog-wrap">
+                                        <div class="blog-img mb-20">
+                                            <a href="/@news.UrlCode-nd@(news.ReId)">
+                                                <img src="@adminSite@news.Picture " onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                            </a>
+                                        </div>
+                                        <div class="blog-content">
+                                            <h3 class="text-center"><a class="text-white" href="/@news.UrlCode-nd@(news.ReId)" title="@(news.Name)">@(news.Name)</a></h3>
+                                            <div class="blog-s_desc text-white text-center">@news.ShortDescription</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center">
+                            <a class="btn-view-more" href="/du-an?topic=@item.Detail.URL">
+                                <span>Xem thêm <i class="fas fa-angle-double-right ml-1"></i></span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $(function () {
+        $('#pills-tab .nav-link').first().trigger('click');
+    })
+</script>

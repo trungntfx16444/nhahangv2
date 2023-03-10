@@ -1,0 +1,294 @@
+﻿@using AdminPage.Models
+@{
+    ViewBag.Title = "Quản lý nhà cung cấp";
+    string _LogoDefault = "/Content/admin/img/no_image.jpg";
+    //string p_select = Cookies["parentId"]?.ToString() ?? Model.FirstOrDefault()?.Id;
+    //var langs = AdminPage.Services.SiteLang.GetListLangs();
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-close-circle"></i>
+            </span>
+            <span>@TempData["error"]</span>
+        </div>
+    </div>
+}
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check-circle"></i>
+            </span>
+            <span>@TempData["success"]</span>
+        </div>
+    </div>
+}
+<div class="card">
+    <div class="card-header row no-gutters">
+        <div class="col-12">
+            <h2 class="card-title">DANH SÁCH NHÀ CUNG CẤP</h2>
+        </div>
+    </div>
+    <div class="card-body" id="partial_content">
+        <div class="row">
+            <form class="col-md-6">
+                <div class="input-group">
+                    <input id="parentTopic" name="parentTopic" type="hidden" value="" />
+                    <input type="text" id="search" class="form-control" name="search" style="width:250px" placeholder="Nhập từ khóa cần tìm..." />
+                </div>
+            </form>
+            <div class="col-md-3">
+                <button type="button" title="Tạo nhà cung cấp" class="btn btn-success btn-sm float-right title-tooltip" style=" padding: .35em .50em;" onclick="EditVendor('')"> <i class="fas fa-2x fa-plus"></i></button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="dataTable" class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th class="no-sort">Logo</th>
+                        <th>Nhà Cung Cấp</th>
+                        <th>Liên hệ</th>
+                        <th>Mô tả</th>
+                        <th>Còn nợ</th>
+                        <th class="no-sort" style="width:70px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalVendor" aria-modal="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form id="FormVendor" class="modal-content" action="/inventory/VendorSave" method="post">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm nhà cung cấp</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <input type="hidden" name="Id" value="">
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold required">Nhà cung cấp</label>
+                        <input type="text" class="form-control mb-3" id="Name" name="Name" value="" required>
+
+                        <label class="font-weight-semibold">Phone</label>
+                        <input type="text" class="form-control mb-3" name="Phone" value="">
+
+                        <label class="font-weight-semibold">Email</label>
+                        <input type="text" class="form-control mb-3" name="Email" value="">
+
+                        <label class="font-weight-semibold">Địa Chỉ</label>
+                        <input type="text" class="form-control" name="Address" value="">
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold required w-100">
+                            Logo
+                            <span class="float-right">
+                                <i class="anticon anticon-form cursor-pointer text-primary font-size-18 m-r-5" onclick="$('#input_logo').trigger('click')"></i>
+                                <i class="anticon anticon-delete cursor-pointer text-danger font-size-18" onclick="DelLogo()"></i>
+                            </span>
+                        </label>
+                        <div style="border:1px solid grey">
+                            <img id="img_Logo" class="w-100" src="@(_LogoDefault)" alt="Ảnh đại diện" style="object-fit:contain">
+                        </div>
+                        <div class="d-none">
+                            <input type="file" id="input_logo" accept="image/*" name="Logo" onchange="readURL(this)">
+                            <textarea id="textarea_Logo" name="textarea_Logo">@(_LogoDefault)</textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 form-group">
+                        <label class="font-weight-semibold">Mô tả</label>
+                        <textarea id="desc" name="Description"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="SaveVendor()">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .select2-choice {
+        padding: 0 16px !important;
+    }
+</style>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            $(".title-tooltip").tooltip();
+            $(".select2").select2();
+
+            table = $('#dataTable').DataTable({
+                "lengthChange": false,
+                'paging': true,
+                'searching': false,
+                'ordering': true,
+                'info': false,
+                'autoWidth': false,
+                "order": [[0, "desc"]],
+                "columnDefs": [{
+                    "targets": 'no-sort',
+                    "orderable": false,
+                }],
+
+                "processing": true,
+                "language": {
+                    "infoFiltered": "",
+                    "processing": '<img src="/Content/admin/img/loading.gif" width="60px">'
+                },
+                "serverSide": true,
+                "ajax": {
+                    "type": "POST",
+                    "url": "/Inventory/_Vendors",
+                    "data": function (d) {
+                        d.search = $("#search").val();
+                        return d;
+                    },
+                    "dataSrc": function () {
+                        return '';
+                    },
+                    "complete": function (json) {
+                        //console.log(json);
+                        if (json.responseJSON.data) {
+                            if (json.responseJSON.data[0] == -1) {
+                                window.location.reload();
+                            }
+                            $("#dataTable tbody").html(json.responseJSON.data);
+                            var _changeInterval = null;
+                            $("#search").off().on("input", function () {
+                                if (_changeInterval) clearInterval(_changeInterval);
+                                _changeInterval = setInterval(function () {
+                                    table.draw();
+                                    clearInterval(_changeInterval)
+                                }, 500);
+
+                            });
+                        }
+                    }
+                },
+            });
+
+            $("#modalVendor").on('hide.bs.modal', function () {
+                $("#FormVendor").resetForm();
+                $("#img_Logo").attr("src", "@(_LogoDefault)");
+                $("#textarea_Logo").val("@(_LogoDefault)");
+                CKEDITOR.instances.desc.setData("");
+            })
+        })
+
+        function SaveVendor() {
+            if ($("#Name").val().replace(/ /g, "") == "") {
+                msg_info("Vui lòng nhập tên nhà cung cấp", "Name");
+            }
+            else {
+                $("#desc").val(CKEDITOR.instances.desc.getData());
+                $("#FormVendor").submit();
+            }
+        }
+
+        $("#FormVendor").ajaxForm(function (data) {
+            if (cnoty(data)) {
+                $("#modalVendor").modal("hide");
+                table.draw();
+            }
+        })
+
+        function EditVendor(Id) {
+            if (Id == null || Id == "") {
+                $("#modalVendor").find(".modal-title").html("Thêm nhà cung cấp");
+                $("#modalVendor").modal("show");
+            }
+            else {
+                $.ajax({
+                    method: "POST",
+                    url: "/inventory/vendorget",
+                    data: { Id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0]) {
+                        $("#FormVendor [name=Id]").val(data[1].Id);
+                        $("#FormVendor [name=Name]").val(data[1].Name);
+                        $("#FormVendor [name=Address]").val(data[1].Address);
+                        $("#FormVendor [name=Phone]").val(data[1].Phone);
+                        $("#FormVendor [name=Email]").val(data[1].Email);
+
+                        $("#img_Logo").attr("src", data[1].Logo);
+                        $("#textarea_Logo").val(data[1].Logo);
+                        CKEDITOR.instances.desc.setData(data[1].Description);
+
+                        $("#modalVendor").find(".modal-title").html("Cập nhật thông tin");
+                        $("#modalVendor").modal("show");
+                    } else {
+                        error(data[1]);
+                    }
+                }).fail(function () {
+                    //...
+                }).always(function () {
+                    //...
+                });
+            }
+        }
+
+        //CKEDITOR RÚT GỌN
+        CKEDITOR.replace('desc', {
+            // Define the toolbar groups as it is a more accessible solution.
+            toolbarGroups: [
+                { "name": "styles", "groups": ["styles"] },
+                { "name": "basicstyles", "groups": ["basicstyles"] },
+                { "name": "links", "groups": ["links"] },
+                { "name": "paragraph", "groups": ["list", "blocks"] },
+                { "name": "colors", "groups": ["TextColor", "BGColor"] },
+                { "name": "insert", "groups": ["insert"] },
+            ],
+            // Remove the redundant buttons from toolbar groups defined above.
+            //removeButtons: 'Underline,Strike,Subscript,Superscript,Anchor,Styles,Specialchar'
+            removeButtons: 'Styles',
+            height: 300
+        });
+
+        function readURL(input) {
+            let inputName = $(input).prop("name");
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#img_" + inputName).attr("src", e.target.result);
+                    $("#textarea_" + inputName).val(e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]); // convert to base64 string
+            }
+        };
+
+        function DelLogo() {
+            $("#img_Logo").attr("src", "@(_LogoDefault)");
+            $("#textarea_Logo").val("@(_LogoDefault)");
+        };
+    </script>
+}

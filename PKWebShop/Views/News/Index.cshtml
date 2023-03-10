@@ -1,0 +1,150 @@
+﻿@model IEnumerable<n_news>
+@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    var search = Request["Search"];
+    List<n_toppic> topics = ViewBag.topics;
+    n_toppic topic = ViewBag.topic;
+    n_parent_topic ptopic = ViewBag.ptopic;
+    string tag = ViewBag.tag?.tag_name ?? Request["tag"];
+    int page = int.Parse(ViewData["page"].ToString());
+    int pagecount = int.Parse(ViewData["pagecount"].ToString());
+    var SEO_tintuc = ViewBag.SEO_tintuc as SiteSEO.SEO_Meta;
+    if (SEO_tintuc != null)
+    {
+        ViewBag.Title = SEO_tintuc.meta_title;
+        ViewBag.SEO_Description = SEO_tintuc.meta_desc;
+        ViewBag.SEO_MetaKeyWord = SEO_tintuc.meta_keyword;
+        //ViewBag.UrlPage = SEO_tintuc.url;
+    }
+
+    if (!string.IsNullOrEmpty(topic?.Seo_title))
+    {
+        ViewBag.Title = topic?.Seo_title;
+    }
+
+    if (!string.IsNullOrEmpty(topic?.Seo_desc))
+    {
+        ViewBag.SEO_Description = topic?.Seo_desc;
+    }
+
+    if (ptopic != null)
+    {
+        ViewBag.Title = ptopic?.Name;
+        ViewBag.SEO_Description = ptopic?.Name;
+    }
+
+    var info = ViewBag.WebInfo as webconfiguration ?? new webconfiguration();
+    if (!string.IsNullOrEmpty(info.ImageShared))
+    {
+        ViewBag.og_image = info.ImageShared;
+    }
+
+    var adminSite = UserContent.GetAdminSite();
+    ViewBag.Class = "blog";
+}
+
+<section class="breadcrumbs">
+    <div class="container">
+
+        <ol>
+            <li><a href="/">Trang chủ</a></li>
+            @if (topic != null)
+            {
+                <li>
+                    <a href="@($"/{ViewBag.UrlPage}")">@ViewBag.Title</a>
+                </li>
+                <li class="active">
+                    <a href="@($"/{ViewBag.UrlPage}?topic={topic.URL}")">@topic.Name</a>
+                </li>
+            }
+            else
+            {
+                <li class="active">
+                    <a href="@($"/{ViewBag.UrlPage}")">@ViewBag.Title</a>
+                </li>
+            }
+        </ol>
+
+    </div>
+</section>
+
+<section class="blog blog-article">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="title text-center">
+                @if (topic != null)
+                {
+                    <span>@topic.Name<br /></span>
+                }
+                else
+                {
+                    <span>@ViewBag.Title<br /></span>
+                }
+                @if (!string.IsNullOrEmpty(search))
+                {
+                    <span>Tìm kiếm: "@search"<br /></span>
+                }
+                @if (tag != null)
+                {
+                    <span>Tag: "@tag"<br /></span>
+                }
+            </h2>
+        </div>
+
+        <div class="entries">
+            @foreach (var m in Model)
+            {
+                <article class="entry">
+                    <a href="/@(m.UrlCode)-nd@(m.ReId)" class="row">
+                        <div class="col-md-4">
+                            <div class="entry-img">
+                                <img class="img-fluid" src="@($"{adminSite}{m.Picture}")" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" alt="@(m.ImageAlt)" loading="lazy">
+                                <div class="zoom-icon"><i class="fas fa-search-plus"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="entry-content">
+                                <h3 class="entry-title">
+                                    @m.Name
+                                </h3>
+                                <p class="entry-decription">
+                                    @Html.Raw(m.ShortDescription)
+                                </p>
+
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+
+            }
+        </div>
+        <div class="blog-pagination">
+            <ul class="justify-content-center">
+                <li><a class="prev" href="#" onclick="$('li:has(.page.active)').prev().find('.page').trigger('click')"><i class="fas fa-chevron-left"></i></a></li>
+                @for (int i = 1; i <= pagecount; i++)
+                {
+                    <li class="@(page == i ? "active" : "")"><a href="/@(ViewBag.UrlPage)?page=@i@(!string.IsNullOrEmpty(search)?"&search="+search:"")@(topic != null?"&topic="+topic.URL:"")@(tag != null?"&tag="+tag:"")">@i</a></li>
+                }
+                <li><a class="next" href="#" onclick="$('li:has(.page.active)').next().find('.page').trigger('click')"><i class="fas fa-chevron-right"></i></a></li>
+
+            </ul>
+        </div>
+
+    </div>
+</section>
+@section scripts{
+    <script>
+        $(function () {
+            //$(".blog-content").matchHeight();
+        })
+    </script>
+}
+
+
+
+
+
+

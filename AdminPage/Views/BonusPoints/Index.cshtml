@@ -1,0 +1,274 @@
+﻿@model IEnumerable<AdminPage.Models.customer_score>
+@using AdminPage.Models
+@using AdminPage.Services
+@using System.Globalization;
+@{
+    ViewBag.Title = "Tích điểm";
+    List<bonuspointconfig> BonusPointConfigs = ViewBag.BonusPointConfigs;
+    var webLicense = new PackageServices().WebPackInfo();
+    if (webLicense.MembershipPoints == false)
+    {
+        Response.Redirect("/");
+    }
+}
+
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">Chương trình khuyến mãi</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+<button type="button" class="btn btn-primary" onclick="add()">
+    <i class="anticon anticon-plus"></i> Thêm chương trình tích điểm
+</button>
+
+<div class="row m-t-25">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h4 class="card-title">@ViewBag.Title</h4>
+                    <div class="card-toolbar">
+                        <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#PointConfig">
+                            <i class="anticon anticon-setting"></i> Sử dụng điểm tích lũy
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!--Search-->
+                <div class="form-group row">
+                    <div class="col-md-3 col-xs-12 m-t-5">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Từ ngày</span>
+                            </div>
+                            <input type="date" id="fromdate" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="fDate" value="@(ViewBag.fromdate)" />
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-xs-12 m-t-5">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Đến ngày</span>
+                            </div>
+                            <input type="date" id="todate" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="tDate" value="@(ViewBag.todate)" />
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-xs-12 m-t-5">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Trạng thái</span>
+                            </div>
+                            <select id="status" class="form-control cursor-pointer" name="Status">
+                                <option value="" selected>Tất cả</option>
+                                <option value="-1">Hết hạn</option>
+                                <option value="0">Chưa bắt đầu</option>
+                                <option value="1">Hoạt động</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xs-12 m-t-5">
+                        <div class="input-group">
+                            <input type="text" id="search" class="form-control" value="" placeholder="Nhập Tên chương trình" autocomplete="off" />
+                            <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                                <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="dataContent" class="table-responsive">
+                    <table id="table_discount" class="table table-hover" style="margin-top:0px !important">
+                        <thead>
+                            <tr>
+                                <th style="width:40%;">Tên</th>
+                                <th>Thời gian áp dụng</th>
+                                <th>Nhóm sản phẩm áp dụng</th>
+                                <th  class="no-sort">Trạng thái</th>
+                                <th  class="no-sort"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<form class="modal fade" id="PointConfig" action="/bonuspoints/saveconfig" method="post">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quản lý sử dụng thẻ tích điểm</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                @foreach (var cfg in BonusPointConfigs)
+                {
+                    <input type="hidden" name="cfgId" value="@cfg.Id">
+                    <div class="form-group point_cfg mb-0">
+                        <label class="font-weight-semibold">@cfg.Name</label>
+                        <div class="input-affix m-b-10">
+                            <input type="text" class="form-control" name="@cfg.Id" data-cur="@(cfg.Value.ToString(CultureInfo.InvariantCulture))" value="@cfg.Value.ToString(CultureInfo.InvariantCulture)" oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
+                            <span class="suffix-icon">đ</span>
+                        </div>
+                        <span>@Html.Raw(string.Format(cfg.Description, "<b class='point_f'></b>", "<b class='point_t'></b>"))</span>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Đóng</button>
+                <button class="btn btn-sm btn-success">Lưu</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div id="ScoreModalPartial">
+    <!--Append _ScoreModalPartial-->
+</div>
+
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('#PointConfig').on('shown.bs.modal', function () {
+            $(".point_cfg").each(function (i, el) {
+                $(el).find("input").val($(el).find("input").data("cur"));
+                fixnote(el);
+            })
+        });
+
+        $(".point_cfg input").on("blur", function () {
+            fixnote($(this).closest(".point_cfg"));
+        });
+
+        $("#PointConfig").ajaxForm(function (data) {
+            if (cnoty(data)) {
+                $(".point_cfg").each(function (i, el) {
+                    $(el).find("input").data("cur", $(el).find("input").val());
+                });
+                //$('#PointConfig').modal("hide");
+            }
+        });
+
+        table = $('#table_discount').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false,
+            "order": [[1, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<img src="/Content/admin/img/loading.gif" width="60px">'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/bonuspoints/Load_table",
+                "data": function (d) {
+                    d.status = $("#status").val();
+                    d.fromdate = $("#fromdate").val();
+                    d.todate = $("#todate").val();
+                    d.search = $("#search").val();
+                    return d;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        console.log(json.responseJSON.data.length);
+                        if (json.responseJSON.data.length > 0) {
+                            $("#table_discount tbody").html(json.responseJSON.data);
+                        }
+                        
+                    }
+                }
+            },
+            //"stateSave": true,
+            //"stateSaveParams": function (settings, d) {
+            //    d.Tags = $("#ticket_tags_filter").val();
+            //    localStorage.setItem("tiket_filter_default", JSON.stringify(d));
+            //},
+            //"stateLoadParams": function (settings, d) {
+            //    var current = localStorage.getItem("tiket_filter_default");
+            //    if (current) {
+            //        d = JSON.parse(current); current = null;
+            //        $("#ticket_tags_filter").val(d.Tags);
+            //    }
+            //    return d;
+            //}
+        });
+        table.on('draw', function () {
+        });
+        $("#btn_search").on("click", function(){
+            table.draw();
+        })
+    })
+
+    function fixnote(el) {
+        var v = parseFloat($(el).find("input").val() || 0);
+        var s = 1;
+        while (v > 0 && v < 1) {
+            v *= 10;
+            s *= 10;
+        }
+        var fm = Intl.NumberFormat("vi");
+        $(el).find(".point_f").html(fm.format(s));
+        $(el).find(".point_t").html(fm.format(v));
+    }
+
+    function add(id) {
+        $.ajax({
+            method: "POST",
+            url: "/BonusPoints/add",
+            data: { id: id },
+            dataType: "html"
+        }).done(function (data) {
+            //data: Partial_html
+            $("#ScoreModalPartial").html(data);
+            $("#scoreModal").modal('show');
+        }).fail(function () {
+            error("Không thể thực hiện. Vui lòng thử lại sau.")
+        });
+    };
+
+    function del(id) {
+        if (confirm('Bạn muốn xóa Chương trình tích điểm này?')) {
+            $.ajax({
+                method: "POST",
+                url: "/BonusPoints/delete",
+                data: { id: id },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    table.draw();
+                }
+            }).fail(function () {
+                error("Không thể thực hiện. Vui lòng thử lại sau.")
+            });
+        }
+    };
+
+</script>
+

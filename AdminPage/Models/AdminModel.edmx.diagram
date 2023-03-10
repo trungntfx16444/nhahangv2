@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="af797d16566548698a9436b322552141" Name="Diagram1">
+        <EntityTypeShape EntityType="Model.bonuspointconfig" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.category" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.comment" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.customer_request" Width="1.5" PointX="4.75" PointY="5.75" />
+        <EntityTypeShape EntityType="Model.customer_score" Width="1.5" PointX="6.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.customer" Width="1.5" PointX="0.75" PointY="6.75" />
+        <EntityTypeShape EntityType="Model.expens" Width="1.5" PointX="6.75" PointY="5.75" />
+        <EntityTypeShape EntityType="Model.giasu_class" Width="1.5" PointX="8.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.giasu_option" Width="1.5" PointX="8.75" PointY="8.75" />
+        <EntityTypeShape EntityType="Model.giasu_teacher" Width="1.5" PointX="10.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.gift_code" Width="1.5" PointX="2.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Model.import_ticket" Width="1.5" PointX="4.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Model.introduce" Width="1.5" PointX="10.75" PointY="7.75" />
+        <EntityTypeShape EntityType="Model.loyalcustomer" Width="1.5" PointX="6.75" PointY="11.75" />
+        <EntityTypeShape EntityType="Model.menu" Width="1.5" PointX="8.75" PointY="11.75" />
+        <EntityTypeShape EntityType="Model.n_news" Width="1.5" PointX="10.75" PointY="11.75" />
+        <EntityTypeShape EntityType="Model.n_news_tags" Width="1.5" PointX="12.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.n_parent_topic" Width="1.5" PointX="12.75" PointY="3.75" />
+        <EntityTypeShape EntityType="Model.n_toppic" Width="1.5" PointX="12.75" PointY="7.75" />
+        <EntityTypeShape EntityType="Model.order" Width="1.5" PointX="12.75" PointY="13.75" />
+        <EntityTypeShape EntityType="Model.orders_detail" Width="1.5" PointX="14.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.package" Width="1.5" PointX="0.75" PointY="14.75" />
+        <EntityTypeShape EntityType="Model.packagesetting" Width="1.5" PointX="14.75" PointY="5.75" />
+        <EntityTypeShape EntityType="Model.policy" Width="1.5" PointX="14.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Model.popupad" Width="1.5" PointX="14.75" PointY="14.75" />
+        <EntityTypeShape EntityType="Model.product_option" Width="1.5" PointX="2.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Model.product_option_value" Width="1.5" PointX="4.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Model.product_properties" Width="1.5" PointX="6.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Model.productoptionprice" Width="1.5" PointX="16.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.product" Width="1.5" PointX="16.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Model.receipt" Width="1.5" PointX="16.75" PointY="14.75" />
+        <EntityTypeShape EntityType="Model.sectionfeature" Width="1.5" PointX="18.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.sectionfeaturedetail" Width="1.5" PointX="0.75" PointY="18.75" />
+        <EntityTypeShape EntityType="Model.service" Width="1.5" PointX="18.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Model.shipping_config" Width="1.5" PointX="8.75" PointY="18.75" />
+        <EntityTypeShape EntityType="Model.tag" Width="1.5" PointX="18.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Model.uploadmorefile" Width="1.5" PointX="18.75" PointY="14.75" />
+        <EntityTypeShape EntityType="Model.user_actions_log" Width="1.5" PointX="18.75" PointY="17.75" />
+        <EntityTypeShape EntityType="Model.user" Width="1.5" PointX="2.75" PointY="19.75" />
+        <EntityTypeShape EntityType="Model.users_permissions" Width="1.5" PointX="4.75" PointY="19.75" />
+        <EntityTypeShape EntityType="Model.users_permissions_granted" Width="1.5" PointX="14.75" PointY="19.75" />
+        <EntityTypeShape EntityType="Model.vendor" Width="1.5" PointX="20.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Model.viewpagetracker" Width="1.5" PointX="20.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Model.vn_district" Width="1.5" PointX="20.75" PointY="7.75" />
+        <EntityTypeShape EntityType="Model.vn_province" Width="1.5" PointX="20.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Model.vn_ward" Width="1.5" PointX="20.75" PointY="13.75" />
+        <EntityTypeShape EntityType="Model.vnp_paymentdata" Width="1.5" PointX="20.75" PointY="16.75" />
+        <EntityTypeShape EntityType="Model.webconfiguration" Width="1.5" PointX="16.75" PointY="21.75" />
+        <EntityTypeShape EntityType="Model.whychooseu" Width="1.5" PointX="18.75" PointY="21.75" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

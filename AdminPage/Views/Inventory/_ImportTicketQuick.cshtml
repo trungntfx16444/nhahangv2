@@ -1,0 +1,47 @@
+﻿@using AdminPage.Models
+@using Inner.Libs.Helpful;
+@using AdminPage.Enums;
+@model IEnumerable<product>
+@{
+    IEnumerable<SelectListItem> vendor_select = ViewBag.vendors as IEnumerable<SelectListItem>;
+    int i = 0;
+}
+<table class="table table-bordered">
+    <thead class="thead-light">
+        <tr>
+            <td style="width:25%">Sản Phẩm</td>
+            <td style="width:25%"><label class="required mb-0">Nhà cung cấp</label></td>
+            <td style="width:12.5%">Đơn giá nhập</td>
+            <td style="width:12.5%">Số lượng nhập</td>
+            <td style="width:12.5%">Đơn vị nhập</td>
+            <td style="width:12.5%">SL quy đổi</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@($"{p.ProductName} ({p.Unit})")<input name="[@i].Product_Id" type="hidden" value="@p.ReId" /></td>
+                <td style="padding: 0 10px;">@Html.DropDownList("[" + i + "].Vendor_Id", vendor_select.Select(v => { v.Selected = v.Value == p.VendorId; return v; }), new { @class = "select2 Vendor_Id", @required = "required" })</td>
+                <td style="padding: 0 10px;"><input type="number" name="[@i].EntryPrice" class="form-control" /></td>
+                <td style="padding: 0 10px;"><input type="number" name="[@i].ImportQty" class="form-control" /></td>
+                <td style="padding: 0 10px;"><input name="[@i].ImportUnit" class="form-control" /></td>
+                <td style="padding: 0 10px;"><input name="[@i].QtyExchange" class="form-control" value="1" /></td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+<style>
+    
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0,0,0,.05);
+    }
+</style>
+
+<script>
+    $(function () {
+        $(".select2").select2();
+    });
+</script>

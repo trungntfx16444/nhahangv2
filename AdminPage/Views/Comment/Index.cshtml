@@ -1,0 +1,221 @@
+﻿@model List<AdminPage.Models.category>
+@using AdminPage.Services;
+@{
+    ViewBag.Title = "Bình luận sản phẩm";
+    var webLicense = new PackageServices().WebPackInfo();
+    var info = AdminPage.AppLB.UserContent.GetWebInfomation();
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <a class="breadcrumb-item" href="/comments">Bình luận</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+<style>
+    .categories {
+        max-width: 30vw;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        border-radius: 15px;
+        white-space: break-spaces;
+        text-align: left;
+    }
+
+    .nav-tabs .nav-link, .nav-tabs > li > a.active.nav-link, .nav-tabs .nav-link:hover {
+        border-right: 1px solid #eee;
+    }
+</style>
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">@ViewBag.Title</h4>
+        </div>
+    </div>
+    <div class="card-body">
+        <div>
+            <div class="form-group row">
+                <div class="col-md-4 col-sm-6 m-t-5">
+                    <div class="input-group">
+                        <div class="input-group-append">
+                            <span class="input-group-text">Trạng thái</span>
+                        </div>
+                        <select id="isActive" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="True">Đã duyệt</option>
+                            <option value="False">Chưa duyệt</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 m-t-5">
+                    <div class="input-group">
+                        <input type="text" id="search" class="form-control" value="" placeholder="Nhập mã hoặc tên sản phẩm" autocomplete="off" />
+                        <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                            <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 mb-0">
+                    <button class="btn btn-success create_import_ticket" style="display:none" onclick="createImport()">Tạo Phiếu nhập</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="product_table" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ngày giờ</th>
+                            <th>Sản phẩm</th>
+                            <th>Bình luận</th>
+                            <th>Trạng thái</th>
+                            <th class="no-sort" style="width:35px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--Append data using dataTable-->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="ImportticketQuick" aria-modal="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="width: 1000px; max-width: 100vw;">
+        <form id="QuickImport" action="../inventory/ImportTicketQuickSave" method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm Phiếu Nhập</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Tạo Phiếu Nhập</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+
+            table = $('#product_table').DataTable({
+                "lengthChange": false,
+                'paging': true,
+                'searching': false,
+                'ordering': true,
+                'info': true,
+                'autoWidth': false,
+                "order": [[0, "desc"]],
+                "columnDefs": [{
+                    "targets": 'no-sort',
+                    "orderable": false,
+                }],
+
+                "processing": true,
+                "language": {
+                    "infoFiltered": "",
+                    "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+                },
+                "serverSide": true,
+                "ajax": {
+                    "type": "POST",
+                    "url": "/comment/Load_table",
+                    "data": function (data) {
+                        data.search = $("#search").val();
+                        data.isActive = $("#isActive").val();
+                        return data;
+                    },
+                    "dataSrc": function () {
+                        return '';
+                    },
+                    "complete": function (json) {
+                        if (json.responseJSON.data) {
+                            if (json.responseJSON.data[0] == -1) {
+                                window.location.reload();
+                            }
+                            $("#product_table tbody").html(json.responseJSON.data);
+                        }
+                    }
+                }
+            });
+            table.on('draw', function () {
+                //...
+            });
+
+            $("#search").keypress(function () {
+                if (event.keyCode == 13) {
+                    $("#btn_search").trigger("click");
+                }
+            });
+            $("#btn_search").click(function () {
+                table.draw();
+            });
+            $("#isActive").change(function () {
+                table.draw();
+            });
+        })
+        function activeComment(Id) {
+            $.ajax({
+                method: "POST",
+                url: "/comment/active",
+                data: { Id },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    table.draw();
+                }
+            }).fail(function () {
+            }).always(function () {
+            });
+        }
+        function deleteComment(Id) {
+            if (confirm("Bạn muốn xóa bình luận này?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/comment/delete",
+                    data: { Id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (cnoty(data)) {
+                        table.draw();
+                    }
+                }).fail(function () {
+                }).always(function () {
+                });
+            }
+        }
+    </script>
+}

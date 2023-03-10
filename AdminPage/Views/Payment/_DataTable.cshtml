@@ -1,0 +1,58 @@
+﻿@model List<(AdminPage.Models.vnp_paymentdata payment, AdminPage.Models.order Order)>
+@using Inner.Libs.Helpful
+@using AdminPage.AppLB
+@using AdminPage.Enums
+@using AdminPage.Services
+@using AdminPage.Utils
+@{ 
+    var listStatus = UserContent.OrderStatus();
+}
+
+@foreach (var item in Model)
+{
+    <tr>
+        <!--Thông tin đơn hàng-->
+        <td class="align-top">
+            <span>Mã ĐH: <i class="font-weight-semibold">#@(item.Order.Id)</i></span><br/>
+            <span>Ngày đặt: <i class="font-weight-semibold">@item.Order.CreatedAt.Value.ToString("dd/MM/yyyy")</i></span>
+            @if (!string.IsNullOrEmpty(item.Order.Type))
+            {
+                <span class="badge badge-pill badge-geekblue">Đặt hàng online</span>
+            } <br/>
+            <span>Khách hàng :<i class="font-weight-semibold"> @(item.Order.CustomerName)</i> </span><br/>
+            <span>Phone :<i class="font-weight-semibold">  @(item.Order.CustomerPhone)</i></span>
+        </td>
+
+        <!--Thông tin thanh toán-->
+        <td>
+            <span>Mã giao dịch Ngân hàng: <i class="font-weight-semibold">@(item.payment.vnp_BankTranNo)</i></span><br/>
+            <span>Mã giao dịch VNPAY    : <i class="font-weight-semibold">@(item.payment.vnp_TransactionNo)</i> </span><br/>
+            <span>Mã Ngân hàng          : <i class="font-weight-semibold">@(item.payment.vnp_BankCode)</i> </span><br/>
+            <span>Loại thẻ              : <i class="font-weight-semibold">@(item.payment.vnp_CardType)</i></span><br/>
+            <span>Thanh toán lúc        : <i class="font-weight-semibold">@(item.payment.UpdatedAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? "")</i></span><br/>
+        </td>
+        <td class="text-dark">@(item.Order.GrandTotal > 0 ? item.Order.GrandTotal?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</td>
+        <td>
+            <span>@item.payment.vnp_OrderInfo</span>
+        </td>
+        <td>
+            <span class="font-weight-semibold">"@item.payment.vnp_ResponseCode" : </span>
+            @if (item.payment.vnp_ResponseCode == "00")
+            {
+                <span>Thanh toán thành công</span>
+            }
+            else
+            {
+                @PaymentServices.MessageResp(PaymentMethod.VNPAY.Code<string>(), item.payment.vnp_ResponseCode, true)
+            }
+        </td>
+        <td>
+            <a class="btn btn-sm btn-success" target="_blank" href="/orderman/vieworder/@(item.Order.Id)">
+                <i class="anticon anticon-search"></i>
+            </a>
+            <a class="btn btn-sm btn-warning" target="_blank" href="/orderman/save/@(item.Order.Id)">
+                <i class="anticon anticon-edit"></i>
+            </a>
+        </td>
+    </tr>
+}

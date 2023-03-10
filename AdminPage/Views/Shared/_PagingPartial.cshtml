@@ -1,0 +1,68 @@
+﻿@{
+    int page = int.Parse(ViewData["page"].ToString());
+    int rpp = int.Parse(ViewData["rpp"].ToString());
+    int totalRecords = int.Parse(ViewData["totalRecords"].ToString());
+    string url = ViewData["url"].ToString();
+}
+
+<span>Showing @((page - 1) * rpp + 1) to @(((page - 1) * rpp) + rpp) of @(totalRecords) entries</span>
+
+<div class="col-md-12 center-block">
+    <div class="dataTables_paginate paging_bootstrap pagination">
+        <ul class="pagination">
+            <li @if (page == 1) { @Html.Raw(@"class=""disabled""") }><a href="@url?page=@(page - 1)&rpp=@rpp"><- Prev</a></li>
+            @{
+                int totalPages = (totalRecords % rpp > 0) ? (totalRecords / rpp + 1) : (totalRecords / rpp);
+                bool flagSpace1 = false;
+                bool flagSpace2 = false;
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    if (totalPages > 10)
+                    {
+                        //nhung trang dau.
+                        if (i <= 3)
+                        {
+                            <li @if (page == i) { @Html.Raw(@"class=""active""") }><a href="@url?page=@i&rpp=@rpp">@i</a></li>
+                        }
+
+                        //nhom space 1
+                        if (flagSpace1 == false && i > 3 && i < page - 2)
+                        {
+                            flagSpace1 = true;
+                            <li><a>...</a></li>
+                        }
+
+                        //nhom trang hien tai gan ke
+                        if (i >= page - 2 && i <= page + 2 && i > 3 && i < totalPages - 3)
+                        {
+                            <li @if (page == i) { @Html.Raw(@"class=""active""") }><a href="@url?page=@i&rpp=@rpp">@i</a></li>
+                        }
+
+                        //nhom space 2
+                        if (flagSpace2 == false && i < totalPages - 3 && i > page + 2)
+                        {
+                            flagSpace2 = true;
+                            <li><a>...</a></li>
+
+                        }
+
+                        //nhom trang cuoi
+                        if (i >= totalPages - 3)
+                        {
+                            <li @if (page == i) { @Html.Raw(@"class=""active""") }><a href="@url?page=@i&rpp=@rpp">@i</a></li>
+                        }
+
+                    }
+                    else
+                    {
+                        <li @if (page == i) { @Html.Raw(@"class=""active""") }><a href="@url?page=@i&rpp=@rpp">@i</a></li>
+                    }
+
+
+                }
+            }
+            <li @if (page >= totalRecords / rpp) { @Html.Raw(@"class=""disabled""") }><a href="@url?page=@(page + 1)&rpp=@rpp">Next -></a></li>
+        </ul>
+    </div>
+</div>
+

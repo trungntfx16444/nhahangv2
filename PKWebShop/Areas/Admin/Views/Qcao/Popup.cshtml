@@ -1,0 +1,134 @@
+﻿@model PKWebShop.Models.popupad
+@using PKWebShop.Models
+@{
+
+    ViewBag.Title = "Thiết lập quảng cáo ngắn hạn";
+
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="#">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-book"></i> @ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                <form role="form" action="/admin/homepage/popupsubmit" method="post" enctype="multipart/form-data">
+
+
+                    <div class="form-group">
+                        <label>Banner quảng cáo</label>
+                        <input type="file" class="input-sm" name="pic" id="pic" onchange="reviewUpload(this)" />
+
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_pic">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_pic" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_pic"></i>
+                                <a onclick="upload_delete('pic')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @if (string.IsNullOrWhiteSpace(Model?.PopupAdsPicture) == false)
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="rvpic">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.PopupAdsPicture" />
+                                    <i style="padding-left:5px">@Model.PopupAdsPicture</i>
+
+                                    <a style="padding-left:10px" href="@Model.PopupAdsPicture" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete()" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="floading" style="display:none" />
+                                </p>
+
+                            </div>
+                        }
+
+                    </div>
+                    <div class="form-group">
+                        <label>Quảng cáo từ ngày</label>
+                        <input type="text" name="AdsFrom" class="form-control datepicker" required value="@(Model?.PopupAdsFrom?.ToString("dd/MM/yyyy"))" />
+                    </div>
+                    <div class="form-group">
+                        <label>Đến ngày</label>
+                        <input type="text" name="AdsTo" class="form-control datepicker" required value="@(Model?.PopupAdsTo?.ToString("dd/MM/yyyy"))" />
+                    </div>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="url" name="AdsURL" class="form-control" required value="@(Model?.PopupAdsURL)" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+                    <button type="button" onclick="window.location='/admin/homepage/cancelads'" class="btn btn-danger">Hủy quảng cáo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts
+{
+    <script src="~/Scripts/upload_and_review.js"></script>
+
+    <script type="text/javascript">
+        function PicDelete() {
+            if (confirm("Xác nhận muốn xóa picture này?")) {
+                $("#floading").show();
+                $.ajax({
+                    url: "/admin/homepage/PopupAdsDelete/",
+                    type: "post",
+                    datatype: "json",
+                    contenttype: "application/json"
+                })
+                    .success(function (data) {
+                        if (data == true) {
+                            $("#rvpic").hide(500);
+                            alert("Delete successfully");
+                        }
+
+                    })
+                    .error(function () { alert("Can not delete."); $("#floading").hide(); })
+                    .complete(function () { $("#floading").hide(); });
+
+            }
+
+        }
+
+    </script>
+
+}

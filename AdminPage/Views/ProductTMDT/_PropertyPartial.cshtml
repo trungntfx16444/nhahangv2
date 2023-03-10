@@ -1,0 +1,33 @@
+﻿@model List<AdminPage.Models.product_properties>
+
+@if (ViewBag.PropErr != null)
+{
+    <input type="hidden" id="PropErr" value="@(ViewBag.PropErr)" />
+}
+else
+{
+    <input type="hidden" id="PropErr" value="" />
+    foreach (var item in Model.Where(x => string.IsNullOrEmpty(x.parrent_properties_id)))
+    {
+        <div id="@($"f_{item.ReId}")" class="file border-primary">
+            <div class="media">
+                @*<div class="m-r-15 font-size-30">
+                    <i class="anticon anticon-file-text text-success"></i>
+                </div>*@
+                <div class="media-body">
+                    <h6 class="mb-0 text-success" data-remove="@(String.Join(",", Model.Where(x => x.parrent_properties_id == item.id).Select(x => x.ReId)))">
+                        @(item.name)
+                        <span class="float-right" style="cursor:pointer;" data-toggle="tooltip" title="Xóa" data-prname="@(item.name)" onclick="RemoveProperty('@(item.ReId)', $(this))">
+                            <i class="anticon anticon-close-circle text-danger"></i>
+                        </span>
+                    </h6>
+                    <span class="font-size-13 text-primary">@(String.Join(", ", Model.Where(x => x.parrent_properties_id == item.id).Select(x => x.name)))</span>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<script type="text/javascript">
+    $('[data-toggle="tooltip"]').tooltip()
+</script>

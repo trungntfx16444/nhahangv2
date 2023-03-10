@@ -1,0 +1,50 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    var adminSite = UserContent.GetAdminSite();
+}
+<section class="hinhanh">
+    <div class="container-fluid">
+        <div class="swiper hinhanhSwiper">
+            <div class="swiper-wrapper">
+                @foreach (var listimg in Model.Details)
+                {
+                    var img = listimg.Files.FirstOrDefault();
+                    <div class="swiper-slide">
+                        <div class="gallery">
+
+                            <img class="img-fluid" src="@($"{adminSite}{img.FileName}")" />
+                        </div>
+                    </div>
+                }
+                @*<div class="swiper-slide">
+                        <div class="gallery">
+                            <img class="img-fluid" src="~/Content/client/img/blog_1_3.jpg" />
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="gallery">
+                            <img class="img-fluid" src="~/Content/client/img/blog_1_4.jpg" />
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="gallery">
+                            <img class="img-fluid" src="~/Content/client/img/blog_1_5.jpg" />
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="gallery">
+                            <img class="img-fluid" src="~/Content/client/img/blog_1_2.jpg" />
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="gallery">
+                            <img class="img-fluid" src="~/Content/client/img/blog_1_3.jpg" />
+                        </div>
+                    </div>*@
+            </div>
+        </div>
+
+    </div>
+</section>

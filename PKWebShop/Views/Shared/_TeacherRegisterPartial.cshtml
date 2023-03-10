@@ -1,0 +1,686 @@
+﻿@model PKWebShop.Models.giasu_teacher
+@using PKWebShop.Models
+
+@{
+    var listOption = ViewData["listOption"] as List<giasu_option>;
+    var moreFiles = ViewData["moreFiles"] as List<uploadmorefile>;
+    var curUrl = Request.Url.AbsolutePath;
+
+    var option = (from opt in listOption
+                  where opt.TypeName.Equals("môn dạy", StringComparison.OrdinalIgnoreCase) == true
+                  || opt.TypeName.Equals("lớp dạy", StringComparison.OrdinalIgnoreCase) == true
+                  || opt.TypeName.Equals("thời gian dạy", StringComparison.OrdinalIgnoreCase) == true
+                  select opt).ToList();
+
+    var degree = listOption.Where(x => x.TypeName.Equals("trình độ", StringComparison.OrdinalIgnoreCase));
+
+    var pictureCardId1 = string.Empty;
+    var pictureCardId2 = string.Empty;
+    if (!string.IsNullOrEmpty(Model.PictureCardId))
+    {
+        var pictureCardId_Split = Model.PictureCardId.Split('|');
+        for (int i = 0; i < pictureCardId_Split.Length; i++)
+        {
+            if (i == 0)
+            {
+                pictureCardId1 = pictureCardId_Split[i];
+            }
+            else if (i == 1)
+            {
+                pictureCardId2 = pictureCardId_Split[i];
+            }
+        }
+    }
+
+}
+
+
+<style type="text/css">
+    .span-required {
+        color: red;
+    }
+
+    .text-style {
+        font-weight: unset;
+        cursor: pointer;
+    }
+
+        .text-style input[type=checkbox] {
+            cursor: pointer;
+        }
+
+    .form-control[readonly] {
+        cursor: pointer;
+    }
+
+    .jumbotron p {
+        font-size: 14px;
+        font-weight: unset;
+    }
+
+    #ui-id-1, #ui-id-2 {
+        max-height: 300px;
+        overflow-x: scroll;
+    }
+</style>
+
+
+
+@using (Ajax.BeginForm("saveteacher", "teacherman", new AjaxOptions
+{
+    HttpMethod = "POST",
+    //InsertionMode = InsertionMode.Replace,
+    //UpdateTargetId = "",
+    LoadingElementId = "teacherSubmit_loading",
+    OnBegin = "BeginSubmit",
+    OnSuccess = "SubmitComplete",
+    OnFailure = "SubmitError",
+}, new { enctype = "multipart/form-data" }))
+{
+
+    <div class="jumbotron col-md-12" style="padding:0px; background-color:whitesmoke; border:1px solid #e6e6e6">
+        <div class="clearfix"></div>
+        <div style="padding: 0 15px">
+            <h1 class="display-4" style="font-size:18px; color:#317eac">Thông tin gia sư</h1>
+            <input type="hidden" name="hdPath" value="@curUrl" />
+            <input type="hidden" name="callCount" value="0" autocomplete="off"/>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Tỉnh/Thành dạy: <span class="span-required">*</span></label>
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                    <input type="hidden" name="hd_listDistrict" value="@Model.District" />
+                    <input type="hidden" name="hd_province" value="@Model.ProvinceOrCity" />
+                    <select class="form-control" name="ProvinceOrCity" onchange="loadDistrict($(this).val());">
+                        @*<option @if (Model.ProvinceOrCity == "79|Hồ Chí Minh") { @Html.Raw("selected") ; } value="79|Hồ Chí Minh">Hồ Chí Minh</option>
+                        <option @if (Model.ProvinceOrCity == "74|Bình Dương") { @Html.Raw("selected") ; } value="74|Bình Dương">Bình Dương</option>*@
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Họ tên: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control" name="FullName" value="@Model.FullName" required autocomplete="off" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Ngày sinh: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control datepicker" name="Birthday" value="@(Model.Birthday?.ToString("dd/MM/yyyy"))" readonly required autocomplete="off" style="background-color:white" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Giới tính: <span class="span-required">*</span></label>
+                    <select class="form-control" name="Gender" required>
+                        <option value="">--Chọn giới tính--</option>
+                        <option @if (Model.Gender == "Nam") {@Html.Raw("selected");} value="Nam">Nam</option>
+                        <option @if (Model.Gender == "Nữ") {@Html.Raw("selected");} value="Nữ">Nữ</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Điện thoại: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control phone" name="Phone" value="@Model.Phone" required autocomplete="off" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Email: <span class="span-required">*</span></label>
+                    <input type="email" class="form-control" name="Email" value="@Model.Email" required autocomplete="off" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Địa chỉ hiện tại: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control" name="Address" value="@Model.Address" required autocomplete="off" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Số CMND/CCCD: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control" name="CardId" value="@Model.CardId" required autocomplete="off" />
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+
+    <div class="jumbotron col-md-12" style="padding:0px; background-color:whitesmoke; border:1px solid #e6e6e6">
+        <div class="clearfix"></div>
+        <div style="padding: 0 15px">
+            <h1 class="display-4" style="font-size:18px; color:#317eac">Thông tin khác</h1>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Trường đào tạo: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control" name="School" value="@Model.School" required autocomplete="off" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Ngành học: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control" name="Majors" value="@Model.Majors" required autocomplete="off" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Niên khóa: <span class="span-required">*</span></label>
+                    <input type="text" class="form-control" name="SchoolYearbook" value="@Model.SchoolYearbook" required autocomplete="off" placeholder="vd: 2013 - 2018" />
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="form-group">
+                    <label>Hiện là: <span class="span-required">*</span></label>
+                    <select class="form-control" name="Degree" required>
+                        <option value="">--Trình độ hiện tại--</option>
+                        @foreach (var item in degree)
+                        {
+                            <option @if (Model.Degree == (item.Id + "|" + item.Name)) { @Html.Raw("selected") } value="@(item.Id + "|" + item.Name)">@item.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-8 col-sm-12 col-xs-12">
+                <div class="form-group">
+                    <label>Ưu điểm:</label>
+                    <textarea class="form-control" rows="3" name="Note" placeholder="Nơi để bạn ghi thêm thông tin chi tiết về bản thân. Kinh nghiệm và thành tích bạn đạt được trong quá trình học tập và dạy kèm.">@Html.Raw(Model.Note)</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+
+    <div class="jumbotron col-md-12" style="padding:0px; background-color:whitesmoke; border:1px solid #e6e6e6">
+        <div class="clearfix"></div>
+        <div style="padding: 0 15px">
+            <h1 class="display-4" style="font-size:18px; color:#317eac">Cập nhật hình ảnh</h1>
+
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <div class="form-group">
+                    <label>ẢNH THẺ</label><br />
+
+                    <div style="margin-left:5px">
+                        @if (string.IsNullOrWhiteSpace(Model.Avatar))
+                        {
+                            <img id="img_Avatar" src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="margin-top:3px;width:131px;display:block;border:1px dotted grey;cursor:pointer" />
+                        }
+                        else
+                        {
+                            <img id="img_Avatar" src="@Model.Avatar" alt="Anh dai dien" style="margin-top:3px;width:131px;display:block;border:1px dotted grey;cursor:pointer" />
+                        }
+
+                        <label class="btn btn-warning btn-sm btn-file" style="width:131px">
+                            <i class="fa fa-upload" aria-hidden="true"></i> Chọn ảnh
+                            <input type="file" accept="image/*" name="Avatar" style="display: none;" onchange="readURL(this);">
+                            <textarea style="display:none" id="textarea_Avatar" name="textarea_Avatar">@Model.Avatar</textarea>
+                        </label>
+                    </div>
+
+                    <div style="text-align:justify; color:blue">
+                        <br /><i>Ảnh thẻ (ảnh đại diện) là ảnh chụp một mình và nhìn rõ khuôn mặt, tốt nhất nên chọn hình thẻ 3x4 hay 4x6. </i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 col-sm-7 col-xs-12">
+                <div class="form-group">
+                    <label>Ảnh CMND/CCCD</label><br />
+
+                    <div class="pull-left" style="margin-left:5px">
+                        @if (string.IsNullOrWhiteSpace(pictureCardId1))
+                        {
+                            <img id="img_PictureCardId1" src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="margin-top:3px;width:131px;display:block;border:1px dotted grey;cursor:pointer" title="Hình CMND/CCCD mặt trước" data-toggle="tootip" />
+                        }
+                        else
+                        {
+                            <img id="img_PictureCardId1" src="@pictureCardId1" alt="Anh dai dien" style="margin-top:3px;width:131px;display:block;border:1px dotted grey;cursor:pointer" title="Hình CMND/CCCD mặt trước" data-toggle="tootip" />
+                        }
+
+                        <label class="btn btn-warning btn-sm btn-file" style="width:131px">
+                            <i class="fa fa-upload" aria-hidden="true"></i> Chọn ảnh
+                            <input type="file" accept="image/*" name="PictureCardId1" style="display: none;" onchange="readURL(this);">
+                            <textarea style="display:none" id="textarea_PictureCardId1" name="textarea_PictureCardId1">@pictureCardId1</textarea>
+                        </label>
+                    </div>
+
+                    <div class="pull-left" style="margin-left:5px">
+                        @if (string.IsNullOrWhiteSpace(pictureCardId2))
+                        {
+                            <img id="img_PictureCardId2" src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="margin-top:3px;width:131px;display:block;border:1px dotted grey;cursor:pointer" title="Hình CMND/CCCD mặt trước" data-toggle="tootip" />
+                        }
+                        else
+                        {
+                            <img id="img_PictureCardId2" src="@pictureCardId2" alt="Anh dai dien" style="margin-top:3px;width:131px;display:block;border:1px dotted grey;cursor:pointer" title="Hình CMND/CCCD mặt trước" data-toggle="tootip" />
+                        }
+
+                        <label class="btn btn-warning btn-sm btn-file" style="width:131px">
+                            <i class="fa fa-upload" aria-hidden="true"></i> Chọn ảnh
+                            <input type="file" accept="image/*" name="PictureCardId2" style="display: none;" onchange="readURL(this);">
+                            <textarea style="display:none" id="textarea_PictureCardId2" name="textarea_PictureCardId2">@pictureCardId2</textarea>
+                        </label>
+                    </div>
+
+                    <div class="clearfix"></div>
+                    <div style="text-align:justify; color:blue">
+                        <br /><i>Ảnh CMND là ảnh chụp Mặt trước và Mặt sau Chứng minh thư hoặc thẻ căn cước, ảnh chụp rõ nét không bị mờ chữ. </i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+
+    <div class="jumbotron col-md-12" style="padding:0px; background-color:whitesmoke; border:1px solid #e6e6e6">
+        <div class="clearfix"></div>
+        <div style="padding: 0 15px">
+            <h1 class="display-4" style="font-size:18px; color:#317eac">Cập nhật ảnh bằng cấp</h1>
+
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="form-group">
+
+                    @Html.Partial("_UploadMoreFilesPartial", moreFiles, new ViewDataDictionary { { "upload", true } })
+
+                    <div style="text-align:justify; color: blue">
+                        <br /><i>Ảnh bằng cấp là ảnh chụp thẻ sinh viên hoặc Bằng cấp chuyên môn CAO NHẤT của bạn, Ví dụ: Bằng cao đẳng, đại học, thạc sỹ... Các chứng chỉ giấy khen khác (nếu có). Upload tối đa 4 file</i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+
+    <div id="div_kvd">
+        <!--Append html using JQuery-->
+        <div class="jumbotron col-md-12" style="padding:0px; background-color:whitesmoke; border:1px solid #e6e6e6">
+            <div class="container" style="margin-left: unset">
+                <h1 class="display-4" style="font-size:18px">Khu vực dạy <span class="span-required">*</span></h1>
+                <br />
+                <div class="col-lg-3 col-md-4 col-sm-4 col-xs-6">
+                    <div class="form-group">
+                        <label class="text-style" style="color:#094b82">
+                            <input type="checkbox" name="kvd_Id" value="1" />&nbsp;Name
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    foreach (var opt in option.GroupBy(x => x.TypeName).Distinct())
+    {
+        <div class="jumbotron col-md-12" style="padding:0px; background-color:whitesmoke; border:1px solid #e6e6e6">
+            <div class="container" style="margin-left: unset">
+                <h1 class="display-4" style="font-size:18px">@opt.Key <span class="span-required">*</span></h1>
+                <br />
+                @foreach (var item in option.Where(x => x.TypeName.Equals(opt.Key, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x.Order).ToList())
+                {
+                    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-6">
+                        <div class="form-group">
+                            @if (opt.Key.Equals("môn dạy", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <label class="text-style" style="color:green">
+                                    <input type="checkbox" name="md_@item.Id" value="1" @if (!string.IsNullOrEmpty(Model.OptionId) && Model.OptionId.Contains("[" + item.Id + "]")) { @Html.Raw("checked") ; } />&nbsp; @item.Name
+                                </label>
+                            }
+                            else if (opt.Key.Equals("lớp dạy", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <label class="text-style" style="color:#d34e24">
+                                    <input type="checkbox" name="ld_@item.Id" value="1" @if (!string.IsNullOrEmpty(Model.OptionId) && Model.OptionId.Contains("[" + item.Id + "]")) { @Html.Raw("checked") ; } />&nbsp; @item.Name
+                                </label>
+                            }
+                            else if (opt.Key.Equals("thời gian dạy", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <label class="text-style" style="color:green">
+                                    <input type="checkbox" name="tgd_@item.Id" value="1" @if (!string.IsNullOrEmpty(Model.OptionId) && Model.OptionId.Contains("[" + item.Id + "]")) { @Html.Raw("checked") ; } />&nbsp; @item.Name
+                                </label>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+
+    <div class="clearfix"></div>
+    <div class="form-group col-md-12 col-xs-12">
+        @if (!string.IsNullOrEmpty(Model.Id))
+        {
+            <div class="pull-left">
+                <label style="color:red; cursor:pointer">
+                    <input type="checkbox" name="Active" @if (Model.Active == true) { @Html.Raw("checked") } value="1" /> <b>Kích hoạt</b>
+                </label>
+            </div>
+        }
+
+    <button type="submit" id="teacherSubmit" class="btn btn-primary pull-right @if(!curUrl.Contains("/admin/")){@Html.Raw("btn-lg");}">
+        @(curUrl.Contains("/admin/") ? "Lưu thông tin " : "Đăng ký ")
+        <img id="teacherSubmit_loading" src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" style="display:none" />
+    </button>
+    </div>
+    <div class="clearfix"></div>
+}
+
+
+<!--Popup modal-->
+<div class="modal fade" id="MyPopup" tabindex="-1" role="dialog" aria-labelledby="MyPopupLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="MyPopupLabel">Số điện thoại đã được đăng ký</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table" style="margin-bottom: unset">
+                    <tr>
+                        <td style="width: 116px; border-top: unset;">
+                            <img id="teachExirt_Avatar" src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="margin-top:3px;width:100px;display:block;border:1px dotted grey;" />
+                        </td>
+                        <td style="border-top:unset;">
+                            <p id="teachExirt_Code" style="padding-bottom: 5px; border-bottom: 1px dotted grey">Mã số: <b>0086</b></p>
+                            <p id="teachExirt_Name" style="padding-bottom: 5px; border-bottom: 1px dotted grey">Gia sư: <b>NGUYỄN VĂN A</b></p>
+                            <p id="teachExirt_Phone" style="padding-bottom: 5px; border-bottom: 1px dotted grey">Điện thoại: 0395489124</p>
+                            <p id="teachExirt_CreateDate" style="padding-bottom: 5px; border-bottom: 1px dotted grey">Ngày đăng ký: 18/07/2020</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    SchoolAutoComplte();
+    MajorsAutoComplte();
+
+    loadProvince();
+
+    function loadProvince() {
+        let province = $("input[name='hd_province']").val();
+        if (province == null || province == "") {
+            province = "79|Hồ Chí Minh";
+        }
+
+        $.ajax({
+            url: "/home/LoadProvince/",
+            type: "post",
+            datatype: "json"
+        }).done(function (data) {
+
+            if (data[0] == true) {
+                let _value = ""; let _type = "";
+                let _option = '';
+                let _optgroupCity = '<optgroup label="Thành phố">';
+                let _optgroupProvince = '<optgroup label="Tỉnh">';
+
+                for (var i = 0; i < data[1].length; i++) {
+                    _value = data[1][i].provinceid + "|" + data[1][i].name;
+                    _type = data[1][i].type;
+
+                    if (_type == "Thành Phố") {
+                        if (_value == province) {
+                            _optgroupCity += '<option selected value="' + _value + '">' + data[1][i].name + '</option>';
+                        }
+                        else {
+                            _optgroupCity += '<option value="' + _value + '">' + data[1][i].name + '</option>';
+                        }
+                    }
+                    else if (_type == "Tỉnh") {
+                        if (_value == province) {
+                            _optgroupProvince += '<option selected value="' + _value + '">' + data[1][i].name + '</option>';
+                        }
+                        else {
+                            _optgroupProvince += '<option value="' + _value + '">' + data[1][i].name + '</option>';
+                        }
+                    }
+                }
+
+                _optgroupCity += '</optgroup>';
+                _optgroupProvince += '</optgroup>';
+
+                $("select[name='ProvinceOrCity']").html(_option + _optgroupCity + _optgroupProvince);
+            }
+            else {
+                let optErr = $.parseJSON('{"text":"Gặp sự cố không thể tải dữ liệu tỉnh/thành phố","layout":"bottom","type":"error"}');
+                noty(optErr);
+            }
+        }).fail(function () {
+            alert("Gặp sự cố không thể tải dữ liệu tỉnh/thành phố")
+        }).always(function () {
+            loadDistrict(province);
+        });
+    };
+
+    function loadDistrict(province) {
+        //province: "provinceId|provinceName" - [vd: "79|Hồ Chí Minh"]
+        let list_district = $("input[name='hd_listDistrict']").val();
+        console.log(list_district);
+        $.ajax({
+            url: "/home/loadDistrict/",
+            type: "post",
+            datatype: "json",
+            data: { "province": province }
+        }).done(function (data) {
+            if (data[0] == true) {
+
+                let _html = '<div class="jumbotron col-md-12" style="padding:0px; background-color:whitesmoke; border:1px solid #e6e6e6">' +
+                    '<div class="container" style="margin-left: unset">' +
+                    '<h1 class="display-4" style="font-size:18px">Khu vực dạy <span class="span-required">*</span></h1><br />';
+
+                for (var i = 0; i < data[1].length; i++) {
+
+                    let checked = "";
+
+                    if (list_district.includes("[" + data[1][i].districtid + "]") == true) {
+                        checked = "checked";
+                    }
+
+                    _html += '<div class="col-lg-3 col-md-4 col-sm-4 col-xs-6">' +
+                        '<div class="form-group">' +
+                        '<label class="text-style" style="color:#094b82">' +
+                        '<input type="checkbox" ' + checked + ' name="kvd_' + data[1][i].districtid + '" value="1" />&nbsp;' + data[1][i].type + ' ' + data[1][i].name +
+                        '</label></div></div>';
+                }
+
+                _html += '</div></div>';
+
+                $("#div_kvd").html(_html);
+            }
+            else {
+                let optErr = $.parseJSON('{"text":"Gặp sự cố không thể tải dữ liệu quận huyện","layout":"bottom","type":"error"}');
+                noty(optErr);
+            }
+        }).fail(function () {
+            alert("gặp sự cố không thể tải dữ liệu quận huyện")
+        }).always(function () {
+            if ($("#hd_key").val() == "v") {
+                showPageDetail();
+            }
+        });
+    };
+    
+    function readURL(input) {
+        let inputName = $(input).prop("name");
+        //console.log(inputName);
+
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $("#img_" + inputName).attr("src", e.target.result);
+                $("#textarea_" + inputName).val(e.target.result);
+                //console.log(e.target.result);
+            }
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    };
+
+    function BeginSubmit() {
+        let url = $("input[name='hdPath']").val().toLowerCase();
+        let count = $("input[name='callCount']").val();
+
+        if (url.includes('/admin/') == false && count == "0") {
+            //khi client đăng ký gia sư
+            $("input[name='callCount']").val("1");
+            $("form").attr("action", "@Url.Action("ClientRegisterTeacher", "TeacherMan", new {area="Admin" })").submit();
+            return false;
+        }
+
+        $("#wait_overlay").show();
+        $("#teacherSubmit").prop("disabled", true);
+    };
+
+    function SubmitComplete(data) {
+        $("#teacherSubmit").prop("disabled", false);
+        
+        if (data[0] == true) {
+            let url = $("input[name='hdPath']").val().toLowerCase();
+
+            if (url.includes("/admin/") == true) {
+                // admin submit thanh cong
+                window.location.href = "/admin/teacherman/save/" + data[2];
+            }
+            else {
+                // client submit thanh cong
+                window.location.href = "/dang-ky-thanh-cong";
+                //sessionStorage.setItem("SubmitTeacherSuccess", data[1]);
+                //location.reload();
+            }
+        }
+        else {
+            if (data[1] == "-1") {
+                //console.log(data[2]);
+                //data[2]: array["Code", "Avatar", "FullName", "Phone", "CreateDate"]
+                $("#teachExirt_Code").html("Mã số: <b>" + data[2][0] + "</b>");
+                $("#teachExirt_Avatar").prop("src", data[2][1]);
+                $("#teachExirt_Name").html("Gia sư: <b>" + data[2][2] + "</b>");
+                $("#teachExirt_Phone").html("Điện thoại: " + data[2][3]);
+                $("#teachExirt_CreateDate").html("Ngày đăng ký: " + data[2][4]);
+
+                $("#MyPopup").modal("show");
+                //$("#MyPopup").modal({ backdrop: 'static', keyboard: false });
+
+                let optErr = $.parseJSON('{"text":"Số điện thoại đã được đăng ký","layout":"bottom","type":"warning"}');
+                noty(optErr);
+            }
+            else {
+                let optErr = $.parseJSON('{"text":"' + data[1] + '","layout":"bottom","type":"warning"}');
+                noty(optErr);
+            }
+        }
+    };
+
+    function SubmitError() {
+        $("#teacherSubmit").prop("disabled", false);
+        let optErr = $.parseJSON('{"text":"Lưu thất bại. Đã xảy ra sự cố khi lưu.","layout":"bottom","type":"error"}');
+        noty(optErr);
+    };
+
+    function SchoolAutoComplte() {
+        var obj = {};
+        obj.url = "/home/LoadSchool";
+        obj.dataType = "json";
+        obj.type = "POST";
+        obj.contentType = "application/json";
+        obj.success = function (result) {
+
+            if (result[0] == true) {
+                //result[1]: array_SchoolData
+                $("input[name='School']").autocomplete({
+                    source: result[1]
+                });
+            }
+            else {
+                let optErr = $.parseJSON('{"text":"Đã có lỗi xảy ra. ' + result[1] + '","layout":"bottom","type":"error"}');
+                noty(optErr);
+            }
+        };
+        obj.complete = function () {
+
+        };
+        obj.error = function () {
+            alert("Gặp sự cố không thể tải dữ liệu trường đào tạo");
+        };
+
+        $.ajax(obj);
+    };
+
+    function MajorsAutoComplte() {
+        var obj = {};
+        obj.url = "/home/LoadMajors";
+        obj.dataType = "json";
+        obj.type = "POST";
+        obj.contentType = "application/json";
+        obj.success = function (result) {
+
+            if (result[0] == true) {
+                //result[1]: array_MajorsData
+                $("input[name='Majors']").autocomplete({
+                    source: result[1]
+                });
+            }
+            else {
+                let optErr = $.parseJSON('{"text":"Đã có lỗi xảy ra. ' + result[1] + '","layout":"bottom","type":"error"}');
+                noty(optErr);
+            }
+        };
+        obj.complete = function () {
+
+        };
+        obj.error = function () {
+            alert("Gặp sự cố không thể tải dữ liệu chuyên ngành đào tạo");
+        };
+
+        $.ajax(obj);
+    };
+
+    function showPageDetail() {
+        $('.box-content #upload_more, #divmorefiles, #teacherSubmit, .btn-file, i.glyphicon-trash, span.span-required').remove();
+
+        //replace tag input[type='text'], input[type='email'] => <span></span>
+        $('.box-content').find('input[type="text"], input[type="email"]').each(function () {
+            $(this).replaceWith($("<span />").text(this.value));
+        })
+
+        //replace select tag => <span></span>
+        $('.box-content').find('select').each(function () {
+            let selectName = $(this).prop("name");
+            let _value = $("select[name='" + selectName + "'] option:selected").text();
+            $(this).replaceWith($("<span />").text(_value));
+        })
+
+        //replace textarea tag => <span></span>
+        $('.box-content').find('textarea').each(function () {
+            let textareaName = $(this).prop("name");
+            if (textareaName == "Note") {
+                let _value = $("textarea[name='" + textareaName + "']").val();
+                $(this).replaceWith($("<span />").html(_value));
+            }
+        })
+
+        //replace tag input[type='checkbox'] => <i></i>
+        $('.box-content').find('input[type="checkbox"]').each(function () {
+            if ($(this).is(":checked") == true) {
+                $(this).replaceWith($("<i class='fa fa-check-square-o' />"));
+            }
+            else {
+                $(this).replaceWith($("<i class='fa fa-square-o' />"));
+            }
+        })
+    };
+
+</script>
+
+
+

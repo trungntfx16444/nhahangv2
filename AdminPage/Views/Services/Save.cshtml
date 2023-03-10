@@ -1,0 +1,148 @@
+﻿@model AdminPage.Models.service
+@{
+    if (!string.IsNullOrEmpty(Model.ServiceId))
+    {
+        ViewBag.Title = "Sửa dịch vụ";
+    }
+    else
+    {
+        ViewBag.Title = "Thêm dịch vụ";
+    }
+    var langs = ViewBag.exitsLangs as List<AdminPage.Services.SiteLang.Language>;
+    var lang = Request["lang"]?.ToString() ?? AdminPage.Services.SiteLang.GetDefault().Code;
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <a class="breadcrumb-item" href="/services/">Dịch vụ - Sản phẩm</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="/services/" class="btn btn-default">< Trở lại</a>
+    <a href="#" onclick="News_newLang('@Model.ReId')" class="btn btn-primary add_lang"><i class="fa fa-globe"></i> Thêm Ngôn ngữ</a>
+</p>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+<div class="card">
+    @if (langs.Count > 0)
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-6">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==lang ?"active":"")" data-toggle="tab" href="#anticon-tab" onclick="LoadLang('@Model.ReId', '@l.Code', this)"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+            <div class="col-6 p-2">
+                <button id="quicksave" class="btn btn-sm btn-success float-right" style="display:none" onclick="quick_save()"><i class="fa fa-save"></i> Lưu nhanh</button>
+            </div>
+
+        </div>
+    }
+    <div class="card-body" id="partial_content">
+        @Html.Partial("_Save", Model)
+    </div>
+</div>
+<p class="btn-group">
+    <a href="/services/" class="btn btn-default">< Trở lại</a>
+</p>
+
+@section scripts
+{
+    <script src="~/Content/admin/ckeditor/ckeditor.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder_v1.js"></script>
+    <script src="~/Scripts/upload_and_review.js"></script>
+    <script type="text/javascript">
+
+        function uploadpic() {
+            var finder = new CKFinder();
+            finder.BasePath = '/Content/admin/ckfinder/';
+            finder.SelectFunction = SetFileField;
+            finder.Popup();
+        }
+
+        function SetFileField(fileUrl, data) {
+            $("#hdPicture").val(fileUrl);
+            $("#showPicture").attr("src", fileUrl);
+        }
+
+        //resize ckeditor
+        
+        function News_newLang(id) {
+            if ($('#quicksave').is(":visible")) {
+                if (confirm("Bạn có muốn lưu lại bài viết đang chỉnh sửa không?")) {
+                    return quick_save(News_newLang);
+                }
+            }
+            $.ajax({
+                method: "POST",
+                url: "/services/_AddLanguage_Modal",
+                data: { id },
+                dataType: "html"
+            })
+                .done(function (data) {
+                    $("body").append(data);
+                })
+                .fail(function () {
+                })
+                .always(function () {
+                });
+            
+        }
+        function LoadLang(id, lang, el) {
+            if (el == null || !$(el).hasClass('active')) {
+                $.ajax({
+                    method: "POST",
+                    url: "/services/_Save",
+                    data: { id, lang },
+                    dataType: "html"
+                })
+                    .done(function (data) {
+                        $("#partial_content").html(data);
+                    })
+                    .fail(function () {
+                    })
+                    .always(function () {
+                    });
+            }
+        }
+        function quick_save(callback) {
+            var action = $("#services_form").prop("action");
+            $("#services_form").prop("action", "/services/SaveJson").ajaxSubmit(function (data) {
+                if (data[1]) {
+                    success(data[1]);
+                    $("#quicksave").hide();
+                    if (callback) { callback(); }
+                } else {
+                    error(data[1]);
+                }
+            })
+            $("#services_form").prop("action", action);
+        }
+    </script>
+}

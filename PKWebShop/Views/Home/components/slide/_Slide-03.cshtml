@@ -1,0 +1,32 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Models.CustomizeModels
+@{
+    webconfiguration info = UserContent.GetWebInfomation();
+}
+
+<div class="slider-area">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="banner-slider">
+                    @foreach (var s in Model.Details.OrderBy(o => o.Detail.VolumeNumber))
+                    {
+                        foreach (var p in s.Files)
+                        {
+                        <div class="px-0">
+                            <div class="banner-wrap banner-border-1 mb-10">
+                                <div class="banner-img banner-img-zoom">
+                                    <a href="@s.Detail.URL"> <img src="@(p.FileName)" alt="@s.Detail.Title" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" /></a>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+﻿@model List<PKWebShop.Models.expense>
+@using PKWebShop.AppLB
+@using PKWebShop.Services
+@{
+    var listStatus = UserContent.ExpenseStatus();
+    var webLicense = new PackageServices().WebPackInfo();
+}
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td class="font-weight-semibold">
+            <span class="font-weight-semibold">#@(item.Id)</span>
+        </td>
+        <td>
+            <span class="font-weight-semibold">@(item.Title)</span>
+            @if (!string.IsNullOrEmpty(item.Vendor_Name))
+            {
+                <br /><span class="font-weight-semibold">NCC:</span>
+                <span>@(item.Vendor_Name)</span>
+            }
+            @if (!string.IsNullOrEmpty(item.ImportTicket_Id))
+            {
+                <br /><span class="font-weight-semibold">Mã phiếu nhập:</span>
+                <span>#@(item.ImportTicket_Id)</span>
+            }
+        </td>
+        <td class="text-dark">
+            <span class=" font-weight-semibold">@((item.Total > 0 ? item.Total?.ToString("#,###") : "0"))</span>
+        </td>
+        <td>
+            <span>@(item.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm"))</span><br />
+            <span><span class="font-weight-semibold font-italic">Bởi</span> @(item.CreatedBy)</span>
+        </td>
+        <td>
+            @if (item.Status == "1")
+            {
+                <span>@(item.PaymentDate?.ToString("dd/MM/yyyy"))</span>
+            }
+            else
+            {
+                <span class="badge badge-warning">@(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)</span>
+            }
+        </td>
+        <td>
+            <button type="button" class="btn btn-icon btn-sm btn-success m-r-5" data-toggle="tooltip" title="Xem chi tiết" onclick="ViewDetail('@item.Id')">
+                <i class="anticon anticon-search"></i>
+            </button>
+            <button type="button" class="btn btn-icon btn-sm btn-secondary" data-toggle="tooltip" title="In phiếu chi" onclick="ExpensePrint('@item.Id')">
+                <i class="anticon anticon-printer"></i>
+            </button>
+            @if (item.Status == listStatus.FirstOrDefault().Key)
+            {
+                <br />
+                <button type="button" class="btn btn-icon btn-sm btn-warning m-r-5 m-t-5" data-toggle="tooltip" title="Chỉnh sửa" onclick="GetExpense('edit', '@item.Id')">
+                    <i class="anticon anticon-edit"></i>
+                </button>
+                <button type="button" class="btn btn-icon btn-sm btn-danger m-t-5" data-toggle="tooltip" title="Xóa phiếu chi" onclick="DelExpense('@item.Id')">
+                    <i class="anticon anticon-delete"></i>
+                </button>
+            }
+        </td>
+    </tr>
+}
+
+<script type="text/javascript">
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

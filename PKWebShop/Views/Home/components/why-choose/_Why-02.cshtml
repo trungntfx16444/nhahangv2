@@ -1,0 +1,39 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@{
+    string url_product = ViewBag.url_product;
+}
+
+<div class="why-area ptb-70 bg-img" style="background-image: url('../../../../Content/client/images/bg/banner1.jpg.jpg'); ">
+    <div class="container">
+        <div class="section-title-tab-wrap d-none">
+            <b></b>
+            <div class="section-title-3 px-2">
+                <h2 class="text-white">@(Model.Feature.Title)</h2>
+            </div>
+            <b></b>
+        </div>
+        <div class="d-flex justify-content-center mb-20">
+            <p class="col-md-6 text-white text-center">
+                @(Model.Feature.SubTitle)
+            </p>
+        </div>
+        <div class="row justify-content-center">
+            @foreach (var item in Model.Details)
+            {
+                var first_pic = item.Files.FirstOrDefault();
+                <div class="col-lg-2 col-4 px-1 px-md-2">
+                    <div class="single-service-wrap-4 mb-30">
+                        <div class="service-icon mb-3 text-center">
+                            <img src="@(first_pic?.FileName)" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy"/>
+                        </div>
+                        <div class="service-content text-center">
+                            <span class="number count">@(item.Detail.SubTitle)</span>
+                            <p class="service-content-title">@(item.Detail.Title)</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

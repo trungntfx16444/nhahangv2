@@ -1,0 +1,91 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@{
+    //var info = ViewBag.WebInfo as webconfiguration ?? new webconfiguration();
+    //var cates = UserContent.GetWebCategoryProduct();
+    //string url_product = ViewBag.url_product;
+    //Constant.CURRENCY_SIGN = "đ";
+    string url_sanpham = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+    var adminSite = UserContent.GetAdminSite();
+    var cateLv1 = ViewBag.CateLv1 as List<category>;
+    var cateLv2 = ViewBag.CateLv2 as List<category>;
+    var cateLv3 = ViewBag.CateLv3 as List<category>;
+    cateLv2.AddRange(cateLv3);
+}
+
+
+<div class="pt-40 pb-20" style="background-color: #f2f9ff">
+    @foreach (var d in Model.Details)
+    {
+        var data = d.Data[0] as List<(category Key, List<product> Value)>;
+        //var count = d.Data[1]?.ToString();
+        <div class="container-xl">
+            <div class="section-title text-center">
+                <h2 class="title">@Html.Raw(Model.Feature.Title?.Replace("[", "<span>").Replace("]", "</span>"))</h2>
+                <div>@Model.Feature.SubTitle</div>
+            </div>
+            <div class="product-slider-active-3-1 slide-warp-arrow">
+                @foreach (var c in data)
+                {
+                    foreach (var product in c.Value)
+                    {
+                        var cateParent = cateLv1.Where(x => (product.CategoryId ?? "").Contains(x.ReId));
+                        var cateChild = cateLv2.Where(x => (product.CategoryId ?? "").Contains(x.ReId));
+                        var prodUrl = $"/{product.Url}-pd{product.ReId}";
+                        <div class="product-plr-1 px-2">
+                            <div class="single-product-wrap">
+                                <div class="product-img product-img-zoom">
+                                    <a href="@(prodUrl)" tabindex="0">
+                                        <img src="@($"{adminSite}{product.Picture}")" alt="@(product.ProductName)" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                    </a>
+                                </div>
+                                <div class="product-content-wrap">
+                                    <div class="product-content-left">
+                                        <h4 class="text-left">
+                                            <a href="@(prodUrl)" tabindex="0">@(product.ProductName)</a>
+                                        </h4>
+                                        @if (c.Key.ReId == null)
+                                        {
+                                            <small>
+                                                @foreach (var cp in cateParent)
+                                                {
+                                                    <a class="a_cate" href="@($"/{cp.UrlCode}-pc{cp.ReId}")">@(cp.CategoryName)</a>
+                                                }
+                                            </small>
+                                        }
+                                        <div class="tag-size">
+                                            @foreach (var cc in cateChild)
+                                            {
+                                                <a href="@($"/{cc.UrlCode}-pc{cc.ReId}")" class="tag">@(cc.CategoryName)</a>
+                                            }
+                                            
+                                        </div>
+                                        <div class="price-wrap">
+                                            <div class="size">
+                                                @product.Acreage m²
+                                            </div>
+                                            <div class="price-item"><span class="product-price">@(product.Price > 0 ? product.ShowPrice : "Thỏa thuận")</span></div>
+                                        </div>
+                                        <div class="locate-time">
+                                            <span class="time"><i class="far fa-clock"></i> @CommonFunc.TimeAgo(product.CreateAt)</span>
+                                            <span class="locate"><i class="fas fa-map-marker-alt" style="width: 13px; text-align: center;"></i> @product.locationInfo.LocationString()</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="text-center mt-30">
+                <a href="@Model.Feature.Url" class="btn btn-theme btn-view-more">
+                    Xem tất cả
+                </a>
+            </div>
+        </div>
+    }
+</div>
+

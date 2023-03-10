@@ -1,0 +1,115 @@
+﻿@model expense
+@using AdminPage.Models
+@using AdminPage.Models.CustomizeModels
+@using Newtonsoft.Json;
+@using AdminPage.AppLB
+@{
+    var listStatus = UserContent.ExpenseStatus();
+    var orther_cost = JsonConvert.DeserializeObject<List<ExpenseObjectModel>>(Model.Reason ?? string.Empty);
+}
+<style>
+    table td, table th {
+        padding: 10px;
+    }
+
+    .text-black {
+        color: black !important;
+    }
+</style>
+
+<div class="row">
+    <table style="margin: auto; border: 1px solid #2a2a2a; width:90%">
+        <tbody>
+            <tr>
+                <td>
+                    <table style="width: 100%; border-collapse: collapse;" border="0" cellspacing="0" cellpadding="0" width="100%">
+                        <tbody>
+                            <tr>
+                                <td class="p-l-0">
+                                    <p class="font-weight-bold text-black">PHIẾU CHI</p>
+                                    <p class="text-black">@(Model.CreatedAt.Value.ToString("'Ngày 'dd' tháng 'MM' năm 'yyyy"))</p>
+                                    <p class="text-black">Mã Phiếu: <span class="font-weight-bold">@(Model.Id)</span></p>
+                                </td>
+                                <td class="p-r-0">
+                                    <p class="text-black font-italic text-right">NCC: @(!string.IsNullOrEmpty(Model.Vendor_Name) ? Model.Vendor_Name : "__________")</p>
+                                    <p class="text-black font-italic text-right">Mã phiếu nhập: @(!string.IsNullOrEmpty(Model.ImportTicket_Id) ? Model.ImportTicket_Id : "__________")</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table><br />
+                    <span class="text-black"><span class="font-weight-semibold">Nội dung:</span> @(Model.Title)</span><br />
+                    <span class="text-black"><span class="font-weight-semibold">Trạng thái:</span> @(listStatus.FirstOrDefault(x => x.Key == Model.Status).Value)</span><br />
+                    @if (Model.Status == "1")
+                    {
+                        <span class="text-black"><span class="font-weight-semibold">Ngày TT:</span> @Model.PaymentDate.Value.ToString("dd/MM/yyyy")</span><br />
+                        <span class="text-black"><span class="font-weight-semibold">Phương thức TT:</span> @(Model.PaymentMethod)</span><br />
+                    }
+                    <br />
+                    <table style="border: none; width:100%" border="1" class="text-black">
+                        @if (orther_cost.Count > 0)
+                        {
+                            <thead class="text-center font-weight-bold">
+                                <tr>
+                                    <td colspan="6" style="background-color: #eee;">CÁC CHI PHÍ</td>
+                                </tr>
+                                <tr>
+                                    <td>STT</td>
+                                    <td colspan="4">Tên chi phí</td>
+                                    <td>Số tiền</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{int i = 0;}
+                                @foreach (var item in orther_cost)
+                                {
+                                    i++;
+                                    <tr>
+                                        <td class="text-center">@i</td>
+                                        <td colspan="4">@item.Name</td>
+                                        <td style="text-align:right">@(item.Price)</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td style="text-align:right" colspan="5">Tổng chi phí </td>
+                                    <td style="text-align:right">@orther_cost.Sum(item => int.Parse(item.Price?.Replace(".", ""))).ToString("#,##0")</td>
+                                </tr>
+                            </tbody>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <thead class="text-center font-weight-bold">
+                                <tr>
+                                    <td colspan="6" style="background-color: #eee;">GHI CHÚ</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6">@Html.Raw(Model.Note)</td>
+                                </tr>
+                            </tbody>
+                        }
+                        <thead class="font-weight-bold">
+                            <tr>
+                                <td class="text-right" colspan="5">TỔNG CỘNG</td>
+                                <td class="text-right">@((Model.Total??0).ToString("#,##0"))</td>
+                            </tr>
+                        </thead>
+                    </table>
+                    <p>&nbsp;</p>
+                    <table width="100%">
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td style="width: 220.7pt; padding: 0in 5.4pt 0in 5.4pt;">
+                                    <p class="text-black font-italic text-center">@(DateTime.Now.ToString("'Ngày 'dd' tháng 'MM' năm 'yyyy"))</p>
+                                    <p class="text-black font-weight-semibold text-center">Người lập phiếu</p>
+                                    <p class="text-black text-center mt-5">@Model.CreatedBy</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

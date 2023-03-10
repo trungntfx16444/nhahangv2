@@ -1,0 +1,155 @@
+﻿@model IEnumerable<AdminPage.Models.uploadmorefile>
+@{
+    bool upload = bool.Parse(ViewData["upload"].ToString());
+}
+
+@if (Model != null)
+{
+
+    foreach (var item in Model)
+    {
+        string filename = "";
+        if (item.FileName.Length > 30)
+        {
+            filename = "..." + item.FileName.Substring(item.FileName.Length - 30);
+        }
+        else
+        {
+            filename = item.FileName;
+        }
+
+        if (upload == false)
+        {
+            <!--khong cho phep update-->
+
+            if (string.IsNullOrWhiteSpace(item.FileName) == false)
+            {
+                if (item.FileName.Contains("http") == false && item.FileName.Contains("www") == false)
+                {
+
+                    <div style="padding-left:0px;" class="col-md-12">
+                        <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                            <img style="height:100px;margin-left:0" alt="hình ảnh" src="@item.FileName" />
+                            <i style="padding-left:10px">@item.FileName</i>
+                            <a style="padding-left:10px" href="@Url.Action("downloadfile", "upload", new { id = item.UploadId })" data-toggle="tooltip" class="pull-right" title="Tải về">
+                                <i class="glyphicon glyphicon-download"></i>
+                            </a>
+                            <a style="padding-left:10px" href="@item.FileName" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                <i class="glyphicon glyphicon-zoom-in"></i>
+                            </a>
+                        </p>
+
+                    </div>
+
+                }
+                else
+                {
+                    <div style="padding-left:0px;" class="col-md-12">
+                        <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                            <img style="height:100px;margin-left:0" alt="hình ảnh" src="@item.FileName" />
+                            <i style="padding-left:5px">@item.FileName</i>
+                            <a href="@item.FileName" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                <i class="glyphicon glyphicon-zoom-in"></i>
+                            </a>
+                        </p>
+
+                    </div>
+                }
+
+
+            }
+
+        }
+        else
+        {
+            <!--duoc phep update-->
+
+            if (item.FileName.Contains("http") == false && item.FileName.Contains("www") == false)
+            {
+
+                <div style="padding-left:0px;" class="col-md-12" id="f_@item.UploadId">
+                    <p style="border:1px dotted red; padding:3px; ">
+                        <img style="height:45px;margin-left:0" alt="hình ảnh" src="@item.FileName" />
+                        <i style="padding-left:5px">@item.FileName</i>
+                        <a style="padding-left:10px" href="@Url.Action("downloadfile", "upload", new { id = item.UploadId })" data-toggle="tooltip" class="pull-right" title="Tải về">
+                            <i class="glyphicon glyphicon-download"></i>
+                        </a>
+                        <a style="padding-left:10px" onclick="fdelete('@item.UploadId')" data-toggle="tooltip" class="float-right" title="Xóa tập tin">
+                            <i class="fa fa-trash text-danger "></i>
+                        </a>
+                        <a style="padding-left:10px" href="@item.FileName" target="_blank" data-toggle="tooltip" class="float-right" title="Xem tập tin">
+                            <i class="fa fa-search-plus "></i>
+                        </a>
+
+                        &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="floading_@item.UploadId" style="display:none" />
+                    </p>
+
+                </div>
+
+            }
+            else
+            {
+                <div style="padding-left:0px;" class="col-md-12" id="f_@item.UploadId">
+                    <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                        <img style="height:45px;margin-left:0" alt="hình ảnh" src="@item.FileName" />
+                        <i style="padding-left:10px">@item.FileName</i>
+                        <a href="@item.FileName" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                            <i class="glyphicon glyphicon-zoom-in"></i>
+                        </a>
+                    </p>
+
+                </div>
+            }
+
+        }
+
+    }
+}
+
+@if (upload)
+{
+    <div id="divmorefiles">
+        @*<div class='form-group'>
+           
+            <input type='file' class='input-sm input_file' name='morefiles_1' id="pic1" onchange="reviewUpload(this)">
+            <div style="padding-left:0px;display:none" class="col-md-12" id="review_pic1" onclick="$(this).closest('.form-group').find('.input_file').trigger('click')">
+                <p style="border:1px dotted red; padding:3px">
+                    <img id="img_pic1" style="height:45px;margin-left:0" alt="xem trước" />
+                    <i style="padding-left:5px" id="fname_pic1"></i>
+                    <a onclick="upload_delete('pic1'), event.preventDefault()" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                        <i class="fa fa-trash  text-danger float-right"></i>
+                    </a>
+                </p>
+
+            </div>
+
+        </div>*@
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <input type="hidden" id="filescount" name="filescount" value="0" />
+            <button class="btn btn-success btn-xs pt-0 pb-0" type="button" id="upload_more" style="font-size:1.5rem"><i class="anticon anticon-picture" ></i>+</button>
+        </div>
+    </div>
+}
+<script src="~/Scripts/Upload_and_review.js"></script>
+<script type="text/javascript">
+    $("#upload_more").click(function () {
+        var filescount = Number($("#filescount").val()) + 1;
+        var content = $("<div class='form-group m-b-0'>"
+            + "<input type='file' class='input-sm input_file' name='morefiles_" + filescount + "' id='pic" + filescount + "' onchange=\"reviewUpload(this)\" style='display:none'/>"
+            + "<div style='padding-left:0px;display:none' class='col-md-12' id='review_pic" + filescount + "'>"
+            + "<p style=\"border:1px dotted red; padding:3px\">"
+            + "<img id=\"img_pic" + filescount + "\" style=\"height:45px;margin-left:0\" alt=\"xem trước\" />"
+            + "<i style=\"padding-left:5px\" id=\"fname_pic" + filescount + "\"></i>"
+            + "<a onclick=\"upload_delete('pic" + filescount + "')\" href=\"#\" data-toggle=\"tooltip\" class=\"pull-right\" title=\"Xóa file này\">"
+            + "       <i class=\"fa fa-trash text-danger float-right\"></i>"
+            + "    </a>"
+            + "</p>"
+            + "</div></div>");
+        $("#filescount").val(filescount);
+        $("#divmorefiles").append(content);
+        content.find(".input_file").trigger('click');
+
+    });
+</script>

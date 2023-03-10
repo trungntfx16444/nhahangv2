@@ -1,0 +1,30 @@
+﻿/*--------------------------------------------------------------
+# Call To Action Section
+--------------------------------------------------------------*/
+.call-to-action .container {
+    background-size: cover;
+    background-image: url('../../images/bg/bg-why.jpg');
+    background-repeat:no-repeat;
+}
+
+.call-to-action_wrap{
+    padding: 40px;
+}
+    .call-to-action_wrap .form-control {
+        background-color: rgb(255 255 255 / 30%);
+        color:#fff;
+        border:0;
+        padding: 10px 20px
+    }
+        .call-to-action_wrap .form-control::placeholder{
+            color:#fff
+        }
+        .call-to-action_wrap .form-control:focus {
+            box-shadow: none;
+        }
+    .call-to-action_wrap .btn-submit {
+        background-color: #f88711;
+        color:#fff;
+        padding:5px 10px;
+        border:0
+    }

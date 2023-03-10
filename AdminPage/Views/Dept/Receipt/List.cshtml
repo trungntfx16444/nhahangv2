@@ -1,0 +1,56 @@
+﻿@model List<AdminPage.Models.receipts>
+@using Inner.Libs.Helpful
+@using AdminPage.AppLB
+@using AdminPage.Enums
+@using AdminPage.Utils
+@{
+    var listStatus = UserContent.ExpenseStatus();
+}
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td class="font-weight-semibold">
+            <span class="font-weight-semibold">@(item.Id)</span>
+        </td>
+        <td>
+            <span class="text-capitalize font-weight-semibold">@(item.OrderId)</span><br />
+        </td>
+        <td class="text-dark">
+            <span class=" font-weight-semibold text-primary">@((item.PaymentAmount > 0 ? item.PaymentAmount.ToString("#,###") : "0")) @Constant.CURRENCY_SIGN</span><br />
+            <span>Ngày thanh toán: @(item.ReceiptsAt?.ToString("dd/MM/yyyy"))</span><br />
+            <span>Phương thức thanh toán: @(item.PaymentMethod)</span>
+        </td>
+        <td>
+            <span>@(item.CreatedAt.HasValue?item.CreatedAt.Value.ToString("dd/MM/yyyy"):"")</span><br />
+            <span><span class="text-capitalize font-weight-semibold">Bởi</span> @(item.CreatedBy)</span>
+        </td>
+        <td>
+            @if (item.PaymentStatus == PaymentStatus.FullyPaid.Code<string>())
+            {
+                <span class="badge badge-success">@(PaymentStatus.FullyPaid.Text())</span>
+            }
+            else
+            {
+                <span class="badge badge-warning">@(PaymentStatus.PaidAPart.Text())</span>
+            }
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-success" onclick="GetReceipt('view', '@item.Id')">
+                <i class="anticon anticon-search"></i>
+            </button>
+            @if (item.PaymentStatus == listStatus.FirstOrDefault().Key)
+            {
+                <button type="button" class="btn btn-sm btn-warning" onclick="GetReceipt('edit', '@item.Id')">
+                    <i class="anticon anticon-edit"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="DelReceipt('@item.Id')">
+                    <i class="anticon anticon-delete"></i>
+                </button>
+            }
+        </td>
+    </tr>
+}
+<script>
+    
+</script>

@@ -1,0 +1,33 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@model sFeatures_view
+<div class="why-area" style="background-image: url('../../../../Upload/images/banner/bg_why.jpg');">
+    <div class="container">
+        <div class="section-title-tab-wrap align-items-inherit mb-20">
+            <div class="section-title-3">
+                <h2>@Model.Feature.Title</h2>
+                <p class="my-2">@Model.Feature.Description</p>
+            </div>
+        </div>
+        <div class="content_srv col-md-6 px-0">
+            @foreach (var item in Model.Details)
+            {
+                var imgurl = item.Files.FirstOrDefault()?.FileName;
+                <div class="single-service-wrap mb-30 justify-content-start">
+                    <div class="service-icon">
+                        @if (!string.IsNullOrEmpty(imgurl))
+                        {
+                            <img src="@(imgurl)" alt="@item.Detail.Title" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy" />
+                        }
+                    </div>
+                    <div class="service-content">
+                        <h3>@item.Detail.Title</h3>
+                        <p>@Html.Raw(item.Detail.Description)</p>
+                    </div>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

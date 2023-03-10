@@ -1,0 +1,231 @@
+﻿@using PKWebShop.Utils
+@{
+    ViewBag.Title = "Quản lý phiếu thu";
+}
+
+<style type="text/css">
+    table > tbody tr > td {
+        vertical-align: top !important;
+    }
+</style>
+
+@Html.Partial("partial/_HeaderPageDefault")
+<div id="_Detail">
+    @Html.Partial("_Detail")
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">Danh sách phiếu thu</h4>
+            <div class="card-toolbar">
+                <span class="btn btn-primary" onclick="GetReceipt('edit')">
+                    Tạo phiếu thu
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!--Search-->
+        <div class="form-group row">
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Từ ngày</span>
+                    </div>
+                    <input type="date" id="from" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="from" value="@(ViewBag.From)" />
+                </div>
+            </div>
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Đến ngày</span>
+                    </div>
+                    <input type="date" id="to" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="to" value="@(ViewBag.To)" />
+                </div>
+            </div>
+            <div class="col-md-5 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <input type="text" id="search" name="search" class="form-control" value="" placeholder="Nhập tên KH hoặc mã ĐH" autocomplete="off" />
+                    <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                        <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Report-->
+        <div class="row">
+            <div class="col-lg-4 col-md-4">
+                <div class="card" style="border-color:#de4436">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="m-b-0">Tổng phải thu</p>
+                                <h2 class="m-b-0">
+                                    <span id="receipt_total">$0</span>
+                                </h2>
+                            </div>
+                            <div class="avatar avatar-icon avatar-lg avatar-red">
+                                <i class="anticon anticon-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <div class="card card" style="border-color:#00c9a7">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="m-b-0">Đã thu</p>
+                                <h2 class="m-b-0">
+                                    <span id="receipted">$0</span>
+                                </h2>
+                            </div>
+                            <div class="avatar avatar-icon avatar-lg avatar-cyan">
+                                <i class="anticon anticon-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <div class="card" style="border-color:#3f87f5">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="m-b-0">Còn lại</p>
+                                <h2 class="m-b-0">
+                                    <span id="receipt_remaining">$0</span>
+                                </h2>
+                            </div>
+                            <div class="avatar avatar-icon avatar-lg avatar-blue">
+                                <i class="anticon anticon-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Table list customer and order of customer-->
+        <div class="table-responsive">
+            <table id="table_order" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="no-sort">Mã Phiếu Thu</th>
+                        <th>Mã ĐH</th>
+                        <th>Khách hàng</th>
+                        @*<th>Đã Thu</th>*@
+                        <th>Ngày thu</th>
+                        <th>Trạng thái</th>
+                        <th colspan="3" class="no-sort" style="width:15%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--Append data using dataTable-->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(".menu-receipt").addClass("active");
+        
+    </script>
+
+    <script type="text/javascript">
+        var table = $('#table_order').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            "order": [[3, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/admin/dept/ReceiptList",
+                "data": function (data) {
+                    data.from = $("#from").val();
+                    data.to = $("#to").val();
+                    data.search = $("#search").val();
+                    return data;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    if (json.responseJSON.data) {
+                        $("#table_order tbody").html(json.responseJSON.data);
+                    }
+                    let _report = json.responseJSON.report;
+                    $("#receipt_total").html(`${toMoney(_report['receipt_total'])} @Constant.CURRENCY_SIGN`);
+                    $("#receipted").html(`${toMoney(_report['receipted'])} @Constant.CURRENCY_SIGN`);
+                    $("#receipt_remaining").html(`${toMoney(_report['receipt_remaining'])} @Constant.CURRENCY_SIGN`);
+                }
+            }
+        });
+        table.on('draw', function () {
+            //...
+        });
+
+        $("#search").keypress(function () {
+            if (event.keyCode == 13) {
+                $("#btn_search").trigger("click");
+            }
+        });
+
+        $("#btn_search").click(function () {
+            table.draw();
+        });
+        function GetReceipt(Type, Id) {
+            $.ajax({
+                method: "POST",
+                url: "/admin/dept/_Detail",
+                data: {Id,Type },
+                dataType: "html"
+            }).done(function (data) {
+                $("#_Detail").html(data);
+                $('#modal-receipt-detail').modal('show');
+            }).fail(function () {
+                //...
+            }).always(function () {
+            })
+        }
+        function DelReceipt(Id) {
+            if (confirm("Bạn có chắc muốn xóa phiếu nhập?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/dept/DelReceipt",
+                    data: { Id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (cnoty(data)) {
+                        table.draw();
+                    };
+                }).fail(function () {
+                    //...
+                }).always(function () {
+                })
+            }
+            
+        }
+    </script>
+}

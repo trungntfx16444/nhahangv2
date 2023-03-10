@@ -1,0 +1,64 @@
+﻿@model PKWebShop.Models.n_news
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+
+@{
+    ViewBag.Title = Model.TitleWebsite;
+    ViewBag.SEO_Description = Model.SEODescription;
+    ViewBag.og_image = Model.Picture;
+
+    var trangkhac_topbg = ViewBag.trangkhac_topbg as SectionFeatureModel;
+    var listTags = ViewBag.ListTag as List<n_news_tags>;
+    var curURL = Request.Url.LocalPath;
+}
+<div class="page-breadcrumbs">
+    <div class="container">
+        <div class="row py-5">
+            <div class="col-lg-8">
+                <h1 class="m-0">@Model.Name</h1>
+            </div>
+            <div class="col-lg-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="py-1 my-2 breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">@Model.ParentTopicName</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+@*<section class="bg-position-top-center bg-no-repeat py-6 py-sm-7 position-relative" style="background-color: #ff9c1a; background-image: url(../../@trangkhac_topbg.Picture); background-size:cover; background-position: right">
+    <div class="container py-lg-7">
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12">
+            </div>
+        </div>
+    </div>
+</section>*@
+<div class="cs-sidebar-enabled cs-sidebar-right">
+    <div class="container">
+        <div class="row">
+            <!-- Content-->
+            <div class="col-lg-9 cs-content py-4 mb-2 mb-sm-0 pb-sm-5">
+                <div class="pb-4" style="max-width: 38rem;">
+                    <nav aria-label="breadcrumb">
+                        <ol class="py-1 my-2 breadcrumb">
+                            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">@Model.ParentTopicName</li>
+                        </ol>
+                    </nav>
+                </div>
+                <img style="width:100%" src="@Model.Picture" />
+                <h1 class="mb-5">@Model.Name</h1>
+                <div class="post-content">
+                    <!-- Post content-->
+                    @Html.Raw(Model.Decription)
+                </div>
+            </div>
+            <!-- Sidebar-->
+            @Html.Partial("_Left_content")
+        </div>
+    </div>
+</div>
+

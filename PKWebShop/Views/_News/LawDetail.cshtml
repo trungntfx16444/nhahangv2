@@ -1,0 +1,233 @@
+﻿@model PKWebShop.Models.n_news
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+
+@{
+    ViewBag.Title = Model.TitleWebsite;
+    ViewBag.SEO_Description = Model.SEODescription;
+    ViewBag.og_image = Model.Picture;
+
+    ViewBag.topicid = Model.TopicId;
+    var arrData = ViewBag.ArrData as object[];
+    var trangkhac_topbg = arrData[0] as SectionFeatureModel;
+    var listTopic = arrData[1] as List<n_toppic>;
+    var top4NewLaw = arrData[2] as List<n_news>;
+    var listTags = arrData[3] as List<string>;
+
+    var menuLevel1 = listTopic.Where(x => string.IsNullOrEmpty(x.RelatedTopicId)).ToList();
+    var menuLevel2 = listTopic.Where(x => !string.IsNullOrEmpty(x.RelatedTopicId)).ToList();
+}
+
+
+<style type="text/css">
+    .dropdown > .dropdown-menu {
+        display: block;
+        position: relative;
+        border: none;
+        box-shadow: none;
+        margin-top: 15px;
+        float: none;
+    }
+
+    .danhmuc ul li {
+        z-index: 1;
+    }
+
+        .danhmuc ul li a {
+            font-family: 'Pattaya', sans-serif;
+            font-size: 18px;
+        }
+
+    #div-nd p {
+        text-align: justify;
+    }
+
+    .widget_archive ul li a:hover {
+        padding-left: unset;
+    }
+</style>
+
+
+@if (trangkhac_topbg != null)
+{
+    <!--Breadcrumb start-->
+    <div class="ed_pagetitle" style="background-image: url(@(trangkhac_topbg.Picture));">
+        <div class="ed_img_overlay"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-4 col-sm-6">
+                    <div class="page_title">
+                        <h1>@(Model.Name)</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-8 col-sm-6">
+                    <ul class="breadcrumb">
+                        <li><a href="/">Trang chủ</a></li>
+                        <li><i class="fa fa-angle-double-right" aria-hidden="true"></i></li>
+                        <li><a href="/phap-luat" style="cursor:pointer">@(trangkhac_topbg.Title)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Breadcrumb end-->
+}
+
+
+<!--Blog content start-->
+<div class="ed_transprentbg ed_toppadder80 blog-single">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-8 col-sm-8">
+                <div class="ed_blog_all_item">
+                    <div class="ed_blog_item ed_bottompadder50">
+                        <div class="ed_blog_image">
+                            <img src="@(Model.Picture ?? "/Content/admin/img/no_image.jpg")" alt="image" />
+                        </div>
+                        <div class="ed_blog_info">
+                            <h1>@(Model.Name)</h1>
+                            <ul>
+                                <li data-toggle="tooltip" data-placement="right" title="Người viết">
+                                    <a href="javascript:void(0)"><i class="fa fa-user"></i> @(Model.CreatedBy)</a>
+                                </li>
+                                <li data-toggle="tooltip" data-placement="right" title="Ngày viết">
+                                    <a href="javascript:void(0)"><i class="fa fa-clock-o"></i> @(Model.CreatedAt?.ToString("dd/MM/yyyy"))</a>
+                                </li>
+                                <li data-toggle="tooltip" data-placement="right" title="Lượt xem">
+                                    <a href="javascript:void(0)"><i class="fa fa-television"></i> @(Model.ViewCount ?? 0)</a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                            <div id="div-nd">@Html.Raw(Model.Decription)</div>
+                        </div>
+                        <div class="ed_blog_tags">
+                            <ul>
+                                <li><i class="fa fa-tags"></i> <a href="javascript:void(0)">tags: </a></li>
+                                @if (!string.IsNullOrEmpty(Model.Tags))
+                                {
+                                    var tags = Model.Tags?.Split('|');
+                                    foreach (var item in tags)
+                                    {
+                                        <li><a href="/phap-luat?tag=@(item?.Split(']')[0]?.Replace("[", "")?.Replace("]", ""))">@(item?.Split(']')[1]),</a></li>
+                                    }
+                                }
+                            </ul>
+                            <div>
+                                <div class="fb-like" data-href="@Request.Url.AbsoluteUri" data-width="" data-layout="button_count" data-action="like" data-size="large" data-share="true"></div>
+                                @*<a href="javascript:void(0)" id="ed_share_wrapper">share the post</a>
+                                    <ul id="ed_social_share">
+                                        <li><a href="#" data-toggle="tooltip" data-placement="bottom" title="skype"><i class="fa fa-skype"></i></a></li>
+                                        <li><a href="#" data-toggle="tooltip" data-placement="bottom" title="twitter"><i class="fa fa-twitter"></i></a></li>
+                                        <li><a href="#" data-toggle="tooltip" data-placement="bottom" title="linkedin"><i class="fa fa-linkedin"></i></a></li>
+                                        <li><a href="#" data-toggle="tooltip" data-placement="bottom" title="google-plus"><i class="fa fa-google-plus"></i></a></li>
+                                        <li><a href="#" data-toggle="tooltip" data-placement="bottom" title="facebook"><i class="fa fa-facebook"></i></a></li>
+                                    </ul>*@
+                            </div>
+                        </div>
+                        <div class="clearfix"></div><br />
+                        <div class="fb-comments" data-href="@(Request.Url.AbsoluteUri)" data-numposts="5" data-width=""></div>
+                    </div>
+                </div>
+            </div>
+            <!--Sidebar Start-->
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                <div class="sidebar_wrapper">
+
+                    <aside class="widget widget_categories danhmuc">
+                        <h4 class="widget-title" style="color:#be2c39;">Danh mục pháp luật</h4>
+                        @if (menuLevel1 != null && menuLevel1.Count() > 0)
+                        {
+                            <ul>
+                                @foreach (var lv1 in menuLevel1)
+                                {
+                                    <li class="dropdown">
+                                        <a class="dropdown-toggle" href="/danh-muc-phap-luat/@lv1.URL">
+                                            <i class="fa fa-chevron-right"></i> @(lv1.Name)
+                                        </a>
+                                        @if (menuLevel2.Any(x => x.RelatedTopicId == lv1.TopicId))
+                                        {
+                                            <ul class="dropdown-menu">
+                                                @foreach (var lv2 in menuLevel2.Where(x => x.RelatedTopicId == lv1.TopicId))
+                                                {
+                                                    <li class="dropdown-item">
+                                                        <a href="/danh-muc-phap-luat/@lv2.URL"><i class="fa fa-chevron-right"></i> @(lv2.Name)</a>
+                                                    </li>
+                                                }
+                                                <li class="dropdown-item">
+                                                    <a href="/danh-muc-phap-luat/@(lv1.URL)_k">
+                                                        <i class="fa fa-chevron-right"></i> Khác
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        }
+                                    </li>
+                                }
+                                <li>
+                                    <a href="/danh-muc-phap-luat/-1">
+                                        <i class="fa fa-chevron-right"></i> Khác
+                                    </a>
+                                </li>
+                            </ul>
+                        }
+                    </aside>
+
+                    <aside class="widget widget_archive">
+                        <h4 class="widget-title" style="color:#be2c39;">Bài viết mới</h4>
+                        <ul>
+                            @foreach (var item in top4NewLaw)
+                            {
+                                <li>
+                                    <a href="/phap-luat/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId" class="ed_blog_item">
+                                        <div class="ed_blog_image col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                                            <img src="@(item.Picture ?? "/Content/admin/img/no_image.jpg")" alt="image" />
+                                        </div>
+                                        <div class="ed_blog_info col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                                            <h3>@(item.Name)</h3>
+                                            <span style="color:#272727; font-size:12px; font-weight:600;">
+                                                <i class="fa fa-clock-o" style="font-size:15px; color:#be2c39; padding-right:5px;"></i>@(item.CreatedAt?.ToString("dd/MM/yyyy"))
+                                            </span>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </aside>
+
+                    @if (listTags != null && listTags.Count() > 0)
+                    {
+                        <aside class="widget widget_tag_cloud">
+                            <h4 class="widget-title">Tags</h4>
+                            @foreach (var item in listTags.Distinct())
+                            {
+                                <a href="/phap-luat?tag=@(item?.Split(']')[0]?.Replace("[", "")?.Replace("]", ""))" class="ed_btn ed_orange">@(item?.Split(']')[1])</a>
+                            }
+                        </aside>
+                    }
+
+                    <aside class="widget widget_tag_cloud">
+                        <h4 class="widget-title">Kết nối với chúng tôi</h4>
+                        <img style="width:40%; border:1px solid #808080" src="~/Content/user/images/img/GiaSuHappy_QRcode.jpg" />
+                    </aside>
+                </div>
+                <!--Sidebar End-->
+            </div>
+        </div>
+    </div>
+    <!--Blog content end-->
+</div>
+
+
+<script type="text/javascript">
+
+    //fix the p va ul, li trong noi dung bai viet
+    $("#div-nd p").each(function () {
+        let val = $(this).css("margin-left").replace("px", "");
+        if (val > 0) {
+            $(this).css("margin-left", "");
+            $(this).css("padding-left", val + "px");
+        }
+    });
+
+    $($("#div-nd ul li")).css("float", "none").css("list-style", "unset").css("margin-left", "20px");
+</script>

@@ -1,0 +1,184 @@
+﻿@using Inner.Libs.Helpful
+@using PKWebShop.Areas.Admin.Services
+@using PKWebShop.Enums
+@model PKWebShop.Models.receipts
+@using PKWebShop.AppLB
+@{
+    ReceiptService services = new ReceiptService();
+    var customer = services.Customer();
+    var orders = services.Orders();
+    var listStatus = UserContent.ExpenseStatus();
+}
+@if (ViewBag.Type == "view")
+{
+    <style>
+        #modal-receipt-detail * {
+            border: none !important;
+        }
+
+        #modal-receipt-detail .required::after {
+            content: "" !important;
+        }
+
+        #modal-receipt-detail select {
+            color: #000 !important;
+            -webkit-touch-callout: text;
+            -webkit-user-select: text;
+            -khtml-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            background-color: transparent;
+            cursor: text;
+        }
+
+        #modal-receipt-detail select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            text-indent: 1px;
+            text-overflow: '';
+        }
+
+        #modal-receipt-detail input {
+            background-color: transparent;
+        }
+
+        #modal-receipt-detail textarea {
+            background-color: transparent;
+        }
+    </style>
+}
+
+<div class="modal" id="modal-receipt-detail" aria-modal="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form id="FormReceipt" name="FormReceipt" class="modal-content" action="/admin/dept/ReceiptSave" method="post" @(ViewBag.Type == "view" ? "readonly" : "")>
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">@(ViewBag.Type == "view"? ("Xem phiếu Thu " + Model?.Id):Model!=null?"Sửa Phiếu Thu "+Model.Id:"Tạo Phiếu Thu" )</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="Id" name="Id" value="@(Model?.Id)">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Khách hàng</label><br />
+                        <select class="select2" id="CustomerId" name="CustomerId">
+                            <option value="">-- Chọn nhà khách hàng --</option>
+                            @foreach (var item in customer)
+                            {
+                                <option value="@(item.Id)" @(Model?.CustomerId == item.Id ? "selected" : "")>@(item.FullName)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Đơn hàng</label><br />
+                        <select class="select2" id="OrderId" name="OrderId">
+                            <option value="">-- Chọn Đơn hàng --</option>
+                            @foreach (var item in orders)
+                            {
+                                <option value="@(item.Id)" class="cus_@(item.CustomerId)" data-cus="@(item.CustomerId)" @(Model?.OrderId == item.Id ? "selected" : "")>@(item.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm")) | @((item.GrandTotal??0).ToString("#,##0")) </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Tổng tiền</label>
+                        <input type="text" class="form-control price_numbner" id="PaymentAmount" name="PaymentAmount" value="@(Model?.PaymentAmount)" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Phương thức thanh toán</label>
+                        <input type="text" class="form-control" id="PaymentMethod" name="PaymentMethod" value="@(Model?.PaymentMethod)" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Ngày thanh toán</label>
+                        <input type="date" class="form-control" data-date="" data-date-format="DD/MM/YYYY" id="ReceiptsAt" name="ReceiptsAt" value="@((Model?.ReceiptsAt??DateTime.Now).ToString("yyyy-MM-dd"))" />
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold">Trạng Thái</label>
+                        <select id="PaymentStatus" name="PaymentStatus" class="form-control">
+                            @foreach (var s in listStatus)
+                            {
+                                <option value="@s.Key" @(Model?.PaymentStatus == s.Key ? "selected" : "")>@s.Value</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-12 form-group">
+                        <label class="font-weight-semibold">Ghi chú</label>
+                        <textarea class="form-control" id="Note" name="Note" rows="3">@(Model?.Note)</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer px-0">
+                    <button type="submit" class="btn btn-primary">Lưu Phiếu</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    @if (ViewBag.Type == "view") {
+    <text>
+    $(function () {
+        $("#modal-receipt-detail input").prop("readonly", "readonly");
+        $("#modal-receipt-detail textarea").prop("readonly", "readonly");
+        $("#modal-receipt-detail select").prop("disabled", "disabled");
+        $("#modal-receipt-detail button[type=submit]").remove();
+        $("input[type='date']").on("change", function () {
+            var mo = moment(this.value, "YYYY-MM-DD");
+            if (mo.isValid())
+                this.setAttribute("data-date", mo.format(this.getAttribute("data-date-format")));
+            else {
+                this.setAttribute("data-date", "");
+            }
+        }).trigger("change");
+    })
+    </text>
+    }
+    else
+    {<text>
+    $(function () {
+
+        $(".select2").select2({
+            templateResult: function (data, container) {
+                if (data.element) {
+                    $(container).addClass($(data.element).attr("class"));
+                }
+                return data.text;
+            }
+        });
+        $("input[type='date']").on("change", function () {
+            var mo = moment(this.value, "YYYY-MM-DD");
+            if (mo.isValid())
+                this.setAttribute("data-date", mo.format(this.getAttribute("data-date-format")));
+            else {
+                this.setAttribute("data-date", "");
+            }
+        }).trigger("change");
+        $("#CustomerId").on("change", function () {
+            $("#OrderId option.cus_" + $(this).val()).removeClass("hide");
+            $("#OrderId option:not(.cus_" + $(this).val() + ")").addClass("hide").removeAttr("selected");
+            $("#OrderId").prop("disabled", $("#OrderId option:not(.hide)").length == 0);
+        }).trigger("change");
+        $("#FormReceipt").ajaxForm(function (data) {
+            if (cnoty(data)) {
+                $('#modal-receipt-detail').modal("hide");
+                table.draw();
+            }
+            else {
+            }
+        })
+    });
+    </text>}
+
+
+
+
+</script>

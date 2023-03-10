@@ -1,0 +1,77 @@
+﻿@model PKWebShop.Models.order
+@using Inner.Libs.Helpful
+@using PKWebShop.AppLB
+@using PKWebShop.Enums
+@using PKWebShop.Models
+@using PKWebShop.Utils
+@{
+    string link = $"{UserContent.GetAdminSite()}/orderman/vieworder/{Model.Id}";
+    var listProp = ViewBag.ListProp as List<product_properties>;
+    var Shipping = ViewBag.Shipping as string;
+}
+<div style="max-width: 1140px;width: 100%;padding-right: 15px;padding-left: 15px;margin-right: auto;margin-left: auto;box-sizing: border-box;color: #53535f;font-size: 14px;font-family: 'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif;">
+    <div style="position: relative;display: flex;flex-direction: column;min-width: 0;word-wrap: break-word;background-color: #fff;background-clip: border-box;border: 1px solid rgba(0,0,0,0.125);border-radius: 0.25rem;margin-bottom: 1.25rem;transition: all 0.3s ease-in-out;-webkit-transition: all 0.3s ease-in-out;-moz-transition: all 0.3s ease-in-out;-o-transition: all 0.3s ease-in-out;-ms-transition: all 0.3s ease-in-out;">
+        <div style="padding: 1.5rem;position: relative;flex: 1 1 auto;width: 100%;">
+            <div style="line-height: 2 !important; margin-top: 15px !important; padding-left: 10px !important;">
+                <h3 style="font-weight: 600 !important; color: black">THÔNG BÁO ĐƠN HÀNG MỚI</h3>
+            </div><br>
+            <div style="line-height: 2 !important; padding-left: 10px !important;">
+                <span style="font-weight: 600 !important; color: black">THÔNG TIN KHÁCH HÀNG</span><br>
+                <span>@Model.CustomerName</span><br />
+                <span>@(Shipping)</span><br />
+            </div><br>
+            <div style="line-height: 2 !important; padding-left: 10px !important;">
+                <span style="font-weight: 600 !important; color:black">ĐƠN HÀNG</span><br>
+                <span style="font-weight: 600 !important;">Tổng thanh toán: </span><span style="font-weight: 600 !important; color: black">@(Model.GrandTotal?.ToString("#,##0đ"))</span><br>
+                <span style="font-weight: 600 !important;">Trang thái: </span><span>@UserContent.OrderStatus()[Model.Status] - @(Ext.EnumParse<PaymentMethod>(Model.PaymentMethod).Text())</span><br />
+                <span style="font-weight: 600 !important;">Thời gian: </span><span>@(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm"))</span><br />
+            </div>
+            <div style="margin-top: 20px !important;">
+                <div style="display: block;width: 100%;overflow-x: auto;">
+                    <table style="color: #53535f;width: 100%;margin-bottom: 1rem;border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="color: #2a2a2a;border-bottom: 1px solid #ededed;font-weight: 600;padding: 15px;text-align: inherit;">Tên sản phẩm</th>
+                                <th style="color: #2a2a2a;border-bottom: 1px solid #ededed;font-weight: 600;padding: 15px;text-align: inherit;">Tổng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.Details)
+                            {
+                                <tr>
+                                    <td style="border-color: #ededed;padding: 15px;border-top: 1px solid #dee2e6;">
+                                        <span>@detail.Quantity x @detail.ProductName</span><br />
+                                        @foreach (var prop in listProp.Where(x => (detail.ParentPropertiesId ?? "").Contains(x.ReId) && x.is_parrent == true))
+                                        {
+                                            <span style="font-size: 13px;">
+                                                <b style="font-weight: 600 !important;">@(prop.name):</b>
+                                                @(listProp.FirstOrDefault(x => (detail.PropertiesId ?? "").Contains(x.ReId) && x.parrent_properties_id == prop.id)?.name + ", ")
+                                            </span>
+                                        }
+                                    </td>
+                                    <td style="border-color: #ededed;padding: 15px;border-top: 1px solid #dee2e6;">
+                                        @((detail.Price*detail.Quantity)?.ToString("#,##0")) @Constant.CURRENCY_SIGN
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div style="display: flex;flex-wrap: wrap;margin-right: -15px;margin-left: -15px;width: 100%;box-sizing: border-box;line-height: 2 !important;">
+                    <div style="flex: 0 0 100%;max-width: 100%;position: relative;width: 100%;padding-right: 15px;padding-left: 15px;">
+                        <div style="padding-top: 20px !important;padding-bottom: 20px !important;line-height: 2 !important;box-sizing: border-box;">
+                            <h5 style="font-size: 16px;color: #2a2a2a;line-height: 1.5;font-weight: 600;margin-bottom: 0.5rem;margin-top: 0;">Ghi chú:</h5>
+                            <p style="font-size: 13px !important;margin-bottom: 0 !important;margin-top: 0;color: #72849a;line-height: 1.8; font-style: italic;">
+                                @Html.Raw(Model.Customer_Comment?.Replace("\r\n", "<br/>"))
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="line-height: 2 !important; text-align: center; font-style: italic;">
+                    <span style="color: black;">Xem chi tiết đơn hàng <a href='@link' target='_blank'>tại đây.</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

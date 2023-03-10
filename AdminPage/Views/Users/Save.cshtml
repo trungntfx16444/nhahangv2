@@ -1,0 +1,261 @@
+﻿@model AdminPage.Models.user
+@using AdminPage.Models
+@using AdminPage.AppLB
+@{
+    ViewBag.Title = !string.IsNullOrEmpty(Model.UserId) ? "Thông tin thành viên" : "Thêm thành viên";
+    string _AvatarDefault = "/Content/admin/img/no_image.jpg";
+    var curMem = ViewBag.CurMem as user;
+    var role_admin = UserContent.UserRole.Admin;
+    var role_manager = UserContent.UserRole.Manager;
+    var role_member = UserContent.UserRole.Member;
+}
+
+
+<style type="text/css">
+    .suffix-icon {
+        cursor: pointer;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <a class="breadcrumb-item" href="/users">Thành viên</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+
+<div class="container">
+    <p class="btn-group">
+        <a href="/users" class="btn btn-default">
+            <i class="anticon anticon-arrow-left"></i> Trở lại
+        </a>
+        @*@if (!string.IsNullOrEmpty(Model.UserId))
+        {
+            <a onclick="return confirm('Hãy xác nhận bạn muốn RESET mậu khẩu?')" href="/users/resetpassword/@Model.UserId" class="btn btn-default">
+                <i class="glyphicon glyphicon-edit"></i> Reset mật khẩu
+            </a>
+        }*@
+    </p>
+
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger">
+            <div class="d-flex align-items-center justify-content-start">
+                <span class="alert-icon">
+                    <i class="anticon anticon-warning font-size-18"></i>
+                </span>
+                <span>@Html.Raw(TempData["error"])</span>
+            </div>
+        </div>
+    }
+    else if (TempData["success"] != null)
+    {
+        <div class="alert alert-success">
+            <div class="d-flex align-items-center justify-content-start">
+                <span class="alert-icon">
+                    <i class="anticon anticon-check font-size-18"></i>
+                </span>
+                <span> @Html.Raw(TempData["success"])</span>
+            </div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">@ViewBag.Title</h4>
+        </div>
+        <div class="card-body">
+            <form id="frm-member" action="/users/save" method="post">
+                @Html.HiddenFor(m => m.UserId)
+                <div class="media align-items-center">
+                    <div class="avatar avatar-image m-h-10 m-r-15" style="height:80px; width:80px; border:1px solid lightgrey">
+                        <img id="img_Avatar" src="@(!string.IsNullOrEmpty(Model.Avatar) ? Model.Avatar : _AvatarDefault)" alt="Ảnh đại diện" style="object-fit:cover" />
+                    </div>
+                    <div class="m-l-20 m-r-20">
+                        <h5 class="m-b-5 font-size-18">Ảnh Đại Diện</h5>
+                        <p class="opacity-07 font-size-13 m-b-0">
+                            Kích thước đề xuất: 120x120<br>
+                            Kích thước file tối đa: 5MB
+                        </p>
+                    </div>
+                    <div>
+                        <label class="btn btn-tone btn-primary mb-0">
+                            <i class="anticon anticon-upload"></i> Tải hình
+                            <input type="file" accept="image/*" name="Avatar" class="d-none" onchange="readURL(this)">
+                            <textarea id="textarea_Avatar" class="d-none" name="textarea_Avatar">@(!string.IsNullOrEmpty(Model.Avatar) ? Model.Avatar : _AvatarDefault)</textarea>
+                        </label>
+                        <button type="button" class="btn btn-tone btn-danger" onclick="DelAvatar()">Xóa ảnh</button>
+                    </div>
+                </div>
+                <hr class="m-v-25">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Tên:</label>
+                        <input type="text" required name="FullName" class="form-control" placeholder="Họ & Tên" value="@(TempData["Fullname"] == null ? Model.Fullname : TempData["Fullname"])">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Email:</label>
+                        <input type="email" name="Email" class="form-control" placeholder="demo@gmail.com" value="@(TempData["Email"] == null ? Model.Email : TempData["Email"])">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Số điện thoại</label>
+                        <input type="text" required name="Phone" class="form-control phone" placeholder="Số điện thoại" value="@(TempData["Phone"] == null ? Model.Phone : TempData["Phone"])">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Địa chỉ</label>
+                        <input type="text" name="Address" class="form-control" placeholder="Địa chỉ" value="@(TempData["Address"] == null ? Model.Address : TempData["Address"])">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold required">User Name</label>
+                        <input type="text" required id="UserName" name="UserName" class="form-control" placeholder="Username" value="@(TempData["UserName"] == null ? Model.UserName : TempData["UserName"])" @(!string.IsNullOrEmpty(Model.UserId) ? "disabled" : "")>
+                    </div>
+                    @if (string.IsNullOrEmpty(Model.UserId) || (curMem.RoleLevel == (int)UserContent.UserRole.Admin) || (curMem.UserName == Model.UserName))
+                    {
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold required">Password</label>
+                            <div class="input-affix">
+                                <input type="password" required id="Password" name="Password" class="form-control" value="@(TempData["Password"] == null ? Model.Password : TempData["Password"])" placeholder="Password">
+                                <i id="suffix1" class="suffix-icon anticon anticon-eye"></i>
+                            </div>
+                        </div>
+                    }
+
+                    @if (string.IsNullOrEmpty(Model.UserId))
+                    {
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold required">Nhập lại Password</label>
+                            <div class="input-affix">
+                                <input type="password" required id="RetypePassword" name="RetypePassword" class="form-control" value="@(TempData["RetypePass"] == null ? "" : TempData["RetypePass"])" placeholder="Nhập lại pasword">
+                                <i id="suffix2" class="suffix-icon anticon anticon-eye"></i>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold">Vai Trò</label>
+                        <select name="RoleLevel" class="form-control">
+                            <option @(Model.RoleLevel == (int)role_member || (TempData["RoleLevel"] != null && (int)TempData["RoleLevel"] == (int)role_member) ? "selected" : "") value="@((int)role_member)">@(role_member.ToString())</option>
+                            @if (curMem.RoleLevel == (int)role_admin)
+                            {
+                                <option @(Model.RoleLevel == (int)role_manager || (TempData["RoleLevel"] != null && (int)TempData["RoleLevel"] == (int)role_manager) ? "selected" : "") value="@((int)role_manager)">@(role_manager.ToString())</option>
+                                <option @(Model.RoleLevel == (int)role_admin || (TempData["RoleLevel"] != null && (int)TempData["RoleLevel"] == (int)role_admin) ? "selected" : "") value="@((int)role_admin)">@(role_admin.ToString())</option>
+                            }
+                            else if (curMem.RoleLevel == (int)role_manager && curMem.UserName == Model.UserName)
+                            {
+                                <option @(Model.RoleLevel == (int)role_manager || (TempData["RoleLevel"] != null && (int)TempData["RoleLevel"] == (int)role_manager) ? "selected" : "") value="@((int)role_manager)">@(role_manager.ToString())</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group @(curMem.UserId == Model.UserId ? "d-none" : "")">
+                    <div class="checkbox">
+                        <input id="gridCheck" type="checkbox" name="Active" checked="@(Model.Active ?? false)" value="true">
+                        <label for="gridCheck">Kích hoạt</label>
+                    </div>
+                </div>
+
+                <div class="col-md-12 text-right">
+                    <button type="button" class="btn btn-primary" onclick="SaveMember($(this))">
+                        <i id="submit-icon" class="anticon anticon-check"></i> @(string.IsNullOrEmpty(Model.UserId) ? "Lưu thông tin" : "Lưu thay đổi")
+                    </button>
+                    <button id="btn-submit" type="submit" class="d-none"></button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/Content/admin/js/input-mask/mask.js"></script>
+    <script src="~/Content/admin/js/notify/notify.min.js"></script>
+
+    <script type="text/javascript">
+        $(".phone").inputmask("999.999.9999");
+
+        $("#UserName").on("input", function () {
+            let _val = $(this).val().toLowerCase();
+            _val = _val.replace(/[^0-9a-z]/gi, "");
+            $(this).val(_val);
+        });
+
+        $(".suffix-icon").click(function () {
+            if ($(this).prop("id") == "suffix1") {
+                if ($("#Password").prop("type") == "password") {
+                    $("#Password").prop("type", "text");
+                    $(this).removeClass("anticon-eye").addClass("anticon-stop");
+                }
+                else {
+                    $("#Password").prop("type", "password");
+                    $(this).removeClass("anticon-stop").addClass("anticon-eye");
+                }
+            }
+            else if ($(this).prop("id") == "suffix2") {
+                if ($("#RetypePassword").prop("type") == "password") {
+                    $("#RetypePassword").prop("type", "text");
+                    $(this).removeClass("anticon-eye").addClass("anticon-stop");
+                }
+                else {
+                    $("#RetypePassword").prop("type", "password");
+                    $(this).removeClass("anticon-stop").addClass("anticon-eye");
+                }
+            }
+        });
+
+        function readURL(input) {
+            let inputName = $(input).prop("name");
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#img_" + inputName).attr("src", e.target.result);
+                    $("#textarea_" + inputName).val(e.target.result);
+                    //console.log(e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]); // convert to base64 string
+            }
+        };
+
+        function DelAvatar() {
+            $("#img_Avatar").attr("src", "@(_AvatarDefault)");
+            $("#textarea_Avatar").val("@(_AvatarDefault)");
+        };
+
+        function SaveMember(element) {
+            if (!element.hasClass("button-loading")) {
+                let _checkValid = document.getElementById("frm-member").checkValidity();
+                if (_checkValid) {
+                    if ($("#UserId").val() == null || $("#UserId").val() == "") {
+                        let _pass = $("input[name='Password']").val().trim();
+                        let _retype = $("input[name='RetypePassword']").val().trim();
+                        if (_pass == "") {
+                            $("input[name='Password']").val("");
+                            msg_info("Vui lòng nhập password", "Password");
+                            return false;
+                        }
+                        else if (_pass != _retype) {
+                            msg_info("Password không khớp. Vui lòng nhập lại", "RetypePassword");
+                            return false;
+                        }
+                    }
+                    element.addClass("button-loading");
+                    $("#submit-icon").removeClass("anticon-check").addClass("anticon-loading", { duration: 500 });
+                }
+                $("#btn-submit").trigger("click");
+            }
+        };
+    </script>
+}

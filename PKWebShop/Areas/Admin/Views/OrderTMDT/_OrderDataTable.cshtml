@@ -1,0 +1,90 @@
+﻿@model List<PKWebShop.Models.order>
+@using Inner.Libs.Helpful
+@using PKWebShop.AppLB
+@using PKWebShop.Enums
+@using PKWebShop.Services
+@using PKWebShop.Utils
+@{
+    var listStatus = UserContent.OrderStatus();
+    var webLicense = new PackageServices().WebPackInfo();
+}
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td class="font-weight-semibold">
+            <a class="font-size-12 font-weight-semibold" href="/admin/OrderTMDT/vieworder/@(item.Id)">#@(item.Id)</a>
+            @if (!string.IsNullOrEmpty(item.Type))
+            {
+                <br /><span class="badge badge-pill badge-geekblue">Đặt hàng online</span>
+            }
+        </td>
+        <td>
+            <span class="text-capitalize font-weight-semibold">@(item.CustomerName)</span><br />
+            <span>P: @(item.CustomerPhone)</span>
+        </td>
+        <td class="text-dark">@((item.GrandTotal > 0 ? item.GrandTotal?.ToString("#,###") : "0")) @Constant.CURRENCY_SIGN</td>
+        <td>
+            <span>@(item.CreatedAt.Value.ToString("dd/MM/yyyy"))</span><br />
+            <span><i class="text-capitalize font-weight-semibold">Bởi</i> @(item.CreateBy)</span>
+        </td>
+        <td>
+            @if (item.Status == "-1")
+            {
+                <span class="badge badge-danger">@(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)</span>
+            }
+            else if (item.Status == "0")
+            {
+                <span class="badge badge-dark">@(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)</span>
+            }
+            else if (item.Status == "1")
+            {
+                <span class="badge badge-info">@(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)</span>
+            }
+            else if (item.Status == "2")
+            {
+                <span class="badge badge-success">@(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)</span>
+            }
+            else if (item.Status == "3")
+            {
+                <span class="badge badge-primary">@(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)</span>
+            }
+            else if (item.Status == "4")
+            {
+                <span class="badge badge-warning">@(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)</span>
+            }
+            else
+            {
+                @(listStatus.FirstOrDefault(x => x.Key == item.Status).Value)
+            }
+        </td>
+        <td>
+            <span><i class="font-weight-semibold">@(Ext.EnumParse<PaymentMethod>(item.PaymentData.Paytype).Text())</i></span><br />
+            @if (webLicense.PaymentOnline && Ext.EnumParse<PaymentMethod>(item.PaymentData.Paytype) != PaymentMethod.COD)
+            {
+                <span>
+                    Trạng thái :
+                    @if (item.PaymentData.ResponseCode == "00")
+                    {
+                        <span>Thanh toán thành công</span>
+                    }
+                    else
+                    {
+                        <span>@PaymentServices.MessageResp(item.PaymentData.Paytype, item.PaymentData.ResponseCode, true)</span>
+                    }
+                </span><br />
+                <span>Mã Ngân hàng : <i class="font-weight-semibold">@(item.PaymentData.BankCode)</i> </span><br />
+                <span>Loại thẻ     : <i class="font-weight-semibold">@(item.PaymentData.CardType)</i></span><br />
+                <span>Thực hiện lúc: <i class="font-weight-semibold">@(item.PaymentData.UpdatedAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? "")</i></span><br />
+            }
+        </td>
+        <td>
+            <a class="btn btn-sm btn-warning" href="/admin/OrderTMDT/save/@(item.Id)">
+                <i class="anticon anticon-edit"></i>
+            </a>
+            <a class="btn btn-sm btn-danger" href="/admin/OrderTMDT/deleteorder/@(item.Id)" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')">
+                <i class="anticon anticon-delete"></i>
+            </a>
+        </td>
+    </tr>
+}

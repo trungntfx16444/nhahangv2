@@ -1,0 +1,608 @@
+﻿@model List<PKWebShop.Models.category>
+@using PKWebShop.Services
+
+@{
+    ViewBag.Title = "Danh mục sản phẩm";
+    var listLanguage = ViewBag.ListLang as List<SiteLang.Language>;
+    var langCode = ViewBag.LangCode as string;
+}
+
+
+<style type="text/css">
+    .btn-desc:focus {
+        outline: 1px dotted;
+    }
+
+    .connectedSortable1 {
+        min-height: 20px;
+        border-radius: unset !important;
+    }
+
+    .div-cate1 {
+        border: 1px solid orange !important;
+        border-left: 2px solid orange !important;
+        color: orange !important;
+    }
+
+    .div-cate2 {
+        border: 1px solid #007bff !important;
+        border-left: 2px solid #007bff !important;
+        color: #007bff !important;
+    }
+
+    .div-cate3 {
+        border: 1px solid #28a745 !important;
+        border-left: 2px solid #28a745 !important;
+        color: #28a745 !important;
+    }
+
+    .bg-white {
+        background-color: white !important;
+    }
+
+    i.cate1, i.cate2, i.cate3 {
+        font-size: 18px;
+    }
+
+    .ui-state-highlight {
+        height: 3em;
+        line-height: 1.2em;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <a class="breadcrumb-item" href="/admin/productman">Sản phẩm</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">@ViewBag.Title</h4>
+            <div class="card-toolbar">
+                <button class="btn btn-primary" onclick="GetCateDetail('', 'add')">
+                    <i class="anticon anticon-plus"></i> Thêm danh mục SP
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body pt-1">
+        <div>
+            @if (listLanguage.Count > 1)
+            {
+                <ul class="nav nav-tabs" id="langTab" role="tablist">
+                    @foreach (var item in listLanguage)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(item.Code == langCode ? "active" : "")" href="/admin/productman/category?langcode=@(item.Code)">
+                                <i class="flag-icon @(item.Icon)"></i> @(item.Name)
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+        <br />
+        <div>
+            <div class="mb-3 save_sort_btn" style="display:none">
+                <button id="save_sort" class="btn btn-tone btn-primary" onclick="save_sort()">
+                    <i class="anticon anticon-retweet"></i> Lưu thay đổi vị trí
+                </button>
+            </div>
+
+            <div class="sortable1 connectedSortable1">
+                @foreach (var item in Model.Where(x => x.Level == 1))
+                {
+                    <div id="@(item.ReId)" class="div-cate1 border pl-3 pt-2 pr-3 pb-2 mb-2">
+                        @{ var cateLevel1 = $"/{item.UrlCode}-pc{item.ReId}";}
+                        <div class="cate1 header-content">
+                            <input name="cate_id_order" type="hidden" class="cate1" value="@($"cate1|{item.ReId}")" />
+                            <div class="cate1 ">
+                                <span class="cate1 font-weight-semibold text-dark">
+                                    @(item.CategoryName)
+                                </span>
+                                <span class="cate1 float-right">
+                                    <i class="cate1 cursor-pointer text-success anticon anticon-plus" onclick="GetCateDetail('@(item.ReId)', 'add')"></i>
+                                    <i class="cate1 cursor-pointer text-primary ml-2 anticon anticon-edit" onclick="GetCateDetail('@(item.ReId)')"></i>
+                                    <i class="cate1 cursor-pointer text-danger ml-2 anticon anticon-delete" onclick="DeleteCategory('@(item.ReId)')"></i>
+                                </span>
+                            </div>
+                            <div class="cate1">
+                                <span class="cate1 badge badge-pill @(item.Active == true ? "badge-purple" : "badge-magenta")">
+                                    @(item.Active == true ? "Hiển thị" : "Không hiển thị")
+                                </span>
+                                <span class="cate1 badge badge-pill badge-default">
+                                    <span class="cate1 font-weight-semibold">Url:</span>
+                                    <a class="cate1" href="@cateLevel1" target="_blank">
+                                        <span class="cate1 text-primary">@cateLevel1</span>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="cate1 body-content pt-2 pl-3 sortable2 connectedSortable1">
+                            <!--...-->
+                            @foreach (var item1 in Model.Where(x => x.Level == 2 && x.ParentId == item.ReId))
+                            {
+                                <div id="@(item1.ReId)" class="div-cate2 border pl-3 pt-2 pr-3 pb-2 mb-2" draggable="true">
+                                    @{ var cateLevel2 = $"/{item1.UrlCode}-pc{item1.ReId}";}
+                                    <div class="cate2 header-content">
+                                        <input name="cate_id_order" type="hidden" class="cate2" value="@($"cate2|{item1.ReId}")" />
+                                        <div class="cate2">
+                                            <span class="cate2 font-weight-semibold text-dark">
+                                                @(item1.CategoryName)
+                                            </span>
+                                            <span class="cate2 float-right">
+                                                <i class="cate1 cursor-pointer text-success anticon anticon-plus" onclick="GetCateDetail('@(item1.ReId)', 'add')"></i>
+                                                <i class="cate2 cursor-pointer text-primary ml-2 anticon anticon-edit" onclick="GetCateDetail('@(item1.ReId)')"></i>
+                                                <i class="cate2 cursor-pointer text-danger ml-2 anticon anticon-delete" onclick="DeleteCategory('@(item1.ReId)')"></i>
+                                            </span>
+                                        </div>
+                                        <div class="cate2">
+                                            <span class="cate2 badge badge-pill @(item1.Active == true ? "badge-purple" : "badge-magenta")">
+                                                @(item1.Active == true ? "Hiển thị" : "Không hiển thị")
+                                            </span>
+                                            <span class="cate2 badge badge-pill badge-default">
+                                                <span class="cate2 font-weight-semibold">Url:</span>
+                                                <a class="cate2" href="@cateLevel2" target="_blank">
+                                                    <span class="cate2 text-primary">@cateLevel2</span>
+                                                </a>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="cate2 body-content pt-2 pl-3 sortable3 connectedSortable1">
+                                        <!--...-->
+                                        @foreach (var item2 in Model.Where(x => x.Level == 3 && x.ParentId == item1.ReId))
+                                        {
+                                            <div id="@(item2.ReId)" class="div-cate3 border pl-3 pt-2 pr-3 pb-2 mb-2" draggable="true">
+                                                @{ var cateLevel3 = $"/{item2.UrlCode}-pc{item2.ReId}";}
+                                                <div class="cate3 header-content">
+                                                    <input name="cate_id_order" type="hidden" class="cate3" value="@($"cate3|{item2.ReId}")" />
+                                                    <div class="cate3">
+                                                        <span class="cate3 font-weight-semibold text-dark">
+                                                            @(item2.CategoryName)
+                                                        </span>
+                                                        <span class="cate3 float-right">
+                                                            <i class="cate3 cursor-pointer text-primary anticon anticon-edit" onclick="GetCateDetail('@(item2.ReId)')"></i>
+                                                            <i class="cate3 cursor-pointer text-danger ml-2 anticon anticon-delete" onclick="DeleteCategory('@(item2.ReId)')"></i>
+                                                        </span>
+                                                    </div>
+                                                    <div class="cate3">
+                                                        <span class="cate3 badge badge-pill @(item2.Active == true ? "badge-purple" : "badge-magenta")">
+                                                            @(item2.Active == true ? "Hiển thị" : "Không hiển thị")
+                                                        </span>
+                                                        <span class="cate3 badge badge-pill badge-default">
+                                                            <span class="cate3 font-weight-semibold">Url:</span>
+                                                            <a class="cate3" href="@cateLevel3" target="_blank">
+                                                                <span class="cate3 text-primary">@cateLevel3</span>
+                                                            </a>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="cate3 body-content pt-2 pl-3 sortable4 connectedSortable1">
+                                                    <!--...-->
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+
+                }
+            </div>
+
+            <div class="mb-3 save_sort_btn" style="display:none">
+                <button class="btn btn-tone btn-primary" onclick="save_sort()">
+                    <i class="anticon anticon-retweet"></i> Lưu thay đổi vị trí
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--Modal Category-->
+<div class="modal fade" id="modalCategory">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form id="frmcate" class="modal-content" action="/admin/productman/SaveCate" method="post">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ReId" name="ReId" value="" />
+                <input type="hidden" id="LangCode" name="LangCode" value="@(langCode)" />
+                <input type="hidden" id="Order" name="Order" value="-1" />
+
+                <div class="form-group">
+                    <label class="font-weight-semibold required">Tên danh mục</label>
+                    <input type="text" class="form-control" id="CategoryName" name="CategoryName" value="" required>
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-semibold">Chọn danh mục cha</label>
+                    <select id="ParentId" name="ParentId" class="form-control">
+                        <option value="">--- Chọn danh mục ---</option>
+                    </select>
+                </div>
+
+                <div class="accordion borderless" id="accordion-borderless">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <a id="a_collapse" class="collapsed p-0" data-toggle="collapse" href="#collapse">
+                                    <span class="font-weight-semibold text-primary">Cấu hình SEO cho danh mục</span>
+                                </a>
+                            </h5>
+                        </div>
+                        <div id="collapse" class="collapse" data-parent="#accordion-borderless">
+                            <div class="card-body">
+                                <div class="form-row">
+                                    <label class="font-weight-semibold">SEO - Meta Title</label>
+                                    <input type="text" class="form-control" id="MetaTitle" name="MetaTitle" value="">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label class="font-weight-semibold">SEO - Meta Description</label>
+                                        <textarea class="form-control" rows="3" id="MetaDesc" name="MetaDesc"></textarea>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="font-weight-semibold">SEO - Meta KeyWord</label>
+                                        <textarea class="form-control" rows="3" id="MetaKeyWord" name="MetaKeyWord"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="font-weight-semibold">Mô tả</label>
+                    <textarea class="form-control" id="Description" name="Description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="checkbox col-md-2">
+                        <input id="Active" name="Active" type="checkbox" value="true">
+                        <label class="font-weight-semibold" for="Active">Hiển thị</label>
+                    </div>
+                    <div class="checkbox col-md-6">
+                        <input id="Sellable" name="Sellable" type="checkbox" value="true">
+                        <label class="font-weight-semibold" for="Sellable">Mặt hàng kinh doanh</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                <button type="submit" class="btn btn-primary" onclick="return SaveCategory()">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section scripts
+{
+    <script type="text/javascript">
+        $(function () {
+            $("html, body").animate({ scrollTop: 0 }, 800);
+            load_event();
+            LoadCateParent();
+
+            CKEDITOR.replace('Description', { height: 260 });
+        });
+
+        var _sort = false;
+        function load_event() {
+            //category level 1
+            $(".sortable1").sortable({
+                connectWith: ".connectedSortable1",
+                placeholder: "ui-state-highlight",
+                start: function (event, ui) {
+                    Start(ui);
+                },
+                sort: function () {
+                    //console.log("bb");
+                },
+                stop: function () {
+                    Stop();
+                },
+            }).disableSelection();
+
+            //category level 2
+            $(".sortable2").sortable({
+                connectWith: ".connectedSortable1",
+                placeholder: "ui-state-highlight",
+                start: function (event, ui) {
+                    Start(ui);
+                },
+                sort: function () {
+                    //console.log("bb");
+                },
+                stop: function () {
+                    Stop();
+                },
+            }).disableSelection();
+
+            //category level 3
+            $(".sortable3").sortable({
+                connectWith: ".connectedSortable1",
+                placeholder: "ui-state-highlight",
+                start: function (event, ui) {
+                    Start(ui);
+                },
+                sort: function () {
+                    //console.log("bb");
+                },
+                stop: function () {
+                    Stop();
+                },
+            }).disableSelection();
+
+            $(".sortable1").on("sortchange", function () {
+                $(".save_sort_btn").show();
+                _sort = true;
+            });
+        };
+
+        var id_target = "";
+        function Start(ui) {
+            id_target = ui.item.prop("id");
+            $(`#${id_target}`).addClass("bg-white");
+        };
+
+        function Stop() {
+            let el_target = $(`#${id_target}`);
+            let el_parent = el_target.parent().parent();
+            $(`#${id_target}`).removeClass("bg-white");
+
+            if (el_parent.prop("class").search("cate3") != -1) {
+                if (el_target.prop("class").search("cate1") != -1) {
+                    $(".sortable1").sortable("cancel");
+                }
+                else if (el_target.prop("class").search("cate2") != -1) {
+                    $(".sortable2").sortable("cancel");
+                }
+                else if (el_target.prop("class").search("cate3") != -1) {
+                    $(".sortable3").sortable("cancel");
+                }
+                alert("Danh mục không được quá 3 cấp");
+            }
+            else {
+                if (el_target.prop("class").search("cate1") != -1) {
+                    if (((el_parent.prop("class").search("cate1") != -1) && (el_target.html().search("cate3") != -1))
+                        || ((el_parent.prop("class").search("cate2") != -1) && (el_target.html().search("cate2") != -1))) {
+                        $(".sortable1").sortable("cancel");
+                        alert("Danh mục không được quá 3 cấp");
+                    }
+                    else if (el_parent.prop("class").search("cate1") != -1) {
+                        el_target.removeClass("div-cate1").addClass("div-cate2");
+                        el_target.html(el_target.html().replace(/cate2/g, 'cate3').replace(/cate1/g, 'cate2').replace(/sortable2/g, 'sortable3'));
+                    }
+                    else if (el_parent.prop("class").search("cate2") != -1) {
+                        el_target.removeClass("div-cate1").addClass("div-cate3");
+                        el_target.html(el_target.html().replace(/cate1/g, 'cate3'));
+                    }
+                }
+                else if (el_target.prop("class").search("cate2") != -1) {
+                    if ((el_parent.prop("class").search("cate2") != -1) && (el_target.html().search("cate3") != -1)) {
+                        $(".sortable2").sortable("cancel");
+                        alert("Danh mục không được quá 3 cấp");
+                    }
+                    else if (el_parent.prop("class") == "") {
+                        el_target.removeClass("div-cate2").addClass("div-cate1");
+                        el_target.html(el_target.html().replace(/cate2/g, 'cate1').replace(/cate3/g, 'cate2').replace(/sortable3/g, 'sortable2'));
+                    }
+                    else if (el_parent.prop("class").search("cate2") != -1) {
+                        el_target.removeClass("div-cate2").addClass("div-cate3");
+                        el_target.html(el_target.html().replace(/cate2/g, 'cate3').replace(/sortable3/g, 'sortable4'));
+                    }
+                }
+                else if (el_target.prop("class").search("cate3") != -1) {
+                    if (el_parent.prop("class") == "") {
+                        el_target.removeClass("div-cate3").addClass("div-cate1");
+                        el_target.html(el_target.html().replace(/cate3/g, 'cate1').replace(/sortable4/g, 'sortable2'));
+                    }
+                    else if (el_parent.prop("class").search("cate1") != -1) {
+                        el_target.removeClass("div-cate3").addClass("div-cate2");
+                        el_target.html(el_target.html().replace(/cate3/g, 'cate2').replace(/sortable4/g, 'sortable3'));
+                    }
+                }
+            }
+
+            load_event();
+        };
+
+        var lisCate_lv1;
+        var lisCate_lv2;
+        function LoadCateParent() {
+            $.ajax({
+                method: "POST",
+                url: "/admin/productman/LoadCateParent",
+                data: { langCode: $("#LangCode").val() },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    lisCate_lv1 = data[1].filter(x => x.Level == 1);
+                    lisCate_lv2 = data[1].filter(x => x.Level == 2);
+
+                    let opt_cate = "<option value='' selected>--- Chọn danh mục ---</option>";
+                    $.each(lisCate_lv1, function (index, item) {
+                        opt_cate += `<option value='${item.ReId}' class='m${item.ReId}'>${item.CategoryName}</option>`;
+
+                        $.each(lisCate_lv2.filter(x => x.ParentId == item.ReId), function (index1, item1) {
+                            opt_cate += `<option value='${item1.ReId}' class='m${item1.ReId} m${item.ReId}'>--${item1.CategoryName}</option>`;
+                        })
+                    })
+                    $("#ParentId").html(opt_cate);
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Tải dữ liệu không thành công. Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function GetCateDetail(reId = "", key = "edit") {
+            if (_sort == true) {
+                msg_warning("Hãy lưu lại vị trí trước khi thực hiện thao tác khác", "save_sort", "right");
+                $("html, body").animate({ scrollTop: 0 }, 500);
+                return false;
+            }
+
+            $("#collapse").removeClass("show");
+            $("#a_collapse").addClass("collapsed");
+            $("#ParentId option").show();
+
+            if (key == "add") {
+                $("#modalTitle").html("Thêm danh mục");
+                $("#Order").val("");
+                $("#ReId").val("");
+                $("#CategoryName").val("");
+                CKEDITOR.instances.Description.setData("");
+                $("#MetaTitle").val("");
+                $("#MetaDesc").val("");
+                $("#MetaKeyWord").val("");
+                $("#Active").prop("checked", true);
+                $("#Sellable").prop("checked", true);
+                if (reId == "") {
+                    $("#ParentId").val("");
+                }
+                else {
+                    $("#ParentId").val(reId);
+                }
+                $("#modalCategory").modal("show");
+            }
+            else {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/productman/GetCateDetail",
+                    data: {
+                        reId: reId,
+                        langCode: $("#LangCode").val()
+                    },
+                    dataType: "json"
+                }).done(function (data) {
+                    ajaxLoading("off");
+                    if (data[0] == true) {
+                        $("#modalTitle").html("Chỉnh sửa danh mục");
+                        $("#Order").val(data[1].Order || "");
+                        $("#ReId").val(data[1].ReId || "");
+                        $(`.m${reId}`).hide();
+                        $("#ParentId").val(data[1].ParentId || "");
+                        $("#CategoryName").val(data[1].CategoryName);
+                        CKEDITOR.instances.Description.setData(data[1].Description);
+                        $("#MetaTitle").val(data[1].MetaTitle);
+                        $("#MetaDesc").val(data[1].MetaDesc);
+                        $("#MetaKeyWord").val(data[1].MetaKeyWord);
+                        $("#Active").prop("checked", data[1].Active ?? false);
+                        console.log(data[1].Sellable);
+                        $("#Sellable").prop("checked", data[1].Sellable ?? true);
+                        $("#modalCategory").modal("show");
+                    }
+                    else {
+                        msg_error(data[1], "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Tải dữ liệu không thành công. Đã có lỗi xảy ra", "", "top center");
+                });
+            }
+        };
+
+        function SaveCategory() {
+            if ($("#CategoryName").val() == "") {
+                msg_info("Vui lòng nhập tên danh mục", "CategoryName");
+                $("#CategoryName").focus();
+                return false;
+            }
+            $(".cs-page-loading").addClass("ajax_active");
+            $("#Description").val(CKEDITOR.instances.Description.getData());
+            return true;
+        };
+
+        function DeleteCategory(reId) {
+            if (confirm("Bạn có chắc muốn xóa danh mục này?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/productman/DeleteCate",
+                    data: {
+                        reId: reId,
+                        langCode: $("#LangCode").val()
+                    },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        window.location.reload();
+                    }
+                    else {
+                        msg_warning(data[1], "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Xóa không thành công. Đã có lỗi xảy ra", "", "top center");
+                });
+            }
+        };
+
+        function save_sort() {
+            var list_id = [];
+            $("[name=cate_id_order]").each(function () {
+                list_id.push($(this).val().replace("cate", ""));
+            });
+            $.ajax({
+                method: "POST",
+                url: "/admin/productman/SaveSort",
+                data: { list_id },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    $(".cs-page-loading").addClass("ajax_active");
+                    window.location.reload();
+
+                    //$(".save_sort_btn").hide(500);
+                    //msg_success(data[1], "", "top center");
+                    //$("html, body").animate({ scrollTop: 0 }, 800);
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function () {
+                msg_error("Lưu không thành công. Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+    </script>
+}

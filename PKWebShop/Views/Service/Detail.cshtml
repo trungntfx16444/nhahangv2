@@ -1,0 +1,137 @@
+﻿@model  PKWebShop.Models.service
+@using PKWebShop.Resources
+@using PKWebShop.Models
+@{
+    ViewBag.Title = Model.Name;
+    List<service> services = ViewBag.list_services ?? new List<service>();
+    List<uploadmorefile> gallery = ViewBag.gallery ?? new List<uploadmorefile>();
+}
+
+<div class="section-page big-55-height half-height over-hide z-bigger">
+
+    <div class="parallax parallax-top" style="background-image: url('@ViewBag.topbg'); top: 0px;"></div>
+    <div class="dark-over-pages"></div>
+    <div class="hero-center-section pages">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 parallax-fade-top" style="top: 0px; opacity: 1;">
+                    @*<div class="hero-text">@ViewBag.Title</div>*@
+                    <div class="breadcrumbs-wrap hero-small-text">
+                        <nav aria-label="breadcrumb">
+                            <ol class="mb-0 breadcrumb justify-content-center">
+                                <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                                <li class="breadcrumb-item">
+                                    <a href="/tin-tuc">Tin tức</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    @ViewBag.Title
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_BookingForm")
+<div class="padding-top-bottom z-bigger">
+    <div class="z-bigger">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 mt-4 mb-4 mt-lg-0">
+                    <div class="section">
+                        <div class="customNavigation rooms-sinc-1-2">
+                            <a class="prev-rooms-sync-1"></a>
+                            <a class="next-rooms-sync-1"></a>
+                        </div>
+                        <div id="rooms-sync1" class="owl-carousel">
+                            @if (!string.IsNullOrEmpty(Model?.Picture))
+                            {
+                                <div class="item">
+                                    <img src="@(Model?.Picture)" alt="">
+                                </div>
+                            }
+                            @foreach (var img in gallery)
+                            {
+                                <div class="item">
+                                    <img src="@img.FileName" alt="">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div id="rooms-sync2" class="owl-carousel">
+                            @if (!string.IsNullOrEmpty(Model?.Picture))
+                            {
+                                <div class="item">
+                                    <img src="@(Model?.Picture)" alt="">
+                                </div>
+                            }
+                            @foreach (var img in gallery)
+                            {
+                                <div class="item">
+                                    <img src="@img.FileName" alt="">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 post-box">
+                    <h1> @ViewBag.Title</h1>
+                    @Html.Raw(Model.Decription)
+
+                </div>
+                <div class="fb-like" data-href="/loai-phong/@Model.ReId" data-width="" data-layout="button" data-action="like" data-size="large" data-share="true"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="padding-top-bottom over-hide">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 align-self-center">
+                <h3 class="text-center section-title">Xem thêm loại phòng</h3>
+            </div>
+            <div class="clearfix"></div>
+            @foreach (var d in services)
+            {
+                <div class="col-md-4 mb-4">
+
+                    <a href="/loai-phong/@d.ReId">
+                        <div class="room-box background-white">
+                            <div class="room-name">
+                                <div class="name-room d-block">@d.Name</div>
+                                <div class="room-per review">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa text-capitalize">Review</i>
+                                </div>
+                                <div class="room-decs">
+                                    <p class="mt-1">@((d.Price ?? 0).ToString("#,##0")) @d.CurrencyUnit</p>
+                                </div>
+                            </div>
+                            <img src="@d.Picture" alt="">
+                        </div>
+                    </a>
+
+                </div>}
+
+
+        </div>
+        <div class="text-center">
+            <a href="/Room" class="btn btn-primary btn-pill">@Resource.BookRoom</a>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        $(function () {
+            $(".service_info").matchHeight();
+        })
+    </script>
+}
+

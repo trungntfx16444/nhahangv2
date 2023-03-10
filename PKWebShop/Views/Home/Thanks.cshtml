@@ -1,0 +1,236 @@
+﻿@model (sectionfeaturedetail f, List<uploadmorefile> pics)
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@using PKWebShop.Models.CustomizeModels
+
+@{
+    Layout = null;
+    string url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+    webconfiguration info = UserContent.GetWebInfomation();
+    var adminSite = UserContent.GetAdminSite();
+    var order = ViewBag.Order as order;
+    var listProductItem = ViewBag.ListOrderDetail as List<orders_detail>;
+    var listProp = ViewBag.ListProp as List<product_properties>;
+}
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="shortcut icon" href="@adminSite@(info.LogoPicture ?? info.LogoHeader ?? info.LogoFooter)">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Cảm ơn đã đặt hàng">
+    <meta name="author" content="Webphukhang">
+    <meta name="generator" content="Webphukhang">
+    <title>Mua hàng thành công</title>
+    <link rel="shortcut icon" href="#">
+    <!-- Bootstrap core CSS -->
+    <link href="~/Content/client/css/vendor/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/client/css/vendor/fontawesome.min.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Color.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Font.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Site.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Thank.css" rel="stylesheet" />
+</head>
+<body class="text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="masthead mb-auto">
+            <!--...-->
+        </header>
+        <main role="main" class="inner cover">
+            <div class="mb-3">
+                <a href="/">
+                    <img style="height:40vh" src="@adminSite@(Model.pics.FirstOrDefault()?.FileName ?? "")" loading="lazy" />
+                </a>
+            </div>
+            <h1 class="cover-heading text-theme">@(Model.f.Title)</h1>
+            <h4>@(Model.f.SubTitle)</h4>
+            @*<p>Mã đơn hàng của bạn là: <strong>100000023</strong></p>*@
+            <p>@Html.Raw(Model.f.Description)</p>
+            <div class="row ">
+                <div class="col-md-6 col-12 mb-3 mb-md-0">
+                    <a href="/" class="btn">
+                        <i class="fas fa-home"></i>
+                        Về trang chủ
+                    </a>
+                </div>
+                <div class="col-md-6 col-12 mb-3 mb-md-0">
+                    <a href="@($"/{(!string.IsNullOrEmpty(url_product) ? url_product : "san-pham")}")" class="btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        Tiếp tục mua hàng
+                    </a>
+                </div>
+                @*<div class="col-md-6 col-12 mb-3 mb-md-0">
+                        <a href="/customer/profile#newestorder" class="btn btn-theme w-100 p-3">
+                            <i class="fas fa-shopping-bag"></i>
+                            Xem đơn hàng
+                        </a>
+                    </div>*@
+            </div>
+
+            <!--Thông tin đơn hàng-->
+            @if (order != null)
+            {
+                <div class="mt-5 mb-5">
+                    <h4>Đơn hàng của bạn</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>STT.</th>
+                                    <th style="width:45%">Sản phẩm</th>
+                                    <th>Đơn giá</th>
+                                    <th>Số lượng</th>
+                                    <th class="text-right">Tạm tính</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in listProductItem)
+                                {
+                                    <tr>
+                                        <th class="align-top">@(listProductItem.IndexOf(item) + 1)</th>
+                                        <td class="align-top">
+                                            @(item.ProductName)
+                                            @if (!string.IsNullOrEmpty(item.PropertiesId))
+                                            {
+                                                <br />
+                                                <i>
+                                                    @foreach (var prop in listProp.Where(x => (item.ParentPropertiesId ?? "").Contains(x.ReId) && x.is_parrent == true))
+                                                    {
+                                                        <span>
+                                                            <b class="font-weight-semibold">@(prop.name):</b>
+                                                            @(listProp.FirstOrDefault(x => (item.PropertiesId ?? "").Contains(x.ReId) && x.parrent_properties_id == prop.id)?.name + "; ")
+                                                        </span>
+                                                    }
+                                                </i>
+                                            }
+                                        </td>
+                                        <td class="align-top">@(item.Price?.ToString("#,###")) @Constant.CURRENCY_SIGN</td>
+                                        <td class="align-top">@(item.Quantity)</td>
+                                        <td class="align-top text-right">@((item.Price * item.Quantity)?.ToString("#,###")) @Constant.CURRENCY_SIGN</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tbody id="total_detail">
+                                <tr>
+                                    <td colspan="3">
+                                        <div class="float-right text-right font-weight-semibold text-dark">
+                                            <h6><span class="font-weight-semibold">Tổng cộng:</span></h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-center font-weight-semibold text-dark">
+                                            <h6>@(listProductItem.Sum(x=>x.Quantity)??0)</h6>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="float-right text-right font-weight-semibold text-dark">
+                                            <h6>@(order.SubTotal?.ToString("#,###")) @Constant.CURRENCY_SIGN</h6>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @if (order.Shipping.Value > 0)
+                                {
+                                    <tr>
+                                        <td colspan="3">
+                                            <div class="float-right text-right font-weight-semibold text-dark">
+                                                <h6><span class="font-weight-semibold">Phí giao hàng:</span></h6>
+                                            </div>
+                                        </td>
+                                        <td colspan="2">
+                                            <div class="float-right text-right font-weight-semibold text-dark">
+                                                <h6>@((order.Shipping != null && order.Shipping > 0) ? order.Shipping?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</h6>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                @if ((order.DiscountAmount > 0) || (order.DiscountPercent > 0) || !string.IsNullOrEmpty(order.GiftCode))
+                                {
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="float-right text-right font-weight-semibold text-dark">
+                                                <h6>
+                                                    <span class="font-weight-semibold">Giảm giá:</span>
+                                                    @if (order.DiscountAmount > 0)
+                                                    {
+                                                        @((order.DiscountAmount != null && order.DiscountAmount > 0) ? order.DiscountAmount?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN
+                                                    }
+                                                    else if (order.DiscountPercent > 0)
+                                                    {
+                                                        @(((order.DiscountPercent ?? 0)/100 * (order.SubTotal ?? 0)).ToString("#,###")) @Constant.CURRENCY_SIGN
+                                                    }
+
+                                                    @if (!string.IsNullOrEmpty(order.GiftCode))
+                                                    {
+                                                        <br /><span class="text-success">(Mã giảm giá: @(order.GiftCode)@(order.DiscountPercent > 0 ? $" -{order.DiscountPercent}%" : ""))</span>
+                                                    }
+                                                </h6>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                @if ((order.BonusPointsUsed ?? 0) > 0)
+                                {
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="float-right text-right font-weight-semibold text-dark">
+                                                <h6><span class="font-weight-semibold">Sử dụng điểm tích lũy giảm:</span> @(order.BonusPointsDiscount?.ToString("#,###")) @Constant.CURRENCY_SIGN</h6>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="3">
+                                        <div class="float-right text-right font-weight-semibold text-dark">
+                                            <h6><span class="font-weight-semibold">Tổng thanh toán:</span></h6>
+                                        </div>
+                                    </td>
+                                    <td colspan="2">
+                                        <div class="float-right text-right font-weight-semibold text-dark">
+                                            <h6>@(order.GrandTotal > 0 ? order.GrandTotal?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</h6>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            <!--End-Thông tin đơn hàng-->
+        </main>
+
+        <footer class="mastfoot mt-auto">
+            <div class="inner">
+                <p>Copyright © @(info.Copyright) |  <a href="https://webphukhang.com/" target="_blank">Thiết kế web</a> <a href="https://webphukhang.com/gioi-thieu/" target="_blank">Phú Khang</a>
+            </div>
+        </footer>
+    </div>
+
+    @Html.Raw(info.GoogleOrdersStatistic)
+
+    <script>
+        if ('@Request["cartclear"]' == '1') {
+            console.log("oke");
+            localStorage.removeItem("cart");
+        }
+    </script>
+    <style>
+        .btn {
+            background-color: #fff;
+            color: #ea1c00;
+            border: 1px solid #ea1c00;
+            display: block;
+            padding: 10px
+        }
+
+            .btn:hover {
+                background-color: #ea1c00;
+                color: #fff;
+                border: 1px solid #ea1c00
+            }
+    </style>
+</body>
+</html>

@@ -1,0 +1,123 @@
+﻿@model IEnumerable<AdminPage.Models.CustomizeModels.Group_Service>
+    @{ 
+        var langs = AdminPage.Services.SiteLang.GetListLangs();
+    }
+@{
+    ViewBag.Title = "Quản lý dịch vụ";
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="/services/save" class="btn btn-primary"><i class="fa fa-plus"></i>Thêm dịch vụ</a>
+</p>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["error"]
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["success"]
+    </div>
+}
+
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header well" data-original-title="">
+                <h2 class="card-title">Dịch vụ</h2>
+
+            </div>
+            <div class="card-body">
+
+                <table class="table table-hover bootstrap-datatable datatable responsive">
+                    <thead>
+                        <tr>
+                            <th style="width:30%">Tên dịch vụ</th>
+                            <th>Hình ảnh</th>
+                            <th>Thứ tự</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.service.Name</td>
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(item.service.Picture))
+                                    {
+                                        <img src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="width:100px" />
+                                    }
+                                    else
+                                    {
+                                        <img src="@item.service.Picture" alt="ảnh đại diện" style="width:100px" />
+                                    }
+                                </td>
+                                <td>@item.service.Order</td>
+                                <td class="center">
+                                    <a class="btn btn-xs btn-success" href="/services/detail/@item.service.ServiceId" data-toggle="tooltip" title="Xem chi tiết">
+                                        <i class="anticon anticon-search"></i>
+                                    </a>
+                                    <a class="btn btn-xs btn-warning" href="/services/save/@item.service.ServiceId" data-toggle="tooltip" title="Sửa dịch vụ">
+                                        <i class="anticon anticon-edit"></i>
+                                    </a>
+                                    <a class="btn btn-xs btn-danger" href="/services/delete/@item.service.ServiceId" data-toggle="tooltip" title="Xóa dịch vụ" onclick="return confirm('Bạn xác nhận muốn xóa?')">
+                                        <i class="anticon anticon-delete"></i>
+                                    </a>
+
+                                </td>
+                                <td class="lang_col">
+                                    @foreach (var l in item.langs)
+                                    {
+                                        <a href="/services/detail/@item.service.ReId?lang=@l" class="p-1"><i class="flag-icon @langs.FirstOrDefault(_l=>_l.Code==(l??"vi")).Icon" style="padding: 10px 15px"></i></a>
+                                    }
+                                    <button class="btn btn-default btn-xs text-success" onclick="News_newLang('@item.service.ReId')" style="padding:3px 8px"><i class="fa fa-plus"></i></button>
+                                </td>
+                            </tr>
+
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function News_newLang(id) {
+        $.ajax({
+            method: "POST",
+            url: "/services/_AddLanguage_Modal",
+            data: { id },
+            dataType: "html"
+        })
+            .done(function (data) {
+                $("body").append(data);
+            })
+            .fail(function () {
+            })
+            .always(function () {
+            });
+
+    }
+</script>
+

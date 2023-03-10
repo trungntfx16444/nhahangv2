@@ -1,0 +1,566 @@
+﻿@using AdminPage.Models
+@using AdminPage.AppLB
+@{
+    ViewBag.Title = "Quản lý phiếu chi";
+    var vendors = ViewBag.vendors as List<vendor> ?? new List<vendor>();
+    var importTicketTotal = ViewBag.ImportTicketTotal as decimal?;
+    var expenseTotal = ViewBag.ExpenseTotal as decimal?;
+    var listStatus = UserContent.ExpenseStatus();
+}
+
+
+<style type="text/css">
+    table > tbody tr > td {
+        vertical-align: top !important;
+    }
+
+    .OtherPriceGroup input {
+        border-radius: unset !important;
+    }
+
+    input[disabled], select[disabled], textarea[disabled] {
+        /*background-color: ghostwhite !important;*/
+    }
+
+    .select2-container--default.select2-container--disabled .select2-selection--single {
+        /*background-color: ghostwhite !important;*/
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">Nhập kho - Thu chi</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">Danh sách phiếu chi</h4>
+            <div class="card-toolbar">
+                <button type="button" class="btn btn-primary" onclick="GetExpense('add')">
+                    <i class="anticon anticon-plus"></i> Tạo phiếu chi
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!--Search-->
+        <div class="form-group row">
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Từ ngày</span>
+                    </div>
+                    <input type="date" id="From" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="fDate" value="@(ViewBag.From)" />
+                </div>
+            </div>
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Đến ngày</span>
+                    </div>
+                    <input type="date" id="To" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="tDate" value="@(ViewBag.To)" />
+                </div>
+            </div>
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <select id="s_vendor" class="select2" name="s_vendor">
+                    <option value="">-- Tất cả NCC --</option>
+                    @foreach (var item in vendors)
+                    {
+                        <option value="@(item.Id)">@(item.Name)</option>
+                    }
+                    <option value="-1">Khác</option>
+                </select>
+            </div>
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <select id="s_status" class="select2" name="s_status">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    @foreach (var item in listStatus)
+                    {
+                        <option value="@(item.Key)">@(item.Value)</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-md-6 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <input type="text" id="search" class="form-control" value="@(ViewBag.Search)" placeholder="Nhập mã phiếu chi/mã phiếu nhập" autocomplete="off" />
+                    <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Report-->
+        <div class="row">
+            <div class="col-lg-4 col-md-4">
+                <div class="card" style="border-color:#de4436">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="m-b-0 font-weight-semibold">TỔNG NỢ</p>
+                                <h2 class="m-b-0">
+                                    <span id="ddh">@(importTicketTotal > 0 ? importTicketTotal?.ToString("#,##0") : "0")</span>
+                                </h2>
+                            </div>
+                            <div class="avatar avatar-icon avatar-lg avatar-red">
+                                <i class="anticon anticon-profile"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <div class="card card" style="border-color:#00c9a7">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="m-b-0 font-weight-semibold">ĐÃ THANH TOÁN</p>
+                                <h2 class="m-b-0">
+                                    <span id="dsdh">@(expenseTotal > 0 ? expenseTotal?.ToString("#,##0") : "0")</span>
+                                </h2>
+                            </div>
+                            <div class="avatar avatar-icon avatar-lg avatar-cyan">
+                                <i class="anticon anticon-bar-chart"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <div class="card" style="border-color:#ffc107">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="m-b-0 font-weight-semibold">NỢ CÒN</p>
+                                <h2 class="m-b-0">
+                                    <span id="tds">@((importTicketTotal - expenseTotal) > 0 ? (importTicketTotal - expenseTotal)?.ToString("#,##0") : "0")</span>
+                                </h2>
+                            </div>
+                            <div class="avatar avatar-icon avatar-lg avatar-gold">
+                                <i class="anticon anticon-pie-chart"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Table list customer and order of customer-->
+        <div class="table-responsive">
+            <table id="table_expense" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Mã Phiếu</th>
+                        <th>Nội dung phiếu chi</th>
+                        <th>Tổng tiền</th>
+                        <th>Ngày tạo</th>
+                        <th>Ngày thanh toán</th>
+                        <th class="no-sort" style="width:85px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--Append data using dataTable-->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<template id="template_OtherPriceGroup">
+    <div class="input-group OtherPrice">
+        <input type="text" class="form-control" name="expenseName" value="{name}" placeholder="Tên chi phí *" required>
+        <div class="input-affix" style="flex: 0 0 50%;">
+            <input type="text" class="form-control price_numbner" name="expensePrice" value="{price}" placeholder="Số tiền thanh toán">
+            <i class="suffix-icon anticon anticon-delete text-danger cursor-pointer font-size-20" onclick="$(this).closest('.OtherPrice').remove()"></i>
+        </div>
+    </div>
+</template>
+
+<div class="modal fade" id="modal-expense">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <form id="frmExpense" class="modal-content" action="/dept/SaveExpense" method="post">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-expense-title">TẠO PHIẾU CHI</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="Id" name="Id" value="" />
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold">Nhà cung cấp</label>
+                        <select class="select2" id="Vendor_Id" name="Vendor_Id">
+                            <option value="">-- Không chọn nhà cung cấp --</option>
+                            @foreach (var item in vendors)
+                            {
+                                <option value="@(item.Id)">@(item.Name)</option>
+                            }
+                        </select>
+                    </div>
+                    <div id="div_ImportTicket_Id" class="form-group col-md-6">
+                        <label class="font-weight-semibold">Mã phiếu nhập</label>
+                        <input type="text" class="form-control" id="ImportTicket_Id" name="ImportTicket_Id">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-semibold required">Tiêu đề phiếu chi</label>
+                    <input type="text" class="form-control" id="Title" name="Title" placeholder="vd: chi trả cho abc" required/>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <!--Empty-->
+                    </div>
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label class="font-weight-semibold">Các chi phí thanh toán</label>
+                            <button type="button" id="btn_expenseGroup" class="btn-inline-plus float-right" data-toggle="tooltip" title="Thêm chi phí"></button>
+                            <div id="OtherPriceGroup">
+                                <div class="input-group OtherPrice">
+                                    <input type="text" class="form-control" name="expenseName" value="" placeholder="Tên chi phí *" required>
+                                    <div class="input-affix" style="flex: 0 0 50%;">
+                                        <input type="text" class="form-control price_numbner" name="expensePrice" placeholder="Số tiền thanh toán">
+                                        <i class="suffix-icon anticon anticon-delete text-danger cursor-pointer font-size-20" onclick="$(this).closest('.OtherPrice').remove()"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-semibold mr-2 required">Tổng tiền</label>
+                            <button type="button" id="btn_expenseTotal" class="btn btn-success btn-xs float-right"><i class="fas fa-equals"></i></button>
+                            <p class="mb-0 float-right m-r-5 font-size-12 p-t-5">
+                                Click để tính lại tổng tiền<i class="anticon anticon-arrow-right"></i>
+                            </p>
+                            <input type="text" class="form-control" id="Total" name="Total" value="" required="">
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-semibold">Trạng thái phiếu chi</label>
+                            <select class="form-control" id="Status" name="Status">
+                                @foreach (var item in listStatus)
+                                {
+                                    <option value="@(item.Key)">@(item.Value)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="divPayment" class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Phương thức thanh toán</label>
+                        <input type="text" class="form-control" id="PaymentMethod" name="PaymentMethod">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="font-weight-semibold required">Ngày thanh toán</label>
+                        <input type="date" class="form-control" data-date="" data-date-format="DD/MM/YYYY" id="PaymentDate" name="PaymentDate" value="@(DateTime.Now.ToString("yyyy-MM-dd"))" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-semibold">Ghi chú</label>
+                    <textarea class="form-control" rows="5" id="Note" name="Note"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                <button type="submit" class="btn btn-primary" onclick="return SaveExpense()">Lưu phiếu chi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-expense-detail">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">CHI TIẾT PHIẾU CHI</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!--Append _Partial-->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script type="text/javascript">
+        $(".select2").select2();
+        
+        $('#Vendor_Id').on('select2:select', function (e) {
+            if ($(this).val() == "") {
+                $("#Title").val("");
+            }
+            else {
+                $("#Title").val(`Chi trả cho NCC ${e.params.data.text}`);
+            }
+        });
+
+        $("#Status").change(function () {
+            if ($(this).val() == "1") {
+                $("#divPayment").show(500);
+            }
+            else {
+                $("#divPayment").hide(500);
+            }
+        });
+
+        function InitInputPrice() {
+            $("input.price_numbner").on("input", function () {
+                this.value = this.value.replace(/[^0-9.]/g, '');
+            })
+
+            $("input.price_numbner").keyup(function () {
+                $(this).val(toMoney($(this).val()));
+            })
+        }
+        InitInputPrice();
+
+        let table = $('#table_expense').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            "order": [[3, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+
+            "processing": true,
+            //"language": {
+            //    "infoFiltered": "",
+            //    "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+            //},
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/dept/Load_table",
+                "data": function (data) {
+                    data.From = $("#From").val();
+                    data.To = $("#To").val();
+                    data.search = $("#search").val();
+                    data.s_vendor = $("#s_vendor").val();
+                    data.s_status = $("#s_status").val();
+                    return data;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#table_expense tbody").html(json.responseJSON.data);
+                    }
+                }
+            }
+        });
+        table.on('draw', function () {
+            //...
+        });
+
+        $("#search").keypress(function () {
+            if (event.keyCode == 13) {
+                $("#btn_search").trigger("click");
+            }
+        });
+
+        $("#btn_search").click(function () {
+            table.draw();
+        });
+
+        $("#s_vendor, #s_status").change(function () {
+            table.draw();
+        });
+
+        $("#btn_expenseGroup").click(function () {
+            $("#OtherPriceGroup").append($("#template_OtherPriceGroup").html().replace('{name}', '').replace('{price}', ''));
+            InitInputPrice();
+        })
+
+        function GetExpense(key, id = "") {
+            if (key == "add") {
+                $("#modal-expense-title").html("TẠO PHIẾU CHI");
+                $("#frmExpense button, #frmExpense i.suffix-icon").show();
+                $("#frmExpense input, #frmExpense select, #frmExpense textarea").attr("disabled", false);
+                
+                $("#frmExpense")[0].reset();
+                $("#Id").val("");
+                $("#Vendor_Id").select2("val", "");
+                $('#Vendor_Id').trigger('change.select2');
+                $("#Status").trigger("change");
+                $("#OtherPriceGroup").html($("#template_OtherPriceGroup").html().replace('{name}', '').replace('{price}', ''));
+                InitInputPrice();
+                $("#PaymentDate").val(moment(new Date()).format("YYYY-MM-DD")).trigger("change");
+                $("#modal-expense").modal("show");
+            }
+            else if (key == "edit" && id != "") {
+                $.ajax({
+                    method: "POST",
+                    url: "/dept/GetExpense",
+                    data: {id: id},
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        $("#modal-expense-title").html("CẬP NHẬT PHIẾU CHI");
+
+                        $("#Id").val(data[1].Id);
+                        $("#Title").val(data[1].Title);
+                        $("#Vendor_Id").select2().val(data[1].Vendor_Id).trigger("change");
+                        $("#ImportTicket_Id").val(data[1].ImportTicket_Id);
+                        $("#Total").val(toMoney(data[1].Total));
+                        $("#PaymentMethod").val(data[1].PaymentMethod);
+                        $("#Status").val(data[1].Status).trigger("change");
+                        $("#Note").val(data[1].Note);
+
+                        if (data[1].PaymentDate) {
+                            $("#PaymentDate").val(moment(data[1].PaymentDate).format("YYYY-MM-DD")).trigger("change");
+                        }
+
+                        let templateHtml = $("#template_OtherPriceGroup").html();
+                        if (data[1].Reason == "") {
+                            $("#OtherPriceGroup").html(templateHtml.replace('{name}', '').replace('{price}', ''));
+                        }
+                        else {
+                            let obj = $.parseJSON(data[1].Reason);
+                            let newOpt = "";
+                            $.each(obj, function (_index, item) {
+                                newOpt += templateHtml.replace('{name}', item.Name).replace('{price}', item.Price);
+                            })
+                            $("#OtherPriceGroup").html(newOpt);
+                        }
+
+                        InitInputPrice();
+                        $("#modal-expense").modal("show");
+                    }
+                    else {
+                        msg_error(`Tải dữ liệu thất bại. ${data[1]}`, "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Tải dữ liệu thất bại.", "", "top center");
+                });
+            }
+        }
+
+        $("#frmExpense").ajaxForm(function (data) {
+            if (data[0] == true) {
+                msg_success(data[1], "", "top center");
+                $("#modal-expense").modal("hide");
+                table.draw();
+            }
+            else {
+                msg_error(data[1], "", "top center");
+            }
+        })
+
+        function SaveExpense() {
+            if ($("#Title").val() == "") {
+                msg_info("Vui lòng nhập tiêu đề phiếu chi", "Title");
+                return false;
+            }
+            else if ($("#Total").val() == "" || $("#Total").val() == "0") {
+                msg_info("Vui lòng nhập tổng tiền thanh toán", "Total");
+                return false;
+            }
+            else if ($("#Status").val() == "1" && $("#PaymentMethod").val() == "") {
+                msg_info("Vui lòng nhập phương thức thanh toán", "PaymentMethod");
+                return false;
+            }
+            return true;
+        }
+
+        function DelExpense(id) {
+            if (confirm("Bạn có chắc muốn xóa phiếu chi này?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/dept/DelExpense",
+                    data: { id: id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        msg_success(data[1], "", "top center");
+                        table.draw();
+                    }
+                    else {
+                        msg_error(`Xóa thất bại. ${data[1]}`, "", "top center");
+                    }
+                }).fail(function () {
+                    msg_error("Xóa thất bại. Đã có sự cố xảy ra.", "", "top center");
+                })
+            }
+        }
+
+        $("#btn_expenseTotal").click(function () {
+            let _sum = 0;
+            $("input[name='expensePrice']").each(function () {
+                _sum = _sum + parseInt($(this).val() == "" ? "0" : $(this).val().replace(/\./g, ""));
+            })
+            $("#Total").val(toMoney(_sum));
+        });
+
+        function ViewDetail(Id) {
+            $.ajax({
+                method: "POST",
+                url: "/dept/_ExpenseDetail",
+                data: { Id },
+                dataType: "html"
+            }).done(function (data) {
+                $("#modal-expense-detail .modal-body").html(data);
+                $("#modal-expense-detail").modal("show");
+            }).fail(function () {
+                //...
+            }).always(function () {
+                //...
+            });
+        };
+
+        function ExpensePrint(id) {
+            ajaxLoading("on");
+            $("<iframe>")
+                .hide()
+                .attr("onload", "ajaxLoading(\"off\")")
+                .attr("src", "/dept/ExpensePrint/" + id)
+                .appendTo("body");
+        };
+    </script>
+}

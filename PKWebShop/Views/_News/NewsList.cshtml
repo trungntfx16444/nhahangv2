@@ -1,0 +1,63 @@
+﻿@model IEnumerable<PKWebShop.Models.n_news>
+@using PKWebShop.AppLB
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+
+@{
+    ViewBag.Title = "Tin tức - Sự kiện";
+    int totalRecords = int.Parse(TempData["totalRecords"].ToString());
+    int page = int.Parse(TempData["page"].ToString());
+    int rpp = int.Parse(TempData["rpp"].ToString());
+    var topic = ViewBag.topic as n_toppic;
+    var ptopic = ViewBag.ptopic as n_parent_topic;
+    var top_bg = ViewBag.trangkhac_topbg as sectionfeaturedetail;
+}
+
+<div class="page-breadcrumbs" style=" @if (top_bg != null) { @Html.Raw("background-image: url(../../" + @top_bg.Picture + ")") }">
+    <div class="container">
+        <div class="row py-5">
+            <div class="col-lg-8">
+                <h1 class="m-0">@(topic?.Name??ptopic?.Name)</h1>
+            </div>
+            <div class="col-lg-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="py-1 my-2 breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                        @if (ptopic != null)
+                        {
+                            <li class="breadcrumb-item active" aria-current="page"><a href="@ptopic.URL"></a>@ptopic.Name</li>
+                        }
+
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="cs-sidebar-enabled cs-sidebar-right">
+    <div class="container">
+        <div class="row">
+            <!-- Content-->
+            <div class="col-lg-9 cs-content py-4 mb-2 mb-sm-0 pb-sm-5">
+                <!-- Post-->
+                @foreach (var news in Model)
+                {
+                    <article class="card card-horizontal card-hover mb-grid-gutter">
+                        <a class="card-img-top" href="/TinTuc/Detail" style="background-image: url('../../@news.Picture');"></a>
+                        <div class="card-body">
+                            <h2 class="h4 nav-heading mb-4"><a href="/tin-tuc/@news.UrlCode">@news.Name</a></h2>
+                            <p class="excerpt-post">
+                                @news.ShortDescription
+                            </p>
+                            <div class="mt-3 text-right text-nowrap"><a class="meta-link font-size-xs" href="#"><i class="fe-user mr-1"></i> @news.CreatedBy</a><span class="meta-divider"></span><a class="meta-link font-size-xs" href="#"><i class="fe-calendar mr-1 mt-n1"></i>@(news.CreatedAt.HasValue?news.CreatedAt.Value.ToString("dd MMM"):"")</a></div>
+                        </div>
+                    </article>
+                }
+                @Html.Partial("_PagingPartial", new ViewDataDictionary { { "page", page }, { "rpp", rpp }, { "totalRecords", totalRecords }, { "url", "/dich-vu" } })
+            </div>
+            <!-- Sidebar-->
+            @Html.Partial("_Left_content")
+        </div>
+    </div>
+</div>
+

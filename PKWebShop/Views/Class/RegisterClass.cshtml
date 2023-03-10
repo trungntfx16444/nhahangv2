@@ -1,0 +1,74 @@
+﻿@model PKWebShop.Models.giasu_class
+@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+
+@{
+    ViewBag.Title = "Đăng ký tìm Gia sư";
+    var _listOption = ViewBag.listOption as List<giasu_option>;
+}
+
+
+
+<!--Breadcrumb start-->
+<div class="ed_pagetitle">
+    <div class="ed_img_overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-md-4 col-sm-6">
+                <div class="page_title">
+                    <h1>Đăng ký tìm Gia sư</h1>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-8 col-sm-6">
+                <ul class="breadcrumb">
+                    <li><a href="/">Trang chủ</a></li>
+                    <li><i class="fa fa-angle-double-right" aria-hidden="true"></i></li>
+                    <li><a>Đăng ký tìm Gia sư</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Breadcrumb end-->
+<!--Blog content start-->
+<div class="ed_transprentbg ed_toppadder80 ed_bottompadder80 blog">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="ed_heading_top ed_bottompadder50">
+                    <h3>Đăng ký tìm <span class="linehight">Gia sư</span></h3>
+                </div>
+            </div>
+            <input type="hidden" id="hd_key" value="" />
+
+            @Html.Partial("_ClassRegisterPartial", Model, new ViewDataDictionary { { "listOption", _listOption }, { "listTeacher", new List<teacherModel>() } })
+        </div>
+    </div>
+</div>
+
+
+@section style
+{
+    <link href='~/content/admin/css/jquery.noty.css' rel='stylesheet'>
+    <link href='~/content/admin/css/noty_theme_default.css' rel='stylesheet'>
+}
+
+
+@section scripts
+{
+    <script src="~/content/admin/js/jquery.noty.js"></script>
+
+    <script type="text/javascript">
+        if (sessionStorage.getItem("SubmitClassSuccess") != null && sessionStorage.getItem("SubmitClassSuccess") != "") {
+            let msg = sessionStorage.getItem("SubmitClassSuccess");
+
+            let optSucc = $.parseJSON('{"text":"' + msg + '","layout":"top","type":"success"}');
+            noty(optSucc);
+            sessionStorage.removeItem("SubmitClassSuccess");
+
+            $('html, body').animate({
+                scrollTop: $(".educo_wrapper").offset().top
+            }, 1000);
+        }
+    </script>
+}

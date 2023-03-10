@@ -1,0 +1,127 @@
+﻿@model AdminPage.Models.product
+@using AdminPage.Models
+@using AdminPage.Utils
+
+@{
+    var arrObj = ViewBag.ArrObj as object[];
+    var listProperties = arrObj[0] as List<product_properties> ?? new List<product_properties>();
+    var priceOptExist = arrObj[1] as string ?? "";
+    var propExist = arrObj[2] as string ?? "";
+    var orderDetail = arrObj[3] as string ?? "";
+    var listPriceOpt = arrObj[4] as List<productoptionprice> ?? new List<productoptionprice>();
+
+    var listParentProp = listProperties.Where(x => x.is_parrent == true).ToList();
+    var listChildProp = listProperties.Where(x => x.is_parrent == false).ToList();
+}
+
+
+@if (ViewBag.ErrMsg != null)
+{
+    <input type="hidden" id="detail_err" value="@(ViewBag.ErrMsg)" />
+}
+else
+{
+    <input type="hidden" id="detail_err" value="" />
+    <input type="hidden" name="_orderDetail" value="@(orderDetail)" />
+    <input type="hidden" name="proReId" value="@(Model.ReId)" />
+    <div class="modal-header">
+        <h5 class="modal-title text-uppercase">@(Model.ProductName)</h5>
+        <button type="button" class="close" data-dismiss="modal">
+            <i class="anticon anticon-close"></i>
+        </button>
+    </div>
+    <div class="modal-body" style="overflow:auto; max-height:500px;">
+        <div class="row">
+            <div class="col-md-2 col-sm-12 col-xs-12">
+                <img class="img-thumbnail" src="@(Model.Picture)" style="width:100%;" />
+            </div>
+            <div class="col-md-10 col-sm-12 col-xs-12" style="padding:5px 10px;">
+                <div class="form-group row m-b-10">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase">Đơn giá:</h6>
+                        <div class="input-affix m-b-10">
+                            <input type="text" class="form-control p-r-50" name="_price" placeholder="Nhập giá sản phẩm" value="@((Model.SalePrice > 0 && Model.SalePrice < Model.Price ? Model.SalePrice : Model.Price)?.ToString("#,###"))" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" onkeyup="$(this).val(toMoney($(this).val()))" autocomplete="off" />
+                            <span class="suffix-icon">@Constant.CURRENCY_SIGN</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase">Số lượng:</h6>
+                        <input type="text" class="form-control" name="_quantity" value="@(Model.Quantity == -1 ? 1 : Model.Quantity)" placeholder="Nhập số lượng" oninput="this.value = this.value.replace(/[^0-9]/g, '');" autocomplete="off" />
+                    </div>
+                </div>
+                <!--Option giá bán-->
+                <div>
+                    @if (listPriceOpt.Count > 0)
+                    {
+                        <p class="m-b-0 m-t-10">
+                            <label class="w-100 mb-0 p-7 border border-dee2e6 cursor-pointer">
+                                <input type="radio" class="m-r-5" name="price_optReId" value="" data-price="@((Model.SalePrice?? Model.Price)?.ToString("#,###"))" @(priceOptExist == "" ? "checked" : "") onchange="ChangePriceOpt(this)" />
+                                <span class="font-weight-semibold text-dark label_name">Giá mặc định</span>
+                                <span class="float-right">
+                                    <span class="text-primary font-weight-semibold m-r-25 price_value">@((Model.SalePrice ?? Model.Price)?.ToString("#,###")) @Constant.CURRENCY_SIGN</span>
+                                </span>
+                            </label>
+                        </p>
+
+                        foreach (var item in listPriceOpt)
+                        {
+                            <p class="m-b-0 m-t-10">
+                                <label class="w-100 mb-0 p-7 border border-dee2e6 cursor-pointer">
+                                    <input type="radio" class="m-r-5" name="price_optReId" value="@(item.ReId)" data-price="@(item.Price?.ToString("#,###"))" @(priceOptExist == item.ReId ? "checked" : "") onchange="ChangePriceOpt(this)" />
+                                    <span class="font-weight-semibold text-dark label_name">@(item.LabelName)</span>
+                                    <span class="float-right">
+                                        <span class="text-primary font-weight-semibold m-r-25 price_value">@(item.Price?.ToString("#,###")) @Constant.CURRENCY_SIGN</span>
+                                    </span>
+                                </label>
+                            </p>
+                        }
+                    }
+                </div>
+                <!--./End Option giá bán-->
+                <hr />
+            </div>
+        </div>
+        <!--Thuộc tính sản phẩm-->
+        @if (listParentProp != null && listParentProp.Count > 0)
+        {
+            <div class="row">
+                <h6 class="col-md-12 text-uppercase">Chọn thuộc tính sản phẩm:</h6>
+                @foreach (var parent in listParentProp)
+                {
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body p-10">
+                                <h5 class="text-primary">
+                                    <i class="anticon anticon-check-square font-size-22"></i>
+                                    @(parent.name)
+                                </h5>
+                                <div class="p-l-25">
+                                    @{var listChild = listChildProp.Where(x => x.parrent_properties_id == parent.id).ToList();}
+                                    @foreach (var child in listChild)
+                                    {
+                                        <div class="radio">
+                                            @if (string.IsNullOrEmpty(propExist))
+                                            {
+                                                <input id="@($"radio-{child.ReId}")" name="@(parent.ReId)" type="radio" value="@(child.ReId)" @(listChild.IndexOf(child) == 0 ? "checked" : "")>
+                                            }
+                                            else
+                                            {
+                                                <input id="@($"radio-{child.ReId}")" name="@(parent.ReId)" type="radio" value="@(child.ReId)" @((listChild.IndexOf(child) == 0 || propExist.Contains(child.ReId)) ? "checked" : "")>
+                                            }
+                                            <label for="@($"radio-{child.ReId}")" class="font-weight-semibold">@(child.name)</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        <!--./End Thuộc tính sản phẩm-->
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-primary" onclick="AddItemOrder()">@(string.IsNullOrEmpty(orderDetail) ? "Thêm vào ĐH" : "Lưu thay đổi")</button>
+    </div>
+}

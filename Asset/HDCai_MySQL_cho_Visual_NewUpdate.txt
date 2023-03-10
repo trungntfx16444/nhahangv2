@@ -1,0 +1,24 @@
+﻿//=====================================
+//Hướng dẫn cài MySQL cho VisualStudio
+//=====================================
+
+
+B1: Cài MySQL for VisualStudio
+B2: Cài Connector
+B3: Cài MySQL cho windown (chỉ cần cài MySql, không cần cài thêm gì khác)
+
+B4: Cài XAMPP
+
+
+-- Xử lý trong Visual (Thêm trong phần NuGet)
+B1: Install MySQL.Data.Entity
+B2: Click vào biểu tượng tool của MySQL trong Visual -> check vào "Use MySQL with Entity Framework" và next next next...
+==> OK
+
+
+=> khi tạo connection string hoặc update database nhớ chạy XAMPP
+
+
+LƯU Y KHI KHÔNG THỂ RUN MYSQL TRONG XAMP:
+- bị đụng port vs 3306 vs MySQL a, vào Service tắt MySQL là được hoặc đổi port cho xampp
+- 

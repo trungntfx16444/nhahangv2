@@ -1,0 +1,108 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@using PKWebShop.Models
+@using PKWebShop.Utils
+@{
+    var adminSite = UserContent.GetAdminSite();
+}
+<section class="menu-product">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="title">
+                <img class="img-fluid" src="/Content/client/img/img-title.png"> Menu
+            </h2>
+            <h3 class="subtitle">Món ăn được <span>quan tâm</span> nhiều nhất</h3>
+            <p class="decription">
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s
+            </p>
+        </div>
+        <div class="nav nav-tabs menu-product-tabs d-flex justify-content-between" id="nav-tab" role="tablist">
+
+                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true"> <div class="menu-img-icon">
+                        <img class="img-fluid" src="~/Content/client/img/menu_widget.png" />
+                    </div>
+                    Menu
+                </button>
+
+            @foreach (var item in Model.Details)
+            {
+                var pro = item.Data as List<product>;
+                var img = item.Files.FirstOrDefault();
+                <button class="nav-link " id="@item.Detail.Id-tab" data-bs-toggle="tab" data-bs-target="@item.Detail.Id" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
+
+                    <div class="menu-img-icon">
+                        <img class="img-fluid" src="@adminSite@(img?.FileName)" />
+                    </div>
+                    @(item.Detail.Title)
+                </button>
+            }
+
+        </div>
+        <div class="row">
+        @foreach (var d in Model.Details)
+        {
+            <div class="tab-contenti col-lg-6" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="" role="@d.Detail.Id" aria-labelledby="@d.Detail.Id-tab" tabindex="0">
+                    <div class="row">
+                        @foreach (var item in d.Data as List<product>)
+                        {
+                            @* response boostrap*@
+                            <div class="">
+                                <div class="menu-product_item">
+                                    <div class="product-img">
+                                        <a href="#">
+                                            <img class="img-fluid" src="@($"{adminSite}{item.Picture}")" alt="@item.ProductName" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                        </a>
+                                    </div>
+                                    <div class="product-content">
+                                        <div class="product-name mb-2"><a href="#">@item.ProductName</a></div>
+                                        <div class="product-decription mb-3">
+                                            @Html.Raw(item.Description)
+                                        </div>
+                                    </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="product-price">
+                                                    @if (item.Quantity != 0 && item.Price > 0)
+                                                    {
+                                                        <div class="product-price">
+                                                            @if (item.SalePrice > 0 && item.SalePrice < item.Price)
+                                                            {
+                                                                <ins>@((item.SalePrice ?? 0).ToString("#,##0"))@Constant.CURRENCY_SIGN</ins>
+                                                                <del>@((item.Price ?? 0).ToString("#,##0"))@Constant.CURRENCY_SIGN</del>
+                                                            }
+                                                            else
+                                                            {
+                                                                <ins>
+                                                                    @((item.Price ?? 0).ToString("#,##0"))@Constant.CURRENCY_SIGN
+                                                                </ins>
+                                                            }
+                                                        </div>
+                                                        @*<ins>250.000 VNĐ</ins>
+                                                        <del>250.000 VNĐ</del>*@
+                                                    }
+                                                </div>
+                                                <div class="product-btn-action">
+                                                    <a href="#" class="btn btn-view"><i class="bi bi-eye-fill"></i></a>
+                                                    <a href="#" class="btn btn-cart"><i class="bi bi-cart-plus"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+        }
+       </div> 
+              
+              
+        
+    </div>
+    <div class="text-center mt-3">
+        <a href="#" class="btn-contact">Đọc thêm</a>
+    </div>
+
+</section>

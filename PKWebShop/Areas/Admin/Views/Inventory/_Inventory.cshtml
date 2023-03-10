@@ -1,0 +1,77 @@
+﻿@model List<PKWebShop.Models.product>
+@using PKWebShop.Services
+@using PKWebShop.Utils
+@{
+    string lang = SiteLang.GetDefault().Code;
+}
+
+
+@if (Model == null || Model.Count == 0)
+{
+    <tr>
+        <td colspan="6" class="text-center">Không tìm thấy sản phẩm nào</td>
+    </tr>
+}
+else
+{
+    foreach (var item in Model)
+    {
+        <tr>
+            <td class="align-top">
+                <input class="select cursor-pointer" type="checkbox" style="width:20px; height:20px" value="@item.ReId" />
+            </td>
+            <td class="align-top">
+                <a class="font-weight-bold text-primary pl-1" href="@($"/admin/productman/detail/{item.ReId}?lang={lang}")" target="_blank">
+                    @(item.ProductName?.ToUpper())
+                </a>
+                <br />
+                <span class="badge badge-pill badge-default"><b>Đơn vị:</b> @(item.Unit)</span><br />
+                <span class="badge badge-pill badge-default"><b>Nhóm SP:</b> @(item.CategoryName?.Replace(",", ", "))</span>
+            </td>
+            <td class="align-top">
+                @if (item.Quantity == 0)
+                {
+                    <span class="badge badge-danger m-t-5">Hết hàng</span>
+                }
+                else if (item.WarningQuantity >= item.Quantity)
+                {
+                    <span class="badge badge-warning m-t-5">Sắp hết hàng: @item.Quantity</span>
+                }
+                else
+                {
+                    <span class="badge badge-success m-t-5">Còn hàng: @item.Quantity</span>
+                }
+            </td>
+            <td class="align-top">
+                <span class="badge badge-primary">@item.WarningQuantity</span>
+            </td>
+            <td class="align-top lang_col">
+                <a href="@($"/admin/productman/detail/{item.ReId}?lang={lang}")" target="_blank" class="btn btn-info btn-xs m-b-5" data-toggle="tooltip" title="Chi tiết sản phẩm" data-placement="left">
+                    <i class="anticon anticon-search"></i>
+                </a>
+            </td>
+        </tr>
+    }
+}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#product_table tr').click(function (event) {
+            if (event.target.type !== 'checkbox' && $(event.target).closest(".dropdown").length == 0)
+            {
+                //$(':checkbox', this).trigger('click');
+            }
+            else if (event.target.checked == true && $('#product_table :checkbox:checked').length == 1)
+            {
+                $('#product_table').addClass("stop_link"); $(".create_import_ticket").show(200);
+            }
+            else if (event.target.checked != true && $('#product_table :checkbox:checked').length == 0)
+            {
+                $('#product_table').removeClass("stop_link"); $(".create_import_ticket").hide(200);
+            }
+        });
+
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

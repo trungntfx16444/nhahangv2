@@ -1,0 +1,102 @@
+﻿@model AdminPage.Models.popupad
+@using AdminPage.Services
+@{
+    ViewBag.Title = !string.IsNullOrEmpty(Model.Id) ? "Cập nhật popup suảng cáo" : "Tạo popup quảng cáo";
+    var langs = SiteLang.GetListLangs() ?? new List<SiteLang.Language>();
+    var lang = ViewData["LangCode"]?.ToString() ?? "vi";
+}
+
+<style type="text/css">
+    .box_border {
+        border: 1px solid lightgrey;
+        padding: 3px;
+    }
+
+    .img_main img .box_border {
+        height: 180px;
+    }
+
+    .img_main img {
+        height: 170px;
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">Popup quảng cáo</span>
+        </nav>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="javascript:history.back()" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+</p>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">@(ViewBag.Title)</h4>
+        </div>
+    </div>
+
+    @if (langs.Count > 1 && !string.IsNullOrEmpty(Model.ReId))
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-6">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==lang ? "active" : "" )" href="@($"/qcao/save/{Model.ReId}?lang={l.Code}")">
+                                <i class="flag-icon @l.Icon"></i> @l.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+    <div class="card-body" id="partial_content">
+        @Html.Partial("_Save", Model)
+    </div>
+</div>
+
+<p class="btn-group">
+    <a href="javascript:history.back()" class="btn btn-default"><i class="fa fa-chevron-left"></i> Trở lại</a>
+</p>
+
+
+
+@section scripts
+{
+    <script src="~/Content/admin/ckfinder/ckfinder_v1.js"></script>
+    <script src="~/Scripts/upload-more-picture.js"></script>
+}

@@ -1,0 +1,60 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    string url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.TinTuc).url;
+}
+
+<style type="text/css">
+    .blog-s_desc > p {
+        text-align: justify !important;
+    }
+</style>
+
+<div class="blog-area pt-50">
+    <div class="container">
+        <div>
+            <div class="section-title-tab-wrap mb-20">
+                <b class="bg-gradient"></b>
+                <div class="section-title-3 px-2">
+                    <h2>@(Model.Feature.Title)</h2>
+                </div>
+                <b class="bg-gradient"></b>
+            </div>
+
+            <div class="blog-area-pb first">
+                <div class="column-count">
+                    @foreach (var item in Model.Details)
+                    {
+                        var first_pic = item.Files.FirstOrDefault();
+                        <div class="blog-wrap mb-30">
+                            <div class="row">
+                                <div class="blog-img">
+                                    <a href="@(item.Detail.URL)">
+                                        <img src="@(first_pic?.FileName)" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                    </a>
+                                </div>
+                                <div class="blog-content">
+                                    <h3><a href="@(item.Detail.URL)">@(item.Detail.Title)</a></h3>
+                                    <div class="blog-meta">
+                                        <ul>
+                                            <li>@(item.Detail.CreateAt?.ToString("dd/MM/yyyy"))</li>
+                                        </ul>
+                                    </div>
+                                    @if (string.IsNullOrEmpty(item.Detail.Id))
+                                    {
+                                        <div class="blog-s_desc"><p>@Html.Raw(item.Detail.Description)</p></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="blog-s_desc">@Html.Raw(item.Detail.Description)</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

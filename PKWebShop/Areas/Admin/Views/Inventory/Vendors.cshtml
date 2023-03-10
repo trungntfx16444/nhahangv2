@@ -1,0 +1,216 @@
+﻿@using PKWebShop.Models
+@{
+    ViewBag.Title = "Quản lý bài viết";
+    //string p_select = Cookies["parentId"]?.ToString() ?? Model.FirstOrDefault()?.Id;
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-close-circle"></i>
+            </span>
+            <span>@TempData["error"]</span>
+        </div>
+    </div>
+}
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check-circle"></i>
+            </span>
+            <span>@TempData["success"]</span>
+        </div>
+    </div>
+}
+<div class="card">
+    <div class="card-header row no-gutters">
+        <div class="col-12">
+            <h2 class="card-title">QUẢN LÝ NHÀ CUNG CẤP</h2>
+        </div>
+    </div>
+    <div class="card-body" id="partial_content">
+        <div class="row">
+
+            <form class="col-md-9">
+                <div class="input-group">
+
+                    <input id="parentTopic" name="parentTopic" type="hidden" value="" />
+                    <input type="text" id="search" class="form-control" name="search" style="width:250px" placeholder="Nhập từ khóa cần tìm..." />
+                </div>
+            </form>
+            <div class="col-md-3">
+                <button id="addnew_btn" title="Tạo nhà cung cấp" class="btn btn-success btn-sm float-right title-tooltip" style=" padding: .35em .50em;" onclick="$('#modalVendor').modal('show')"> <i class="fas fa-2x fa-plus"></i></button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="dataTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <td>Ngày</td>
+                        <td>Nhà Cung Cấp</td>
+                        <td>Liên hệ</td>
+                        <td>Địa chỉ</td>
+                        <td>Còn nợ</td>
+                        <td class="no-sort"></td>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+<div class="modal" id="modalVendor" aria-modal="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form id="FormVendor" class="modal-content" action="/admin/inventory/VendorSave" method="post">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Nhà Cung Cấp Mới</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <input type="hidden" name="Id" value="">
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold required">Nhà cung cấp</label>
+                        <input type="text" class="form-control" name="Name" value="" required>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold required">Email</label>
+                        <input type="text" class="form-control" name="Email" value="">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold">Phone</label>
+                        <input type="text" class="form-control" name="Phone" value="">
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold">Địa Chỉ</label>
+                        <input type="text" class="form-control" name="Address" value="">
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                <button type="submit" class="btn btn-primary" >Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .select2-choice {
+        padding: 0 16px !important;
+    }
+</style>
+<script type="text/javascript">
+    $(function () {
+        $(".title-tooltip").tooltip();
+        $(".select2").select2();
+        table = $('#dataTable').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false,
+            "order": [[0, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<img src="/Content/admin/img/loading.gif" width="60px">'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/admin/Inventory/_Vendors",
+                "data": function (d) {
+                    d.search = $("#search").val();
+                    return d;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    //console.log(json);
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#dataTable tbody").html(json.responseJSON.data);
+                        var _changeInterval = null;
+                        $("#search").off().on("input", function () {
+                            if (_changeInterval) clearInterval(_changeInterval);
+                            _changeInterval = setInterval(function () {
+                                table.draw();
+                                clearInterval(_changeInterval)
+                            }, 500);
+
+                        });
+                    }
+                }
+            },
+        });
+
+        $("#FormVendor").ajaxForm(function (data) {
+            if (cnoty(data)) {
+                $("#modalVendor").modal("hide");
+                table.draw();
+            }
+        })
+        $("#modalVendor").on('hide.bs.modal', function () {
+            $("#FormVendor").resetForm();
+        })
+    })
+    function EditVendor(Id) {
+        $.ajax({
+            method: "POST",
+            url: "/admin/inventory/vendorget",
+            data: { Id },
+            dataType: "json"
+        }).done(function (data) {
+            if (data[0]) {
+                $("#FormVendor [name=Id]").val(data[1].Id);
+                $("#FormVendor [name=Name]").val(data[1].Name);
+                $("#FormVendor [name=Address]").val(data[1].Address);
+                $("#FormVendor [name=Phone]").val(data[1].Phone);
+                $("#FormVendor [name=Email]").val(data[1].Email);
+                $("#delete_btn").show();
+                $("#modalVendor").find(".modal-title").html("Cập Nhật Nhà Cung Cấp");
+                $("#modalVendor").modal("show");
+            } else {
+                error(data[1]);
+            }
+        }).fail(function () {
+            //...
+        }).always(function () {
+            //...
+        });
+    }
+</script>
+

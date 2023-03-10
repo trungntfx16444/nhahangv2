@@ -1,0 +1,339 @@
+﻿@using PKWebShop.AppLB
+@using PKWebShop.Models
+@using PKWebShop.Utils
+@model customer
+@{
+    List<order> orders = ViewBag.orders ?? new List<order>();
+    var O_status = UserContent.OrderStatus();
+    ViewBag.OrderCount = orders.Count;
+
+    var lastOrder = orders?.FirstOrDefault();
+    string _AvatarDefault = "/Content/Client/images/no_image.png";
+}
+
+
+<div class="my-account-wrapper pt-40 pb-40">
+    <div class="container">
+        @if (TempData["s"] != null)
+        {
+            <div class="alert alert-success">@TempData["s"].ToString()</div>
+        }
+        @if (TempData["e"] != null)
+        {
+            <div class="alert alert-danger">@TempData["e"].ToString()</div>
+        }
+        @if (TempData["err-vnpay"] != null)
+        {
+            <div class="alert alert-danger">@TempData["err-vnpay"].ToString()</div>
+        }
+        @if (TempData["info-vnpay"] != null)
+        {
+            <div class="alert alert-success">@TempData["info-vnpay"].ToString()</div>
+        }
+        <div class="row">
+            <div class="col-lg-12">
+                <!-- My Account Page Start -->
+                <div class="myaccount-page-wrapper">
+                    <!-- My Account Tab Menu Start -->
+                    <div class="row">
+                        <div class="col-lg-3 col-md-4">
+                            @Html.Partial("_ProfileBar", Model)
+                        </div>
+                        <!-- My Account Tab Menu End -->
+                        <!-- My Account Tab Content Start -->
+                        <div class="col-lg-9 col-md-8">
+                            <div class="tab-content h-100" id="myaccountContent">
+                                <!-- Single Tab Content Start -->
+                                <div class="tab-pane fade h-100 active show" id="orders" role="tabpanel">
+                                    <div class="myaccount-content h-100">
+
+                                        <!--Đơn hàng mới nhất-->
+                                        @if (lastOrder != null)
+                                        {
+                                            <h3>Đơn hàng mới nhất</h3>
+                                            <div class="accordion mb-4" id="orders-accordion1">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <div class="accordion-heading">
+                                                            <a class="d-flex flex-wrap align-items-center justify-content-between pr-4 collapsed" href="#order-@(lastOrder.Id)" onclick="LoadOrder('@(lastOrder.Id)')" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="order-@(lastOrder.Id)">
+                                                                <div class="font-size-sm font-weight-medium text-nowrap my-1 mr-2">
+                                                                    <span class="d-inline-block align-middle"><i class="font-size-base mr-1"> #</i>@(lastOrder.Id)</span>
+                                                                </div>
+                                                                <div class="text-nowrap text-body font-size-sm font-weight-normal my-1 mr-2">
+                                                                    @((lastOrder.CreatedAt ?? DateTime.MinValue).ToString("HH:mm dd-MMM-yyyy"))
+                                                                </div>
+                                                                @{
+                                                                    var _cls = "";
+                                                                    switch (lastOrder.Status)
+                                                                    {
+                                                                        case "-1": _cls = "danger"; break;
+                                                                        case "0": _cls = "dark"; break;
+                                                                        case "1": _cls = "info"; break;
+                                                                        case "2": _cls = "success"; break;
+                                                                        case "3": _cls = "primary"; break;
+                                                                        case "4": _cls = "warning"; break;
+                                                                    }
+                                                                }
+                                                                <div class="bg-faded-@(_cls) text-@(_cls) font-size-xs font-weight-medium py-1 px-3 rounded-sm my-1 mr-2">@O_status[lastOrder.Status]</div>
+                                                                <div class="font-size-sm font-weight-bold my-1 text-success">@(lastOrder.GrandTotal.Value.ToString("0,###")) @Constant.CURRENCY_SIGN</div>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="collapse" id="order-@(lastOrder.Id)" data-parent="#orders-accordion1" style="background-color: ghostwhite;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!--Lịch sử đơn hàng-->
+                                        <h3>Lịch sử đơn hàng</h3>
+                                        <div class="accordion" id="orders-accordion">
+                                            <!--Order-->
+                                            @foreach (var o in orders.Where(x => x.Id != lastOrder.Id))
+                                            {
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <div class="accordion-heading">
+                                                            <a class="d-flex flex-wrap align-items-center justify-content-between pr-4 collapsed" href="#order-@o.Id" onclick="LoadOrder('@o.Id')" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="order-@o.Id">
+                                                                <div class="font-size-sm font-weight-medium text-nowrap my-1 mr-2">
+                                                                    <span class="d-inline-block align-middle"><i class="font-size-base mr-1"> #</i>@o.Id</span>
+                                                                </div>
+                                                                <div class="text-nowrap text-body font-size-sm font-weight-normal my-1 mr-2">
+                                                                    @((o.CreatedAt ?? DateTime.MinValue).ToString("HH:mm dd-MMM-yyyy"))
+                                                                </div>
+                                                                @{
+                                                                    var cls = "";
+                                                                    switch (o.Status)
+                                                                    {
+                                                                        case "-1": cls = "danger"; break;
+                                                                        case "0": cls = "dark"; break;
+                                                                        case "1": cls = "info"; break;
+                                                                        case "2": cls = "success"; break;
+                                                                        case "3": cls = "primary"; break;
+                                                                        case "4": cls = "warning"; break;
+                                                                    }
+                                                                }
+                                                                <div class="bg-faded-@cls text-@cls font-size-xs font-weight-medium py-1 px-3 rounded-sm my-1 mr-2">@O_status[o.Status]</div>
+                                                                <div class="font-size-sm font-weight-bold my-1 text-success">@(o.GrandTotal.Value > 0 ? o.GrandTotal.Value.ToString("0,###") : "0") @Constant.CURRENCY_SIGN</div>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="collapse" id="order-@o.Id" data-parent="#orders-accordion" style="background-color: ghostwhite;">
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="cart-shiping-update" style="text-align:center">
+                                                <a href="/san-pham" class="btn btn-theme pt-2 mt-2">Tiếp tục mua hàng</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Single Tab Content End -->
+                                <div class="tab-pane fade h-100" id="account-info" role="tabpanel">
+                                    <div class="myaccount-content h-100">
+                                        <h3>Thông tin tài khoản</h3>
+                                        <div class="account-details-form">
+                                            <form id="frm-member" action="/customer/save" method="post">
+                                                <div class="media align-items-center">
+                                                    <div class="avatar avatar-image mh-10 mr-15" style="height:80px; width:80px; border:1px solid lightgrey">
+                                                        <img id="img_Avatar" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" src="@(Model.Avatar??"")" alt="Ảnh đại diện" style="object-fit:cover; height:100%; width:100%" />
+                                                    </div>
+                                                    <div class="m-l-20 mr-20">
+                                                        <h5 class="m-b-5 font-size-18">Ảnh Đại Diện</h5>
+                                                        <p class="opacity-07 font-size-13 m-b-0">
+                                                            Kích thước đề xuất: 120x120<br>
+                                                            Kích thước file tối đa: 5MB
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label class="btn btn-tone btn-primary mb-0">
+                                                            <i class="anticon anticon-upload"></i> Tải hình
+                                                            <input type="file" accept="image/*" data-name="Avatar" class="d-none" onchange="readURL(this)">
+                                                            <textarea id="textarea_Avatar" class="d-none" name="Avatar">@(Model.Avatar)</textarea>
+                                                        </label>
+                                                        <button type="button" class="btn btn-tone btn-danger" onclick="DelAvatar()">Xóa ảnh</button>
+                                                    </div>
+                                                </div>
+                                                <hr class="m-v-25">
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-6">
+                                                        <label class="font-weight-semibold required">Tên: <red>*</red></label>
+                                                        <input type="text" required name="FullName" class="form-control" placeholder="Họ & Tên" value="@(Model.FullName)">
+                                                    </div>
+                                                    <div class="form-group col-md-6">
+                                                        <label class="font-weight-semibold required">Số điện thoại: <red>*</red></label>
+                                                        <input type="text" required name="Phone" class="form-control phone" placeholder="Số điện thoại" value="@(TempData["Phone"] == null ? Model.Phone : TempData["Phone"])">
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-6">
+                                                        <label class="font-weight-semibold required">Tỉnh/TP: <red>*</red></label>
+                                                        <select id="Province" name="Province" class="form-control" onchange="LoadProvince()" required>
+                                                            <option value="@(Model.Province ?? "")">-- Chọn Tỉnh/TP --</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group col-md-6">
+                                                        <label class="font-weight-semibold required">Quận/Huyện: <red>*</red></label>
+                                                        <select id="District" name="District" class="form-control" onchange="LoadDistrict()" required>
+                                                            <option value="@(Model.District ?? "")">-- Chọn Quận/Huyện --</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-6">
+                                                        <label class="font-weight-semibold required">Xã/Phường: <red>*</red></label>
+                                                        <select id="Ward" name="Ward" class="form-control" required>
+                                                            <option value="@(Model.Ward ?? "")">-- Chọn Xã/Phường --</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group col-md-6">
+                                                        <label class="font-weight-semibold">Số nhà, tên đường: <red>*</red></label>
+                                                        <input type="text" name="Address" required class="form-control" placeholder="Địa chỉ" value="@(TempData["Address"] == null ? Model.Address : TempData["Address"])">
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-6">
+                                                        <label class="font-weight-semibold">Email: <red>*</red></label>
+                                                        <input type="email" required name="Email" class="form-control" placeholder="demo@gmail.com" value="@(TempData["Email"] == null ? Model.Email : TempData["Email"])">
+                                                    </div>
+                                                    @if (Model.Password != null)
+                                                    {
+                                                        <div class="col-md-6 form-group">
+                                                            <label class="font-weight-semibold required">Mật khẩu hiện tại: <red>*</red></label>
+                                                            <div class="input-affix">
+                                                                <input type="password" required id="Password" name="Password" class="form-control" value="" placeholder="Nhập mật khẩu hiện tại">
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="text-right">
+                                                    <button type="submit" class="btn btn-primary" onclick="return SaveInfo()">
+                                                        <i id="submit-icon" class="anticon anticon-check"></i> Lưu thông tin
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Single Tab Content End -->
+                                <!-- Single Tab Content End -->
+                                <div class="tab-pane fade h-100" id="account-changepass" role="tabpanel">
+                                    <div class="myaccount-content h-100">
+                                        <h3>Thay đổi mật khẩu</h3>
+                                        <div class="account-details-form">
+                                            <form id="frm-member-pass" action="/customer/changepass" method="post" style="max-width:500px; margin:auto">
+                                                <div class="form-row">
+                                                    <div class="col-md-12 form-group">
+                                                        <label class="font-weight-semibold required">Mật khẩu cũ:</label>
+                                                        <input type="password" name="pass" class="form-control" placeholder="Nhập mật khẩu cũ">
+                                                    </div>
+                                                    <div class="col-md-12 form-group">
+                                                        <label class="font-weight-semibold required">Mật khẩu mới:</label>
+                                                        <input type="password" name="newpass" class="form-control" placeholder="Nhập mật khẩu mới">
+                                                    </div>
+                                                    <div class="col-md-12 form-group">
+                                                        <label class="font-weight-semibold required">Xác nhận mật khẩu mới:</label>
+                                                        <div class="input-affix">
+                                                            <input type="password" name="confirm_newpass" class="form-control" placeholder="Nhập lại mật khẩu mới">
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                <div class="text-right">
+                                                    <button type="submit" class="btn btn-primary" onclick="return SaveInfo()">
+                                                        <i id="submit-icon" class="anticon anticon-check"></i> Lưu mật khẩu
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Single Tab Content End -->
+                            </div>
+                        </div> <!-- My Account Tab Content End -->
+                    </div>
+                </div> <!-- My Account Page End -->
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    red{
+        color:red;
+    }
+</style>
+@section scripts{
+    <script src="~/Content/js/load-full-address.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#frm-member").ajaxForm(function (data) {
+                cnoty(data);
+                bg_loading(false);
+                $("input[type=password]").val("");
+            })
+            $("#frm-member-pass").ajaxForm(function (data) {
+                cnoty(data);
+                $("#frm-member-pass").resetForm();
+            })
+
+            let order_Id = window.location.hash;
+            if (order_Id != null && order_Id != "") {
+                if (order_Id =="#newestorder") {
+                    order_Id = '@(lastOrder?.Id)';
+                }
+
+                order_Id = order_Id.replace("#", "");
+                LoadOrder(order_Id);
+                $("#order-" + order_Id).addClass("show");
+            }
+        })
+
+        function SaveInfo() {
+            if (document.getElementById("frm-member").checkValidity()) {
+                bg_loading();
+            }
+            return true;
+        };
+
+        function LoadOrder(id) {
+            if ($("#order-" + id).html().trim() == "") {
+                bg_loading();
+            }
+
+            if (!$("#order-" + id).hasClass("show")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/customer/getOrderDetail",
+                    data: { id },
+                    dataType: "html"
+                }).done(function (data) {
+                    $("#order-" + id).html(data);
+                }).fail(function () {
+                    //...
+                }).always(function () {
+                    bg_loading(false);
+                });
+            }
+        }
+
+        function readURL(input) {
+            let inputName = $(input).data("name");
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#img_" + inputName).attr("src", e.target.result);
+                    $("#textarea_" + inputName).val(e.target.result);
+                    //console.log(e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]); // convert to base64 string
+            }
+        };
+
+        function DelAvatar() {
+            $("#img_Avatar").attr("src", "@(_AvatarDefault)");
+            $("#textarea_Avatar").val("@(_AvatarDefault)");
+        };
+    </script>
+}

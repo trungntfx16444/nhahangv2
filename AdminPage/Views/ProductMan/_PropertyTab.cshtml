@@ -1,0 +1,88 @@
+﻿@using AdminPage.Models
+@{
+    var listProperty = ViewBag.ListProperty as List<product_properties>;
+}<div class="form-row">
+    <div class="col-md-5">
+        <label class="label-toolbar">
+            <span class="font-weight-semibold">Chọn thuộc tính</span>
+            <span>
+                <i class="anticon anticon-plus text-success" data-toggle="tooltip" title="Thêm thuộc tính" data-action="add" onclick="GetProperty($(this))"></i>
+                <i class="anticon anticon-edit text-warning" data-toggle="tooltip" title="Chỉnh sửa" data-action="edit" onclick="GetProperty($(this))"></i>
+                <i class="anticon anticon-delete text-danger" data-toggle="tooltip" title="Xóa thuộc tính" data-action="property" onclick="DelProperty($(this))"></i>
+            </span>
+        </label>
+        <select id="list_parent_prop" class="form-control" onchange="LoadValue($(this))">
+            <option value="">-- Chọn thuộc tính --</option>
+            @foreach (var item in listProperty)
+            {
+                <option value="@(item.ReId)">@(item.name)</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-5">
+        <label class="label-toolbar">
+            <span class="font-weight-semibold">Chọn giá trị</span>
+            <span>
+                <i class="anticon anticon-plus text-success" data-toggle="tooltip" title="Thêm giá trị" data-action="add" onclick="GetValue($(this))"></i>
+                <i class="anticon anticon-edit text-warning" data-toggle="tooltip" title="Chỉnh sửa" data-action="edit" onclick="GetValue($(this))"></i>
+                <i class="anticon anticon-delete text-danger" data-toggle="tooltip" title="Xóa giá trị" data-action="value" onclick="DelProperty($(this))"></i>
+            </span>
+        </label>
+        <select id="list_prop" class="form-control selectpicker" multiple>
+            <!--Append option using ajax-->
+        </select>
+    </div>
+    <div class="col-md-2">
+        <br />
+        <button type="button" class="btn btn-primary" style="margin-top:7px" onclick="SelectProperty()">
+            ĐỒNG Ý CHỌN <i class="anticon anticon-double-right"></i>
+        </button>
+    </div>
+    <div class="clearfix"></div>
+</div>
+
+<div class="form-group">
+    <input type="hidden" id="list_parent_properties" name="list_parent_properties" value="@(!string.IsNullOrEmpty(Model.list_parent_properties) ? $",{Model.list_parent_properties}" : "")" />
+    <input type="hidden" id="list_properties" name="list_properties" value="@(!string.IsNullOrEmpty(Model.list_properties) ? $",{Model.list_properties}" : "")" />
+    <input type="hidden" id="list_pic_properties" name="list_pic_properties" value="@ViewBag.propertiy_imgs" />
+    <div id="div_product_prop" class="file-wrapper m-t-10">
+        <!--Append _PropertyPartial using ajax-->
+    </div>
+</div>
+<script>
+    function update_propimg() {
+        let selected = JSON.parse($('#list_pic_properties').val() || "[]");
+        let list_img = [];
+        list_img.push(`<td><label style="margin-left:20px"><input required class="prop_pic" data-id="{id}" name="pic_{id}" type="radio" value="${imgDefault}"/><img src="${imgDefault}"/></label></td>`);
+        $("#img_more input[name=picmore]").map((i, x) => {
+            list_img.push(`<td><label style="margin-left:20px"><input required class="prop_pic" data-id="{id}" name="pic_{id}" type="radio" value="${x.value}"/><img src="${x.value}"/></label></td>`);
+        });
+        console.log(list_img);
+        $('#selecprop_image tbody tr .prop_pic').closest("td").remove();
+        $('#selecprop_image tbody tr').map((i, x) => {
+            $(x).append($(list_img.join().replace(/{id}/g, $(x).data('id'))));
+        });
+        selected.map(x => {
+            $(`.prop_pic[name=pic_${x.id}][value='${x.value}']`).first().prop("checked", true);
+        });
+        $(".prop_pic").off().on("change", function () {
+            console.log("change");
+            $('#list_pic_properties').val(JSON.stringify($(".prop_pic:checked").map((i, x) => { return { id: $(x).data('id'), value: $(x).val() } }).toArray()));
+        })
+    }
+    upload_more_pic_done = del_more_pic_done = update_propimg;
+</script>
+<style>
+    .prop_pic {
+        height: 18px;
+        width: 18px;
+        margin: 0 5px;
+        vertical-align: top;
+    }
+
+    #selecprop_image img {
+        height: 80px;
+        width: 80px;
+        object-fit: cover;
+    }
+</style>

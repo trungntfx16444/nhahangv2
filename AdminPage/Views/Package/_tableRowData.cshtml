@@ -1,0 +1,107 @@
+﻿@using Inner.Libs.Helpful
+@using AdminPage.Enums
+@using AdminPage.Models
+@using AdminPage.Utils
+@model (Package pac, string name, int rowNum)
+@{
+    var pac = Model.pac;
+    var name = Model.name;
+    var rowNum = Model.rowNum;
+}
+@functions
+{
+    public string displayValue(Package pac)
+    {
+        switch (Ext.EnumParse<PackageType>(pac.PackageType))
+        {
+            case PackageType.WEB_PACKAGE:
+                return Ext.EnumParse<WebPackageType>(pac.Code).Text() + "<br/>";
+            case PackageType.HOST_DISK_SIZE:
+                return $"{pac.Value} MB" + "<br/>";
+        }
+        return "";
+    }
+
+    public string dateDisplay(DateTime? date, bool blinkCheck = false)
+    {
+        if (date != null)
+        {
+            var rs = date.Value.ToString("d");
+            if (blinkCheck)
+            {
+                if ((date.Value.Date - DateTime.Today.Date).TotalDays <= 0)
+                {
+                    rs = $"<span class='blink_error'>{rs}</span><br/><span class='badge badge-pill badge-danger'>Hết hạn sử dụng</span>";
+                }
+                else if ((date.Value.Date - DateTime.Today.Date).TotalDays <= Constant.WarningDate)
+                {
+                    rs = $"<span class='blink blink_warning'>{rs}</span><br/><span class='blink badge badge-pill badge-danger'>Sắp hết hạn sử dụng</span>";
+                }
+            }
+            return rs;
+        }
+        return "";
+    }
+
+    public string displayMemo(string packageType)
+    {
+        switch (Ext.EnumParse<PackageType>(packageType))
+        {
+            case PackageType.WEB_PACKAGE:
+                return $"<a href='https://webphukhang.com/web-ban-hang-tron-goi-gia-re' target='_blank'>" +
+                       $"<span class='badge badge-pill badge-info'>Xem thêm</span>" +
+                       $"</a>";
+            case PackageType.HOST_DISK_SIZE:
+                return "";
+            case PackageType.GIFT_CODE:
+                return "";
+            case PackageType.SHIPPING_FEE:
+                return "";
+            case PackageType.PAYMENT_ONLINE:
+                return "";
+            case PackageType.MEMBERSHIP_POINTS:
+                return "";
+            case PackageType.SOCIAL_LOGIN:
+                return "";
+        }
+        return "";
+    }
+}
+
+<tr>
+    @if (string.IsNullOrEmpty(name) == false)
+    {
+        <td rowspan="@rowNum" class="align-top text-dark">@name</td>
+    }
+    
+    <td class="align-top text-capitalize text-center">
+        @dateDisplay(pac.EffectiveDate)
+    </td>
+    <td class="align-top text-capitalize text-center">
+        @Html.Raw(dateDisplay(pac.ExpirationDate, true))
+    </td>
+    <td class="align-top text-center" style="@(string.IsNullOrEmpty(name) ? "border-right-width: 1px;" : "")">
+        @Html.Raw(displayValue(pac))
+        @if (pac.IsPending)
+        {<text>
+             <a href="https://webphukhang.com/lien-he" target="_blank">
+                 <span class="badge badge-pill badge-primary">Sử dụng ngay</span>
+             </a>
+         </text>}
+        else if (pac.IsExpiration || pac.IsWarning)
+        {<text>
+            <a href="https://webphukhang.com/lien-he" target="_blank">
+                <span class="badge badge-pill badge-info">Gia hạn ngay</span>
+            </a>
+         </text>}
+        else
+        {<text>
+             <span class="badge badge-pill badge-cyan">Đang hoạt động</span>
+         </text>}
+    </td>
+    
+    @if (string.IsNullOrEmpty(name) == false)
+    {
+        <td rowspan="@rowNum" class="align-top text-dark">@Html.Raw(displayMemo(pac.PackageType))</td>
+    }
+</tr>

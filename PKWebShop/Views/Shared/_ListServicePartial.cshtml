@@ -1,0 +1,68 @@
+﻿@model List<PKWebShop.Models.product>
+
+@{
+
+    var sub_total = Model.Sum(item => (item.Price - item.DiscountAmount - (item.Price * (item.DiscountPercent ?? 0 / 100))));
+    var gift_code = ViewBag.GiftCode as PKWebShop.Models.gift_code;
+    double sub_gift_code = 0;
+    if (gift_code != null)
+    {
+        sub_gift_code = gift_code.percent != null ? (double)((sub_total * gift_code.percent / 100) ?? 0) : (double)(gift_code.price ?? 0);
+    }
+    double? total_amount = sub_total - sub_gift_code;
+}
+
+
+@if (ViewBag.Error != null)
+{
+    <p class="alert alert-warning">Chọn DV thất bại. @ViewBag.Error</p>
+}
+<input type="hidden" id="gift_code_code" value="@(gift_code?.code??"")" />
+<table class="table table-hover table-responsive">
+    <thead style="background-color:gray; color:white">
+        <tr>
+            <th style="width:50px">STT</th>
+            <th>Tên Dịch Vụ</th>
+            <th>Đơn Giá</th>
+            <th style="width:100px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@(Model.IndexOf(item) + 1)</td>
+                <td class="text-capitalize">@(item.ProductName)</td>
+                <td>@((item.Price - item.DiscountAmount - (item.Price * (item.DiscountPercent ?? 0 / 100)))?.ToString("#,###"))</td>
+                <td class="text-center">
+                    <a href="javascript:void(0)" class="label label-danger" onclick="ChooseService('del','@item.Id')">
+                        <i class="fa fa-close"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+    <tfoot style="background-color:#EEEEEE">
+        @if (gift_code != null)
+        {
+            <tr>
+                <td colspan="2" class="text-right text-uppercase"><b>Mã giảm giá: @gift_code.code</b></td>
+                <td colspan="2" class="text-success"><b></b> @("-" + sub_gift_code.ToString("#,###")) @(gift_code?.percent != null ? "(" + gift_code?.percent.ToString() + "%)" : "")</td>
+            </tr>
+        }
+        @if (Model != null && Model.Count() > 0)
+        {
+            <tr style="font-size:16px; ">
+                <td colspan="2" class="text-right text-uppercase"><b>Tổng tiền</b></td>
+                <td colspan="2" class="text-success"><b>@(total_amount?.ToString("#,###"))</b></td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td colspan="4">Chưa có dịch vụ nào được chọn</td>
+            </tr>
+        }
+    </tfoot>
+</table>
+<a class="pull-right" style="cursor:pointer" onclick="input_giftcode()">Nhập mã giảm giá</a>

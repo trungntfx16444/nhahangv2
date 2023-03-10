@@ -1,0 +1,244 @@
+﻿@model IEnumerable<PKWebShop.Models.giasu_class>
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+
+@{
+    ViewBag.Title = "Lớp dạy cần Gia sư";
+    webconfiguration info = UserContent.GetWebInfomation();
+    var listOption = ViewBag.ListOption as List<giasu_option>;
+
+    int totalRecords = int.Parse(TempData["totalRecords"].ToString());
+    int page = int.Parse(TempData["page"].ToString());
+    int rpp = int.Parse(TempData["rpp"].ToString());
+}
+
+
+<!--Breadcrumb start-->
+<div class="ed_pagetitle">
+    <div class="ed_img_overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-md-4 col-sm-6">
+                <div class="page_title">
+                    <h1>Lớp Cần Gia Sư</h1>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-8 col-sm-6">
+                <ul class="breadcrumb">
+                    <li><a href="/">Trang chủ</a></li>
+                    <li><i class="fa fa-angle-double-right" aria-hidden="true"></i></li>
+                    <li><a href="javascript:void(0)">Lớp cần gia sư</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Breadcrumb end-->
+<div class="ed_transprentbg ed_toppadder80 ed_bottompadder80 new-class">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 container">
+                <div class="ed_search_form">
+                    <form class="row" style="font-style:italic; padding-left:15px; padding-right:15px">
+                        <div class="form-group col-md-12 col-sm-12 col-xs-6">
+                            <input type="text" id="malop" name="malop" class="form-control" value="@(TempData["malop"])" placeholder="Nhập mã lớp"autocomplete="off">
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-6">
+                            <select class="form-control" id="tinhthanh" name="tinhthanh" onchange="loadDistrict($(this).val())">
+                                <option value="">Tỉnh/thành</option>
+                            </select>
+                            <input type="hidden" id="hd_tinhthanh" value="@(TempData["tinhthanh"] ?? "")"/>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-6">
+                            <select class="form-control" id="quanhuyen" name="quanhuyen">
+                                <option value="">Quận/huyện</option>
+                            </select>
+                            <input type="hidden" id="hd_quanhuyen" value="@(TempData["quanhuyen"] ?? "")" />
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-6">
+                            <select class="form-control" id="trinhdo" name="trinhdo">
+                                <option value="">Trình độ</option>
+                                @foreach (var item in listOption.Where(x => x.TypeName.Equals("trình độ", StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option @if(TempData["trinhdo"] != null && TempData["trinhdo"].ToString() == (item.Id + "|" + item.Name)){@Html.Raw("selected");} value="@(item.Id + "|" + item.Name)">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-6">
+                            <select class="form-control" id="monhoc" name="monhoc">
+                                <option value="">Môn học</option>
+                                @foreach (var item in listOption.Where(x => x.TypeName.Equals("môn dạy", StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option @if(TempData["monhoc"] != null && TempData["monhoc"].ToString() == item.Name){@Html.Raw("selected");} value="@(item.Name)">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-6">
+                            <select class="form-control" id="lophoc" name="lophoc">
+                                <option value="">Lớp học</option>
+                                @foreach (var item in listOption.Where(x => x.TypeName.Equals("lớp dạy", StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option @if(TempData["lophoc"] != null && TempData["lophoc"].ToString() == (item.Id + "|" + item.Name)){@Html.Raw("selected");} value="@(item.Id + "|" + item.Name)">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-6 col-xs-12">
+                            <button type="submit" class="btn ed_btn pull-right ed_orange"><i class="fa fa-search"></i> Tìm kiếm</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="class-list col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding:0px">
+                    @if (Model != null && Model.Count() > 0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="col-lg-4 col-md-4 col-sm-6">
+                                <div class="item_c">
+                                    <div class="c_ttl">
+                                        <div class="c_tt">@(!string.IsNullOrEmpty(item.Status) && item.Status != "Lớp chưa giao" ? "LỚP ĐÃ GIAO" : "LỚP CHƯA GIAO")</div>
+                                        <div class="c_ms">MS<br>@(item.Code)</div>
+                                    </div>
+                                    <div class="c_content chuagiao" @if (!string.IsNullOrEmpty(item.Status) && item.Status != "Lớp chưa giao") { @Html.Raw("style='background-color:mistyrose'") ; }>
+                                        Môn dạy: <span class="c1">@(item.Subjects)</span><br>
+                                        Lớp dạy: <span class="c1">@(item.ClassName?.Split('|')[1])</span><br>
+                                        Địa chỉ: <span class="c2">@(item.ContactAddress), @(item.District?.Split('|')[1]), @(item.ProvinceOrCity?.Split('|')[1])</span><br>
+                                        Mức lương:
+                                        @if (string.IsNullOrEmpty(item.Salary) || item.Salary == "0")
+                                        {
+                                            <span class="c3">Chưa cập nhật</span><br />
+                                        }
+                                        else
+                                        {
+                                            <span class="c3">@(item.Salary)<sup>đ</sup>/tháng</span><br />
+                                        }
+                                        Số buổi: <span class="c2">@(item.LessonNumber) /tuần</span><br>
+                                        Thời gian: <span class="c2">@(item.LearningTime)</span><br>
+                                        Thông tin: <span class="c2">@Html.Raw(item.Note?.Replace("\r\n", ", "))</span><br>
+                                        Yêu cầu: <span class="c2">@(item.DegreeRequired?.Split('|')[1])</span><br>
+                                        Liên hệ: <span class="c2">@(info.Hotline)</span>
+                                    </div>
+                                    <div class="social clearfix">
+                                        <p class="more_y3">
+                                            <a href="tel:@(info.Hotline)"><i class="fa fa-phone"></i>&nbsp;&nbsp;LIÊN HỆ</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="col-lg-12">
+                            @Html.Partial("_PagingPartial", new ViewDataDictionary { { "page", page }, { "rpp", rpp }, { "totalRecords", totalRecords }, { "url", "/lop-day-can-gia-su" } })
+                        </div>
+                    }
+                    else
+                    {
+                        <h3 class="text-center text-success">Chưa có Lớp phù hợp với điều kiện tìm kiếm của bạn</h3>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section scripts
+{
+    <script type="text/javascript">
+        loadProvince();
+
+        function loadProvince() {
+            let province = $("#hd_tinhthanh").val();
+
+            $.ajax({
+                url: "/home/LoadProvince/",
+                type: "post",
+                datatype: "json"
+            }).done(function (data) {
+
+                if (data[0] == true) {
+                    let _value = ""; let _type = "";
+                    let _option = '<option value="">Tỉnh/thành</option>';
+                    let _optgroupCity = '<optgroup label="Thành phố">';
+                    let _optgroupProvince = '<optgroup label="Tỉnh">';
+
+                    for (var i = 0; i < data[1].length; i++) {
+                        _value = data[1][i].provinceid + "|" + data[1][i].name;
+                        _type = data[1][i].type;
+
+                        if (_type == "Thành Phố") {
+                            if (_value == province) {
+                                _optgroupCity += '<option selected value="' + _value + '">' + data[1][i].name + '</option>';
+                            }
+                            else {
+                                _optgroupCity += '<option value="' + _value + '">' + data[1][i].name + '</option>';
+                            }
+                        }
+                        else if (_type == "Tỉnh") {
+                            if (_value == province) {
+                                _optgroupProvince += '<option selected value="' + _value + '">' + data[1][i].name + '</option>';
+                            }
+                            else {
+                                _optgroupProvince += '<option value="' + _value + '">' + data[1][i].name + '</option>';
+                            }
+                        }
+                    }
+
+                    _optgroupCity += '</optgroup>';
+                    _optgroupProvince += '</optgroup>';
+
+                    $("#tinhthanh").html(_option + _optgroupCity + _optgroupProvince);
+                }
+                else {
+                    let optErr = $.parseJSON('{"text":"Gặp sự cố không thể tải dữ liệu tỉnh/thành phố","layout":"top","type":"error"}');
+                    noty(optErr);
+                }
+            }).fail(function () {
+                alert("Gặp sự cố không thể tải dữ liệu tỉnh/thành phố")
+            }).always(function () {
+                loadDistrict(province);
+            });
+        };
+
+        function loadDistrict(province) {
+            //province: "provinceId|provinceName" - [vd: "79|Hồ Chí Minh"]
+            //console.log(province);
+
+            $.ajax({
+                url: "/home/loadDistrict/",
+                type: "post",
+                datatype: "json",
+                data: { "province": province }
+            }).done(function (data) {
+
+                if (data[0] == true) {
+                    let _district = $("#hd_quanhuyen").val();
+                    let _opt = '<option value="">Quận/huyện</option>';
+
+                    for (var i = 0; i < data[1].length; i++) {
+                        let _value = data[1][i].districtid + "|" + data[1][i].type + " " + data[1][i].name;
+                        let _name = data[1][i].type + " " + data[1][i].name;
+
+                        if (_value == _district) {
+                            _opt += '<option selected value="' + _value + '">' + _name + '</option>';
+                        }
+                        else {
+                            _opt += '<option value="' + _value + '">' + _name + '</option>';
+                        }
+                    }
+
+                    $("#quanhuyen").html(_opt);
+                }
+                else {
+                    let optErr = $.parseJSON('{"text":"Gặp sự cố không thể tải dữ liệu quận/huyện","layout":"top","type":"error"}');
+                    noty(optErr);
+                }
+            }).fail(function () {
+                alert("Gặp sự cố không thể tải dữ liệu quận/huyện")
+            }).always(function () {
+                //...
+            });
+        };
+    </script>
+}

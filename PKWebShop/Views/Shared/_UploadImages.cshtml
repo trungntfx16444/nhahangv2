@@ -1,0 +1,60 @@
+﻿@model IEnumerable<PKWebShop.Models.uploadmorefile>
+<div id="img_more" class="img_more">
+    @if (Model != null)
+    {
+        foreach (var item in Model)
+        {
+            <p class="img_more_p">
+                <img src="@(item.FileName)" alt="review picture" />
+                <button type="button" class="btn btn-danger btn-xs" onclick="del_more_pic($(this))">
+                    <i class="anticon anticon-close"></i>
+                </button>
+                <input type="hidden" name="picmore" value="@(item.FileName)" />
+            </p>
+        }
+    }
+</div>
+<div id="clearboth"><div class="clearfix"></div></div>
+<br />
+<button type="button" class="btn btn-default" onclick="upload_more_pic()">
+    <i class="anticon anticon-picture font-size-18 text-success"></i>
+    <span class="m-l-5 font-weight-bolder">Thêm hình ảnh</span>
+</button>
+<script src="~/Scripts/upload-more-picture.js"></script>
+<style>
+    .box_border {
+        border: 1px solid lightgrey;
+        padding: 3px;
+    }
+
+    .img_main img .box_border {
+        height: 180px;
+    }
+
+    .img_main img {
+        height: 170px;
+    }
+
+    .img_more .btn-danger {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        border-radius: unset;
+        padding: 0px 1px;
+    }
+
+    .img_more_p {
+        position: relative;
+        float: left;
+        margin-right: 5px;
+        background-color: #edf2f9;
+    }
+
+        .img_more_p > img {
+            height: 130px;
+            border: 1px solid lightgrey;
+            max-width: 100%;
+            object-fit: contain;
+        }
+</style>
+

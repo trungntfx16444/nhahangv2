@@ -1,0 +1,86 @@
+﻿[*.cs]
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = silent
+
+# SA1313: Parameter names should begin with lower-case letter
+dotnet_diagnostic.SA1313.severity = silent
+
+# SA1513: Closing brace should be followed by blank line
+dotnet_diagnostic.SA1513.severity = silent
+
+# SA1101: Prefix local calls with this
+dotnet_diagnostic.SA1101.severity = silent
+
+# SA1300: Element should begin with upper-case letter
+dotnet_diagnostic.SA1300.severity = silent
+
+
+# SA1633: File should have header
+dotnet_diagnostic.SA1633.severity = silent
+
+# SA1601: Partial elements should be documented
+dotnet_diagnostic.SA1601.severity = silent
+
+# SA1028: Code should not contain trailing whitespace
+dotnet_diagnostic.SA1028.severity = silent
+
+# SA1309: Field names should not begin with underscore
+dotnet_diagnostic.SA1309.severity = silent
+
+# SA1400: Access modifier should be declared
+dotnet_diagnostic.SA1400.severity = silent
+
+# SA1614: Element parameter documentation should have text
+dotnet_diagnostic.SA1614.severity = silent
+
+# SA1616: Element return value documentation should have text
+dotnet_diagnostic.SA1616.severity = silent
+
+# CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+dotnet_diagnostic.CS8632.severity = silent
+
+# SA1123: Do not place regions within elements
+dotnet_diagnostic.SA1123.severity = silent
+
+# SA1401: Fields should be private
+dotnet_diagnostic.SA1401.severity = silent
+
+# SA1124: Do not use regions
+dotnet_diagnostic.SA1124.severity = silent
+
+# SA1649: File name should match first type name
+dotnet_diagnostic.SA1649.severity = silent
+
+# SA1402: File may only contain a single type
+dotnet_diagnostic.SA1402.severity = silent
+
+# SA1202: Elements should be ordered by access
+dotnet_diagnostic.SA1202.severity = silent
+
+# IDE0025: Use expression body for properties
+dotnet_diagnostic.IDE0025.severity = silent
+
+# SA1201: Elements should appear in the correct order
+dotnet_diagnostic.SA1201.severity = silent
+
+# SA1203: Constants should appear before fields
+dotnet_diagnostic.SA1203.severity = silent
+
+# SA1602: Enumeration items should be documented
+dotnet_diagnostic.SA1602.severity = silent
+
+# CS1998: Async method lacks 'await' operators and will run synchronously
+dotnet_diagnostic.CS1998.severity = silent
+
+# SA1134: Attributes should not share line
+dotnet_diagnostic.SA1134.severity = silent
+
+# SA1516: Elements should be separated by blank line
+dotnet_diagnostic.SA1516.severity = silent
+
+# SA1508: Closing braces should not be preceded by blank line
+dotnet_diagnostic.SA1508.severity = silent
+
+# SA1000: Keywords should be spaced correctly
+dotnet_diagnostic.SA1000.severity = silent

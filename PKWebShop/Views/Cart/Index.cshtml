@@ -1,0 +1,257 @@
+﻿@model IEnumerable<PKWebShop.Models.cart_detail>
+@using PKWebShop.Services
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@{
+    ViewBag.Class = "shop";
+    var adminSite = UserContent.GetAdminSite();
+}
+<link href="~/Content/css/toggle-switch.css" rel="stylesheet" />
+<style type="text/css">
+    .font-weight-500 {
+        font-weight: 500 !important;
+    }
+
+    .p-24 {
+        padding: 24px !important;
+    }
+
+    .free-ship {
+        /*text-decoration: line-through;*/
+        color: #28a745 !important;
+    }
+</style>
+@if (TempData["e"] != null)
+{
+    <div class="modal" tabindex="-1" id="error_modal" role="dialog">
+        <div class="modal-dialog" role="document" style="max-width: 600px">
+            <div class="modal-content modal-md">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thông báo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body py-3">
+                    <p>@Html.Raw(TempData["e"])</p>
+                    @if (TempData["e_id"] != null)
+                    {
+                        var e_id = int.Parse(TempData["e_id"].ToString());
+                        var qty = int.Parse(TempData["qty"].ToString());
+                        var p = Model.FirstOrDefault(x => x.Id == e_id);
+                        <div class="d-flex">
+                            @{ var urlProduct = $"/{p.ProductCode}-pd{p.ItemId}";}
+                            <div class="product-thumbnail" style="width:100px">
+                                <a href="@urlProduct">
+                                    <img src="@($"{adminSite}{p.ProductPicture}")" style="width:80px; height: 80px; object-fit: contain" class="img-thumbnail" alt="" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                </a>
+                            </div>
+                            <div class="product-name text-left">
+                                <a class="text-theme" href="@urlProduct" style="font-size:16px;">
+                                    <b>@(p.ItemName)</b>
+                                </a>
+                                @(!string.IsNullOrEmpty(p.PriceOpt1) ? "(" + p.PriceOpt1_name + ")" : "") @(!string.IsNullOrEmpty(p.PriceOpt2) ? "(" + p.PriceOpt2_name + ")" : "")
+                                <div class="product-price-cart">
+                                    <span>Giá: </span>
+                                    <span class="amount notranslate">@(p.Price.ToString("0,###"))<span>@Constant.CURRENCY_SIGN</span></span>
+
+                                </div>
+                                <div class="product-price-cart">
+                                    <span>Số lượng mua: </span>
+                                    <span class="amount notranslate">@(p.Quantity)</span>
+                                </div>
+                                <div class="product-price-cart">
+                                    <span>Số lượng còn: </span>
+                                    <span class="amount notranslate text-danger">@(qty)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="float-right mt-3">
+                            <button type="button" class="btn btn-danger" onclick="_RemoveFromCart('@p.Id')">Xóa khỏi giỏ</button>
+                            @if (qty > 0)
+                            {
+                                <button type="button" class="btn btn-info" onclick="$('#qty_@p.Id').val('@qty').trigger('change')">Mua @qty </button>
+                            }
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<section class="breadcrumbs">
+    <div class="container">
+
+        <ol>
+            <li><a href="/">Trang chủ</a></li>
+            <li class="active">Giỏ hàng của tôi</li>
+        </ol>
+
+    </div>
+</section>
+<section>
+    <div class="container">
+        <div class="section-title">
+            <h2 class="title">
+                <img class="img-fluid" src="/Content/client/img/img-title.png"> Giỏ hàng
+            </h2>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 col-md-7">
+                <ul class="list-group list-group-flush">
+                    @for (int b = 0; b < 5; b++)
+                    {
+                        <!-- list group -->
+                        <li class="list-group-item py-3 py-lg-0 px-0">
+                            <!-- row -->
+                            <div class="row align-items-center">
+                                <div class="col-3 col-md-2">
+                                    <!-- img --> <img src="/Content/client/img/menu_list_1_1.jpg" alt="Ecommerce" class="img-fluid">
+                                </div>
+                                <div class="col-4 col-md-5">
+                                    <!-- title -->
+                                    <a href="shop-single.html" class="text-inherit"><h4 class="mb-0 product-name">Salted Instant Popcorn </h4></a>
+                                    <span><small class="text-muted">.98 / lb</small></span>
+                                    <!-- text -->
+                                    <div class="mt-2 small lh-1">
+                                        <a href="#!" class="text-decoration-none text-inherit">
+                                            <span class="me-1 align-text-bottom">
+                                                <i class="bi bi-trash"></i>
+                                            </span><span class="text-muted">Remove</span>
+                                        </a>
+                                    </div>
+                                </div>
+                                <!-- input group -->
+                                <div class="col-3 col-md-3 col-lg-2">
+                                    <!-- input -->
+                                    <div class="input-group input-spinner  ">
+                                        <input type="button" value="-" class="button-minus  btn  btn-sm " data-field="quantity">
+                                        <input type="text" step="1" max="10" value="1" name="quantity" class="quantity-field form-control-sm form-input   ">
+                                        <input type="button" value="+" class="button-plus btn btn-sm " data-field="quantity">
+                                    </div>
+
+
+                                </div>
+                                <!-- price -->
+                                <div class="col-2 text-lg-end text-start text-md-end col-md-2">
+                                    <div class="product-price mb-3">
+                                        <ins>250.000 VNĐ</ins>
+                                        <del>250.000 VNĐ</del>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </li>
+                    }
+
+
+                </ul>
+                <div class="cart-btn-wrap d-flex justify-content-between mt-3">
+                    <a href="#" class="cart-btn btn">Tiếp tục mua</a>
+                    <a href="#" class="cart-checkout-btn btn">Đặt hàng</a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5">
+                <div class="card-body p-6">
+                    <div class="card mb-2">
+                        <!-- list group -->
+                        <ul class="list-group list-group-flush">
+                            <!-- list group item -->
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="me-auto">
+                                    <div>Tổng đơn hàng</div>
+
+                                </div>
+                                <span>$70.00</span>
+                            </li>
+
+                            <!-- list group item -->
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="me-auto">
+                                    <div>Phí vận chuyển</div>
+
+                                </div>
+                                <span>$3.00</span>
+                            </li>
+                            <!-- list group item -->
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="me-auto">
+                                    <div class="fw-bold">Tổng</div>
+
+                                </div>
+                                <span class="fw-bold">$67.00</span>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <div class="mt-8">
+                        <h2 class="h5 mb-3">Thêm khuyến mại hoặc thẻ quà tặng</h2>
+                        <form>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="Mã giảm giá" aria-label="Recipient's username" aria-describedby="button-addon2">
+                                <button class="btn btn-outline-secondary" type="button" id="button-addon2">Xác nhận</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="d-grid mb-1 mt-4">
+                        <!-- btn -->
+                        <a href="#" class="btn-checkout d-flex justify-content-between align-items-center" type="submit">
+                            Thanh toán <span class="fw-bold">250.000VNĐ</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="main_content" @*class="container"*@>
+    @Html.Partial("_index", Model)
+</div>
+
+
+@section scripts{
+    <script>
+        $(function () {
+            $('#error_modal').modal('show');
+        })
+        function _RemoveFromCart(Id) {
+            $.ajax({
+                method: "POST",
+                url: "/cart/RemoveFromCart",
+                data: { Id },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    LoadIndex();
+                    $('#error_modal').modal('hide');
+                }
+                else {
+
+                }
+            }).fail(function () {
+                alert("Oops! Something went wrong");
+            });
+        }
+        function LoadIndex() {
+            bg_loading(true);
+            $.ajax({
+                method: "POST",
+                url: "/cart/_index",
+                dataType: "html"
+            }).done(function (data) {
+                $("#main_content").html(data);
+                bg_loading(false);
+            }).fail(function () {
+                bg_loading(false);
+                alert("Oops! Something went wrong");
+            });
+        }
+    </script>
+}
+
+
+

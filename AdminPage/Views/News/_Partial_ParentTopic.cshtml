@@ -1,0 +1,109 @@
+﻿@model IEnumerable<AdminPage.Models.n_parent_topic>
+@{
+    var ralat_able = ViewBag.listRelatAble as List<AdminPage.Models.n_parent_topic>;
+}
+
+<div class="menu nav" style="overflow-y: auto; height: calc(100vh - 187px - 65px); display: block;">
+    <ul id="divparent" class="flex-column">
+        <li id="divparent_all" class="nav-item parent-topic">
+            <a href="javascript:void(0);" class="nav-link active" onclick="reload('all')">
+                <span>Tất cả</span>
+            </a>
+        </li>
+        @if (Model != null && Model.Count() > 0)
+        {
+            foreach (var item in Model.OrderBy(m => m.Order))
+            {
+                <li id="divparent_@item.Id" class="nav-item parent-topic" data-id="@item.Id">
+                    <a href="javascript:void(0);" class="nav-link" onclick="reload('@item.Id')">
+                        <i class="anticon anticon-drag" style="cursor:move"></i> <span>@item.Name</span>
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+<div class="modal" id="ptopic" aria-modal="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Nhóm chủ đề mới</h4>
+            </div>
+            <div class="modal-body" style="padding-bottom:0px;">
+                <div class="form-group">
+                    <label style="font-weight:bold">Tên nhóm CĐ</label><br />
+                    <input type="hidden" name="id" />
+                    <input class="form-control" name="name" />
+                </div>
+                @if (ralat_able != null)
+                {
+                    <div class="form-group" id="p_topic_relate">
+                        <label style="font-weight:bold">Chủ đề liên quan</label><br />
+                        <select name="relation" class="form-control">
+                            @foreach (var r in ralat_able)
+                            {
+                                <option value="@r.ReId">@r.Name</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                @*<div class="form-group">
+                        <label style="font-weight:bold">Sao chép từ</label><br />
+                        <select id="FromLang" class="col-md-12">
+                            <option value=""> Bài viết mới </option>
+                        </select>
+                    </div>*@
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default float-left" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="SavePTopic()"><i class="fa fa-check"></i> Lưu</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-state-highlight {
+        line-height: 45px;
+        height: 45px;
+        margin-bottom: 8px;
+    }
+</style>
+<script>
+    $("#divparent").sortable({
+        revert: 300,
+        helper: 'clone',
+        items: "> .parent-topic:not(#divparent_all)",
+        placeholder: "ui-state-highlight",
+        stop: function (event, ui) {
+            if (confirm("Lưu vị trí?")) {
+                save_ptopicOrder();
+            } else {
+                $(this).sortable('cancel');
+            }
+        }
+    });
+    $("#divparent").disableSelection();
+    function save_ptopicOrder() {
+        var data = $(".parent-topic").map(function (idx, ele) {
+            return $(ele).data("id");
+        }).get()
+        var lang = $('#lang').val();
+        $.ajax({
+            method: "POST",
+            url: "/news/ptopicOrder",
+            data: { data, lang },
+            dataType: "json"
+        })
+            .done(function (data) {
+                cnoty(data);
+            })
+            .fail(function () {
+            })
+            .always(function () {
+                // $(el).sortable('cancel');
+            });
+    }
+</script>

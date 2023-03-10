@@ -1,0 +1,240 @@
+﻿@model PKWebShop.Models.customer_score
+@using PKWebShop.Models
+@using PKWebShop.Utils
+
+@{
+    var list_category = ViewBag.ListProductCategory as List<category>;
+}
+
+<style type="text/css">
+    .form-control[readonly] {
+        background-color: white;
+        cursor: default;
+        opacity: 1;
+    }
+</style>
+
+@if (ViewBag.Error != null)
+{
+    <div class="modal fade" id="scoreModal" tabindex="-1" role="dialog" aria-labelledby="scoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="exampleModalLabel" style="display:inline">NOTIFICATION</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <p>@ViewBag.Error</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!--Modal Popup-->
+    <div class="modal fade" id="scoreModal" tabindex="-1" role="dialog" aria-labelledby="scoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                @using (Ajax.BeginForm("Save", "BonusPoints", new AjaxOptions
+                {
+                    HttpMethod = "POST",
+                    //InsertionMode = InsertionMode.Replace,
+                    //UpdateTargetId = "",
+                    LoadingElementId = "saveloading",
+                    OnSuccess = "SaveComplete",
+                    OnFailure = "SaveError"
+                }))
+                {
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="exampleModalLabel" style="display:inline">
+                            <span>@(string.IsNullOrEmpty(Model.Id) ? "TẠO CHƯƠNG TRÌNH TÍCH ĐIỂM" : $"{Model.Name} #{Model.Id}")</span>
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12 col-xs-12">
+                                <div class="form-group">
+                                    <label class="control-label">TÊN CHƯƠNG TRÌNH <span style="color:red">*</span></label>
+                                    <input type="text" class="form-control" name="Name" value="@Model.Name" required />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xs-12">
+                                <label class="control-label">THỜI GIAN</label>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="min-width:150px">Từ ngày</span>
+                                        </div>
+                                        <input type="date" name="FromDate" class="form-control" placeholder="Ngày bắt đầu quảng cáo" data-date-format="DD/MM/YYYY" value="@((Model.FromDate ?? DateTime.Now).ToString("yyyy-MM-dd"))" autocomplete="off">
+                                    </div>
+                                    <div id="todate_g" class="input-group mt-1">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="min-width:150px">Đến ngày</span>
+                                        </div>
+                                        <input type="date" required name="ToDate" class="form-control" placeholder="Ngày bắt đầu quảng cáo" data-date-format="DD/MM/YYYY" value="@((Model.ToDate ?? DateTime.Now).ToString("yyyy-MM-dd"))" autocomplete="off">
+                                    </div>
+                                    <label style="cursor:pointer;display:flex" class="font-weight-normal mt-1">
+                                        <input id="no_enddate_input" type="checkbox" class="mr-2" style="width:20px; height:20px;" name="MultipleOnOrder" value="true" onclick="no_enddate(this.checked)">
+                                        <span> Không đặt ngày kết thúc</span>
+                                    </label>
+                                </div>
+                                <label class="control-label">GIÁ TRỊ HÓA ĐƠN</label>
+                                <div class="form-group mt-1 mb-3">
+                                    <div class="input-group">
+                                        <label style="display:flex;cursor:pointer;" class="float-left font-weight-normal">
+                                            <input type="checkbox" class="mr-2" style="width:20px; height:20px;" name="MultipleOnOrder" value="true" @(Model.MultipleOnOrder == true ? "checked" : "")>
+                                            <span data-toggle="tooltip" data-placement="top" data-html="true" title="Khi giá trị đơn hàng lớn gấp n lần giá đơn tối thiểu <br/> thì nhận được n lần điểm tích lũy"> Áp dụng nhiều lần cho một đơn hàng <i class="anticon anticon-shopping"></i></span>
+                                        </label>
+                                        <label style="display:flex;cursor:pointer;" class="float-left font-weight-normal">
+                                            <input type="checkbox" class="mr-2" style="width:20px; height:20px;" name="MultipleOnCustomer" value="true" @(Model.MultipleOnCustomer ? "checked" : "")>
+                                            <span data-toggle="tooltip" data-placement="top" data-html="true" title="Tất cả đơn hàng của khách trong thời gian chương trình hàng đều được áp dụng<br/> thay vì chỉ 1 đơn hàng đầu tiên"> Áp dụng nhiều lần cho một khách hàng <i class="anticon anticon-user"></i></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="min-width:150px">Đơn tối thiểu</span>
+                                        </div>
+                                        <input type="text" class="form-control" name="Order_GranTotal" value="@(Model.Order_GranTotal != null ? Model.Order_GranTotal?.ToString("#,###") : "0")" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" onkeyup="$(this).val(toMoney($(this).val()))" />
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">@Constant.CURRENCY_SIGN</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="min-width:150px">Số điểm nhận được</span>
+                                        </div>
+                                        <input type="text" class="form-control" name="Score" value="@(Model.Score ?? 0)" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xs-12">
+                                <label class="control-label">NHÓM SẢN PHẨM ÁP DỤNG</label>
+                                <input type="hidden" name="list_pro_id" value="@(Model.Products)" />
+                                <div style="border:1px solid #CCCCCC; padding:5px; height:300px; overflow:auto">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:37px"></th>
+                                                <th>Nhóm sản phẩm</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (list_category != null && list_category.Count() > 0)
+                                            {
+                                                foreach (var item in list_category)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <input type="checkbox" id="@item.ReId" name="products" value="@item.ReId" onclick="check('@item.ReId')" @if (Model.Products != null && Model.Products.Contains(item.ReId)) { @Html.Raw("checked") } />
+                                                        </td>
+                                                        <td>@item.CategoryName</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="2"><center>Chưa có nhóm sản phẩm</center></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <label style="display:flex;cursor:pointer;width:100px" class="float-left text-success col-md-6">
+                            <input type="checkbox" style="width:20px; height:20px;" name="Active" value="1" @if (Model.Active == true) { @Html.Raw("checked") } />
+                            <span style="font-size:15px">&nbsp;Hoạt động</span>
+                        </label>
+                        <div class="text-right col-md-6">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-primary">
+                                Lưu <img id="saveloading" src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" style="display:none" />
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+<style>
+    .tooltip-inner {
+        max-width: unset !important;
+    }
+</style>
+
+<script type="text/javascript">
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        $("input[type='date']").on("change", function () {
+            var mo = moment(this.value, "YYYY-MM-DD");
+            if (mo.isValid())
+                this.setAttribute("data-date", mo.format(this.getAttribute("data-date-format")));
+        }); $("input[type='date']").trigger("change");
+        @if(Model.Id!=null&&Model.ToDate==null){
+        <text>
+        no_enddate(true);
+        </text>
+        }
+    });
+
+    $(".datepicker").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: "dd/mm/yy",
+        yearRange: "-50:+10"
+    });
+
+    function check(id) {
+        var list_id = $("input[name='list_pro_id']").val();
+        var list_id_new = "";
+        if ($("#" + id).is(":checked") == true) {
+            list_id_new = list_id + id + "|";
+        }
+        else {
+            list_id_new = list_id.replace(id + "|", "");
+        }
+        $("input[name='list_pro_id']").val(list_id_new);
+    }
+
+    function SaveComplete(data) {
+        if (cnoty(data)) {
+            $("#scoreModal").modal('hide');
+            reloadData();
+        }
+    }
+
+    function SaveError() {
+        alert("Oops! Something went wrong");
+    }
+    function no_enddate(check) {
+        if (!check) {
+            $("#todate_g").slideDown();
+            $("#todate_g input[name=ToDate]").removeAttr("disabled");
+        } else {
+            $("#todate_g").slideUp();
+            $("#todate_g input[name=ToDate]").prop("disabled", true);
+        }
+        if ($("#no_enddate_input").is(":checked") != check) {
+            $("#no_enddate_input").prop("checked", check);
+        }
+    }
+</script>

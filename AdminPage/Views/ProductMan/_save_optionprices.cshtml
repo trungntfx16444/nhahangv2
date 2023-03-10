@@ -1,0 +1,301 @@
+﻿@using AdminPage.Models
+@using AdminPage.Services
+@using AdminPage.Utils
+@using AdminPage.AppLB
+@{
+    var listOpts = ViewBag.ListOpt as List<product_option>;
+    var ListOptPrice = ViewBag.ListOptPrice as List<product_option_value>;
+    var listPropertyName = (ViewBag.ListProperty as List<product_properties>)?.Select(x => x.name).OrderBy(x=>x).ToList() ?? new List<string>();
+}
+
+<div class="col-md-12">
+    <span class="font-weight-semibold">Phân loại</span>
+    <div class="form-control">
+        @for (int i = 0; i < 2; i++)
+        {
+            var ops = listOpts.ElementAtOrDefault(i);
+            <div class="option_group row mt-2" style="@(ops == null ? "display: none" : "")">
+                <div class="col-md-6">
+                    <label class="font-weight-semibold required">Tên nhóm phân loại</label><br />
+                    <input type="hidden" class="option_group_id" value="@(ops?.id)" @(ops == null ? "disabled" : "")>
+                    <input class="form-control option_group_name" placeholder="Tên nhóm phân loại" value="@(ops?.name)" onblur="changeGroupName('@i',this.value)" required @(ops == null ? "disabled" : "") />
+                </div>
+                <div class="col-md-6">
+                    <label class="font-weight-semibold required">Phân loại hàng</label><br />
+                    <div class="list_options">
+                        @if (ops?.ListOption?.Count > 0)
+                        {
+                            int j = 0;
+                            foreach (var opt in ops.ListOption)
+                            {
+                                <div class="position-relative option">
+                                    <input class="option_id" type="hidden" value="@(opt?.id)" @(ops == null ? "disabled" : "")>
+                                    <input class="form-control mb-1 pr-4 option_name" value="@(opt?.name)" required onblur="optionnamechange(this)" data-index="@(opt?.id)" placeholder="Nhập phân loại hàng" @(ops == null ? "disabled" : "") /><a class="fas fa-times position-absolute text-gray" style="top: 14px; right: 14px" onclick="removeOptionInput(this)"></a>
+                                </div>
+                                j++;
+                            }
+                        }
+                        else
+                        {
+                            <div class="position-relative option">
+                                <input class="form-control mb-1 pr-4 option_name" value="" required onblur="optionnamechange(this)" placeholder="Nhập phân loại hàng" @(ops == null ? "disabled" : "") /><a class="fas fa-times position-absolute text-gray" style="top: 14px; right: 14px" onclick="removeOptionInput(this)"></a>
+                            </div>
+                        }
+                        <button type="button" class="float-right btn_addOptionInput btn btn-sm btn-default" onclick="addOptionInput(this)"> <i class="fa fa-plus-circle"></i> Thêm</button>
+                    </div>
+
+                </div>
+            </div>
+        }
+        <button id="addOptionGroup_btn" type="button" onclick="addOptionGroup()" class="btn btn-sm btn-default font-weight-semibold" style="@(listOpts.Count >= 2 ? "display:none" : "")"><i class="fa fa-plus-circle"></i> Thêm nhóm phân loại</button>
+
+        <div id="option_price" class="mt-3" style="@(listOpts.Count==0?"display:none":"")">
+            <span class="font-weight-semibold">Giá theo phân loại</span>
+            @{
+                var f = listOpts.FirstOrDefault();
+                var s = listOpts.ElementAtOrDefault(1);
+            }
+            <table id="optionprice_table" class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th id="groupname_0" class="op_1" style="width: calc(100% / 6); @(f?.ListOption.Count > 0 ? "" : "display:none")">@(f?.name??"Tên")</th>
+                        <th id="groupname_1" class="op_2" style="width: calc(100% / 6); @(s?.ListOption.Count > 0 ? "" : "display:none")">@(s?.name??"Tên")</th>
+                        <th style="width: calc(100% / 6)">Giá</th>
+                        <th style="width: calc(100% / 6)">Giá Đại lý</th>
+                        <th style="width: calc(100% / 6)">Số lượng còn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{int ix = 0; }
+                    @foreach (var x in f?.ListOption ?? new List<product_option> { null })
+                    {
+                        int iy = 0;
+                        <tr class="op_1" @(x == null ? "style=display:none" : "")>
+                            <td rowspan="@((s?.ListOption?.Count??1)+1)">@(x?.name??"Loại")</td>
+                        </tr>
+                        foreach (var y in s?.ListOption ?? new List<product_option> { null })
+                        {
+                            var value = ListOptPrice.FirstOrDefault(v => v.option1 == x.id && v.option2 == y?.id);
+                            <tr class="option_value">
+                                <td class="op_2" @(y == null ? "style=display:none" : "")>@(y?.name??"Loại")</td>
+                                <td>
+                                    <input type="hidden" class="option_value_id" value="@(value?.id)" />
+                                    <input class="border-0 w-100 p-0 option_value_price" type="text" placeholder="Nhập giá" @(x == null && y == null ? "disabled" : "") required value="@(value?.price.ToString("#"))" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+                                </td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_wholeprice" type="text" placeholder="Nhập giá" @(x == null && y == null ? "disabled" : "") required value="@(value?.wholeSalePrice?.ToString("#"))" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+                                </td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_qty" type="text" placeholder="Nhập sl" @(x == null && y == null ? "disabled" : "") required value="@(value?.qty.ToString("#"))" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+                                </td>
+                            </tr>
+                            iy++;
+                        }
+                        ix++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<style>
+    .option_value input {
+        text-align: right;
+    }
+</style>
+<script>
+    $(function () {
+        $(".option_group_name").autocomplete({
+            minLength: 0,
+            source: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(listPropertyName)),
+            delay: 0,
+            select: function (ev, ui) {
+                setTimeout(function () {
+                    $(ev.target).trigger("blur");
+                }, 10);
+
+            }
+        }).focus(function () {
+            $(this).autocomplete("search","");
+        });
+        $(".option_name").autocomplete({
+            minLength: 0,
+            source:[],
+            delay: 0,
+            select: function (ev, ui) {
+                setTimeout(function () {
+                    $(ev.target).trigger("blur");
+                }, 10);
+            }
+        }).focus(function () {
+            $(this).autocomplete("search","");
+        });
+        var properties_Item = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(listPropertyName.ToDictionary(x=>x,x=>"")));
+
+        $(".option_group_name").on("blur", function () {
+            var el = this;
+            var source = properties_Item[el.value];
+            if (source == "") {
+                $.ajax({
+                    method: "POST",
+                    url: "/productman/GetValue",
+                    data: {
+                        name: el.value,
+                        langCode: $("#langCode").val()
+                    },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0]) {
+                        let rs = data[1].map(x => x.name);
+                        properties_Item[el.value] = rs;
+                        $(el).closest(".option_group").find(".option_name").autocomplete("option", "source", rs);
+                    }
+                    else {
+                        msg_error(data[1], "", "top-center");
+                    }
+                }).fail(function () {
+                    msg_error("Đã có sự cố xảy ra. Vui lòng thử lại", "", "top-center");
+                });
+            } else if (source?.length > 0) {
+                $(this).closest(".option_group").find(".option_name").autocomplete("option", "source", source);
+            } else {
+                $(this).closest(".option_group").find(".option_name").autocomplete("option", "source", []);
+            }
+        })
+    })
+    function addOptionGroup() {
+        let toshow_group = $('.option_group:hidden').first();
+        toshow_group.show().find("input").prop("disabled", false);
+        if ($('.option_group:hidden').length == 0) {
+            $("#addOptionGroup_btn").hide();
+        }
+        if ($('.option_group:visible').length > 0) {
+            $(".option_value input").prop("disabled", false)
+        }
+        let GroupIndex = $(".option_group").index(toshow_group);
+        if (GroupIndex == 0) {
+            $(".op_1").show();
+        } else {
+            $(".op_2").show();
+        }
+        $("#option_price").show();
+        $("#default_price").hide();
+    }
+    function changeGroupName(i, name) {
+        $("#groupname_" + i).html(name || "Tên");
+    }
+    function addOptionInput(el) {
+        var field = $(`<div class="position-relative option">
+                            <input class="form-control mb-1 pr-4 option_name" value="" required onblur="optionnamechange(this)" placeholder="Nhập phân loại hàng" /><a class="fas fa-times position-absolute text-gray" style="top: 14px; right: 14px" onclick="removeOptionInput(this)"></a>
+                        </div>`);
+        $(el).before(field);
+        field.find(".option_name").autocomplete({
+            minLength: 0,
+            source: [],
+            delay: 0,
+            select: function (ev, ui) {
+                setTimeout(function () {
+                    $(ev.target).trigger("blur");
+                }, 10);
+            }
+        }).focus(function () {
+            $(this).autocomplete("search", "");
+        });
+
+        field.closest(".option_group").find(".option_group_name").trigger("blur");
+
+        if ($(".list_options").index($(el).closest(".list_options")) == 0) {
+            $("#optionprice_table tbody").append(`
+                            <tr class="op_1">
+                                <td rowspan="${$(".list_options:eq(1) .option").length + 1}">Loại</td>
+                            </tr>`);
+            let vis = $(".list_options:eq(1) .option:visible").length;
+            $(".list_options:eq(1) .option").map((i, x) => {
+                $("#optionprice_table tbody").append(`
+                            <tr class="option_value">
+                                <td class="op_2" ${vis == 0 ? `style="display:none"` : ""}>${$(x).find('.option_name').val() || "Loại"}</td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_price" type="number" placeholder="Nhập giá" required value="" />
+                                </td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_wholeprice" type="number" placeholder="Nhập giá" required value="" />
+                                </td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_qty" type="number" placeholder="Nhập sl" required value="" />
+                                </td>
+                            </tr>`);
+            })
+        } else {
+            let ylength = $(".list_options:eq(1) .option").length + 1;
+            $(".list_options:eq(0) .option").map((i, x) => {
+
+                $("#optionprice_table tbody tr:eq(" + (i * ylength + ylength - 2) + ")").after(`
+                            <tr class="option_value">
+                                <td class="op_2">Loại</td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_price" type="number" placeholder="Nhập giá" required value="" />
+                                </td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_wholeprice" type="number" placeholder="Nhập giá" required value="" />
+                                </td>
+                                <td>
+                                    <input class="border-0 w-100 p-0 option_value_qty" type="number" placeholder="Nhập sl" required value="" />
+                                </td>
+                            </tr>`);
+                $("#optionprice_table tbody tr:eq(" + (i * ylength) + ") td:eq(0)").attr("rowspan", ylength);
+            })
+        }
+    }
+    function removeOptionInput(el) {
+        let o_group = $(el).closest(".option_group");
+        var removeItemIndex = o_group.find(".option").index($(el).closest(".option"));
+        let GroupIndex = $(".list_options").index($(el).closest(".list_options"));
+
+        if (o_group.find(".option").length <= 1) {
+            o_group.hide().find("input").prop("disabled", "disabled");
+            if ($('.option_group:visible').length == 0) {
+                $("#option_price").hide();
+                $("#default_price").show();
+                $(".option_value input").prop("disabled", "disabled")
+            }
+            //o_group.find(".option_group_name").prop("disabled", true);
+            $("#addOptionGroup_btn").show();
+            if (GroupIndex == 0) {
+                $(".op_1").hide();
+            } else {
+                $(".op_2").hide();
+            }
+        } else {
+            $(el).closest(".option").remove();
+            let xlength = $(".list_options:eq(0) .option").length;
+            let ylength = $(".list_options:eq(1) .option").length + 1;
+
+            if (GroupIndex == 0) {
+                $("#optionprice_table tbody tr:eq(" + (ylength * removeItemIndex) + ")").remove();
+                $(".list_options:eq(1) .option").map((_i, x) => {
+                    $("#optionprice_table tbody tr:eq(" + (ylength * removeItemIndex) + ")").remove();
+                })
+
+            } else {
+                $(".list_options:eq(0) .option").map((_i, x) => {
+                    $("#optionprice_table tbody tr:eq(" + (_i * ylength + removeItemIndex + 1) + ")").remove();
+                    $("#optionprice_table tbody tr:eq(" + (_i * ylength) + ") td:eq(0)").attr("rowspan", ylength);
+                })
+
+            }
+        }
+    }
+    function optionnamechange(el) {
+        let ig = $(".option_group").index($(el).closest(".option_group"));
+        let ii = $(el).closest(".list_options").find(".option").index($(el).closest(".option"));
+        let xlength = $(".list_options:eq(0) .option").length;
+        let ylength = $(".list_options:eq(1) .option").length + 1;
+        if (ig == 0) {
+            $("#optionprice_table tbody tr:eq(" + (ii * ylength) + ") td").html($(el).val());
+        } else {
+            for (let i = 0; i < xlength; i++) {
+                $("#optionprice_table tbody tr:eq(" + (i * ylength + ii + 1) + ") td:eq(0)").html($(el).val());
+            }
+        }
+    }
+</script>

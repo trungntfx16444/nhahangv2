@@ -1,0 +1,52 @@
+﻿@model IEnumerable<PKWebShop.Models.service>
+@using PKWebShop.Resources
+<div class="section-page big-55-height over-hide z-bigger">
+
+    <div class="parallax parallax-top" style="background-image: url('@(ViewBag.topbg)'); top: 0px;"></div>
+    <div class="dark-over-pages"></div>
+    <div class="hero-center-section pages">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 parallax-fade-top" style="top: 0px; opacity: 1;">
+                    <div class="hero-text">@ViewBag.title</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_BookingForm")
+
+<div class="padding-top-bottom over-hide">
+    <div class="container">
+
+        @{ var i = 0;}
+        @foreach (var s in Model)
+        {
+            i++;
+<div class="row background-white p-0 m-0 ">
+    <div class="col-xl-6 @(i%2==0?"order-first order-xl-last":"") p-0">
+        <div class="img-wrap block-revealer rev-service">
+            <div class="block-revealer__content" style="opacity: 1;">
+                <a href="/loai-phong/@s.ReId"><img src="@s.Picture" alt=""></a>
+            </div><div class="block-revealer__element" style="width: 0px; transform: translateX(555px); transform-origin: 50% 100%; background-color: rgb(33, 33, 33); opacity: 1;"></div>
+        </div>
+    </div>
+    <div class="col-xl-6 p-0 align-self-center">
+        <div class="row justify-content-center">
+
+            <div class="col-9 pt-4 pt-xl-0 pb-5 pb-xl-0">
+                <div class="room-box-in">
+                    <a href="/loai-phong/@s.ReId"><h4 class="">@s.Name</h4></a>
+                    <p class="mt-3">@Html.Raw(s.ShortDescription)</p>
+                    <a class="mt-1 btn btn-primary">@((s.Price??0).ToString("#,##0")) @s.CurrencyUnit</a>
+                    <div class="room-icons mt-4 pt-4">
+                        <a href="/loai-phong/@s.ReId">@Resource.ViewMore</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>}
+    </div>
+</div>

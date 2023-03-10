@@ -1,0 +1,261 @@
+﻿@model PKWebShop.Models.n_news
+@using PKWebShop.Models
+@{
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+    var list_topics = ViewBag.list_topics as List<n_toppic>;
+    var id12char = !string.IsNullOrEmpty(Model.ReId) ? Model.ReId : (DateTime.UtcNow.Ticks - new DateTime(2021, 1, 1).Ticks).ToString("x");
+    var urlNews_full = $"{Request.Url.Scheme}://{Request.Url.Authority}/{Model.UrlCode}-nd{(!string.IsNullOrEmpty(Model.ReId) ? Model.ReId : id12char)}";
+}
+
+
+<form id="news_form" role="form" action="/admin/news/save" method="post" onkeydown="$('#quicksave').show()" , onchange="$('#quicksave').show()">
+    @Html.HiddenFor(m => m.NewsId)
+    @Html.HiddenFor(m => m.ReId)
+    <input type="hidden" id="id12char" name="id12char" value="@(id12char)" />
+    <ul class="nav nav-tabs nav-justified" id="myTabJustified" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab-justified" data-toggle="tab" href="#home-justified" role="tab" aria-controls="home-justified" aria-selected="true">Thông tin chung</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="profile-tab-justified" data-toggle="tab" href="#profile-justified" role="tab" aria-controls="profile-justified" aria-selected="false">Nội dung</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="contact-tab-justified" data-toggle="tab" href="#contact-justified" role="tab" aria-controls="contact-justified" aria-selected="false">Cấu hình SEO</a>
+        </li>
+    </ul>
+    <div class="tab-content m-t-15" id="myTabContentJustified">
+        <div class="tab-pane fade show active" id="home-justified" role="tabpanel" aria-labelledby="home-tab-justified">
+            <div class="row">
+                <div class="col-md-6 col-xs-12">
+                    <div class="form-group">
+                        <label>TIÊU ĐỀ BÀI VIẾT</label>
+                        <input type="text" required id="Name" name="Name" class="form-control" placeholder="Nhập tiêu đề bài viết" value="@Model.Name" autocomplete="off">
+                    </div>
+                    <div class="form-group lang_select @((Model.ReId != null || langs.Count <= 1) ? "d-none" : "")">
+                        <label>NGÔN NGỮ</label>
+                        <select id="Language" name="LangCode" class="col-md-12 p-0">
+                            @foreach (var n in langs)
+                            {
+                                <option data-icon="flag-icon @n.Icon" value="@n.Code" @(n.Code == Model.LangCode ? "selected" : "")> @n.Name </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group @(list_topics == null || list_topics.Count == 0 ? "d-none" : "")">
+                        <label>CHỦ ĐỀ BÀI VIẾT</label>
+                        <a href="/admin/news/toppic" data-toggle="tooltip" title="Quản lý chủ đề" target="_blank" style="padding: 0px 10px"><i class="fa fa-cog"></i></a>
+                        <select id="TopicId" name="TopicId" class="select2" multiple placeholder="-- Không thuộc chủ đề nào --">
+                            @foreach (var topic in list_topics)
+                            {
+                                <option class="level2" @if (Model.TopicId?.Contains($"\"{topic.TopicId}\"") == true) { @Html.Raw("selected='selected'") } data-url="@topic.URL" data-lang="@topic.LangCode" value="@topic.TopicId">@topic.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="RelationPostId" value="@Model.ReId" />
+                    <div class="form-group">
+                        <label>Tags bài viết</label>
+                        <input id="tags" name="tags" class="form-control" value="@Model.Tags" />
+                    </div>
+                    <div class="form-group post-body">
+                        <label>Bài Viết Ưu tiên trang đầu</label>
+                        <select name="order" class="form-control">
+                            <option value="" @(Model.Order == null ? "selected" : "")> Không</option>
+                            <option value="1" @(Model.Order == 1 ? "selected" : "")> Ưu Tiên</option>
+                            <option value="2" @(Model.Order == 2 ? "selected" : "")> Ưu Tiên Hơn</option>
+                            <option value="3" @(Model.Order == 3 ? "selected" : "")> Ưu Tiên Hàng Đầu</option>
+                        </select>
+                    </div>
+                    <div class="checkbox">
+                        <input id="Active" name="Active" type="checkbox" @(Model.Active ?? false ? "checked" : "") value="true">
+                        <label for="Active">Xuất bản</label>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xs-12">
+                    <div class="form-group">
+                        <label>HÌNH ẢNH</label>
+                        <a onclick="uploadpic()" href="#" style="vertical-align:top">[Upload ảnh]</a>
+                        <a onclick="delpic()" href="#" style="vertical-align:top; color:orangered">[Xóa]</a>
+
+                        @if (string.IsNullOrWhiteSpace(Model.Picture))
+                        {
+                            <img id="showPicture" onclick="uploadpic()" src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="margin-top:3px;width:200px;display:block;border:1px dotted grey;cursor:pointer" />
+                        }
+                        else
+                        {
+                            <img id="showPicture" onclick="uploadpic()" src="@Model.Picture" alt="Anh dai dien" style="margin-top:3px;width:200px;display:block;border:1px dotted grey;cursor:pointer" />
+                        }
+                        <br />
+                        <input type="hidden" id="hdPicture" name="Picture" value="@Model.Picture" onchange="$('#ImageAlt').val($(this).val().split('/').pop().replace(`.${$(this).val().split('.').pop()}`, ''))">
+                        <div class="input-group mb-3 d-none">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">img alt:</span>
+                            </div>
+                            <input type="text" class="form-control" id="ImageAlt" name="ImageAlt" value="@(Model.ImageAlt)">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="profile-justified" role="tabpanel" aria-labelledby="profile-tab-justified">
+            <div class="col-md-12 col-xs-12 px-0">
+                <div class="form-group">
+                    <label>MÔ TẢ NGẮN</label>
+                    <textarea wrap="soft" class="form-control" id="ShortDescription" name="ShortDescription" rows="6" placeholder="Nhập đoạn mô tả bài viết">@Html.Raw(Model.ShortDescription)</textarea>
+                </div>
+                <div class="form-group">
+                    <label>NỘI DUNG BÀI VIẾT</label>
+                    <textarea name="Decription" class="form-control" placeholder="Nội dung">@Html.Raw(Model?.Decription)</textarea>
+                </div>
+
+            </div>
+        </div>
+        <div class="tab-pane fade" id="contact-justified" role="tabpanel" aria-labelledby="contact-tab-justified">
+            <div class="col-md-12 px-0">
+                <fieldset class="m-t-10">
+                    <legend class="font-size-16 font-weight-semibold text-dark" style="width:auto">Xem trước kết quả tìm kiếm</legend>
+                    <h4 class="mb-0">
+                        <span id="sp-SEO_Title" style="color:#1a0dab">@(Model.TitleWebsite)</span>
+                    </h4>
+                    <p class="mb-0">
+                        <span id="sp-url" style="color:green">@(urlNews_full)</span>
+                    </p>
+                    <p id="sp-SEO_Desc" class="mb-0">@Html.Raw(Model.SEODescription?.Replace("\r\n", "<br/>"))</p>
+                </fieldset>
+                <br />
+                <div class="form-group">
+                    <label class="font-weight-normal w-100">
+                        <span class="text-dark font-weight-semibold">Thẻ tiêu đề</span>
+                        <span class="float-right">
+                            Số ký tự đã dùng: <span class="font-weight-bold" id="title_char">@(!string.IsNullOrEmpty(Model.TitleWebsite) ? Model.TitleWebsite.Length : 0)</span>/70
+                        </span>
+                    </label>
+                    <input type="text" id="TitleWebsite" name="TitleWebsite" class="form-control" placeholder="Nhập tiêu đề website" value="@Model.TitleWebsite" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-normal w-100">
+                        <span class="text-dark font-weight-semibold">Thẻ mô tả</span>
+                        <span class="float-right">
+                            Số ký tự đã dùng: <span class="font-weight-bold" id="desc_char">@(!string.IsNullOrEmpty(Model.SEODescription) ? Model.SEODescription.Replace("\r\n", "").Length : 0)</span>/320
+                        </span>
+                    </label>
+                    <textarea wrap="soft" class="form-control" id="SEODescription" name="SEODescription" rows="4" placeholder="Nhập đoạn mô tả website">@Html.Raw(Model.SEODescription)</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-semibold w-100 text-dark">Đường dẫn / Alias</label>
+                    <input type="text" class="form-control" id="UrlCode" name="UrlCode" value="@(Model.UrlCode)" placeholder="URL bài viết" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row d-none" style="border-top: 1px solid #edf2f9; margin: 0 -24px; ">
+        <div class="col-md-12 col-xs-12 pt-2">
+            <button type="submit" id="btn-submit" class="btn btn-primary float-right"><i class="fa fa-check"></i> Lưu</button>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</form>
+
+<style type="text/css">
+    .select2-container .select2-results__option.optInvisible {
+        display: none;
+    }
+
+    fieldset {
+        border: 1px solid #3f87f5;
+        padding: 5px 11px 9px;
+        margin: 0px 2px;
+        border-radius: 4px;
+    }
+</style>
+
+<script type="text/javascript">
+    $(function () {
+        $("#btn-save").click(function () {
+            $("#btn-submit").trigger("click");
+        });
+
+        $(".select2").select2({
+            templateResult: resultState
+        });
+
+        $("#Language").selectpicker();
+    @if(Model?.ReId == null)
+    {
+        <text>
+        $("#Language").on("change", function (e) {
+            $("#TopicId").val("");
+            $("#TopicId").trigger("change");
+            var show = $(`#TopicId option[data-lang=${$(this).val()}]`).removeClass("optInvisible");
+            $("#TopicId option").not(show).not("[value='']").prop("selected", false).addClass("optInvisible");
+        }).trigger("change");
+        </text>
+    }
+
+
+        CKEDITOR.replace('Decription', { height: 450 });
+
+        $("#Name, #ShortDescription").blur(function () {
+            let _value = $(this).val();
+            if ($(this).prop("id") == "Name") {
+                if ($('#TitleWebsite').val() == "") {
+                    $('#TitleWebsite').val(_value);
+                    $("#title_char").html(_value.length);
+                    $("#sp-SEO_Title").html(_value);
+                }
+                if ($('#UrlCode').val() == "") {
+                    let _url = U2A(_value);
+                    $('#UrlCode').val(_url);
+                    $("#sp-url").html(`${window.location.protocol}//${window.location.host}/${_url}-nd${$('#id12char').val()}`);
+                }
+            }
+            else if ($(this).prop("id") == "ShortDescription") {
+                if ($("#SEODescription").val() == "") {
+                    $('#SEODescription').val(_value);
+                    $("#desc_char").html(_value.length);
+                    $("#sp-SEO_Desc").html(_value.replace(/\n/g, '<br/>'));
+                }
+            }
+        });
+
+        $("#TitleWebsite, #SEODescription, #UrlCode").keyup(function () {
+            let _id = $(this).prop("id");
+            let _value = $(this).val();
+            if (_id == "TitleWebsite") {
+                $("#title_char").html(_value.length);
+                $("#sp-SEO_Title").html(_value);
+            }
+            else if (_id == "SEODescription") {
+                $("#desc_char").html(_value.length);
+                $("#sp-SEO_Desc").html(_value.replace(/\n/g, '<br/>'));
+            }
+            else if (_id == "UrlCode") {
+                let _url = U2A(_value);
+                $('#UrlCode').val(_url);
+                $("#sp-url").html(`${window.location.protocol}//${window.location.host}/${_url}-nd${$('#id12char').val()}`);
+            }
+        });
+
+        $("#tags").tagsInput({
+            'autocomplete': {
+                source:  @Html.Raw(ViewBag.tags_auto),
+                delay: 100
+            }
+        });
+
+        $('#news_form button[type=submit]').on("click",function () {
+            $(':required:invalid', '#news_form').each(function () {
+                var id = $('.tab-pane').find(':required:invalid').closest('.tab-pane').attr('id');
+                $('.nav a[href="#' + id + '"]').tab('show');
+            });
+        });
+
+    })
+
+    function resultState(data, container) {
+        if (data.element) {
+            $(container).addClass($(data.element).attr("class"));
+        }
+        return data.text;
+    }
+</script>

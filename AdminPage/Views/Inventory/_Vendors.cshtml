@@ -1,0 +1,32 @@
+﻿@using AdminPage.Models
+@model IEnumerable<vendor>
+@foreach (var item in Model)
+{
+    <tr>
+        <td class="align-top">
+            <img src="@(item.Logo)" height="50" />
+        </td>
+        <td class="align-top">
+            <b class="text-primary">@(item.Name)</b><br />
+            <span class="font-weight-semibold">Đ/c: @(item.Address)</span>
+        </td>
+        <td class="align-top">
+            <span><span class="font-weight-semibold">SĐT:</span> @(item.Phone)</span><br />
+            <span><span class="font-weight-semibold">Email:</span> @(item.Email)</span>
+        </td>
+        <td class="align-top">
+            @Html.Raw(item.Description)
+        </td>
+        <td class="align-top">
+            @(item.RemainingDebt)
+        </td>
+        <td class="align-top">
+            <a href="javascript:void(0)" class="btn btn-warning btn-xs" title="Chỉnh sửa" onclick="EditVendor('@item.Id')">
+                <i class="anticon anticon-edit"></i>
+            </a>
+            <a href="@($"/productman/delete/{item.Id}")" onclick="return confirm('Bạn muốn xóa nhà cung cấp này?')" class="btn btn-danger btn-xs" title="Xóa">
+                <i class="anticon anticon-delete"></i>
+            </a>
+        </td>
+    </tr>
+}

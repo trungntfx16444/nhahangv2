@@ -1,0 +1,431 @@
+﻿@model IEnumerable<AdminPage.Models.CustomizeModels.MenuView>
+@{
+    var langs = AdminPage.Services.SiteLang.GetListLangs();
+    var lang = Request["lang"]?.ToString() ?? AdminPage.Services.SiteLang.GetDefault()?.Code;
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">Quản lý menu</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<div class="card">
+    @if (langs.Count > 0)
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-6">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==lang ?"active":"")" href="/menu?lang=@l.Code"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="col-6 p-2">
+                <button id="quicksave" class="btn btn-sm btn-success float-right" style="display:none" onclick="quick_save()"><i class="fa fa-save"></i> Lưu nhanh</button>
+            </div>
+        </div>
+    }
+
+    <div class="card-body" id="partial_content">
+        <a class="btn btn-primary text-white" style="margin:5px 0" onclick="new_menu()"><i class="fa fa-plus"></i> Thêm menu</a>
+        <a class="btn btn-success text-white" id="save_sort_btn" style="margin:5px 0; display:none" onclick="save_sort()"><i class="fa fa-check"></i> Lưu thứ tự menu</a>
+        <div id="list_menu" class="sortable form-group">
+
+            @foreach (var item in Model)
+            {
+                <div id="@item.menu.Id" class="list-group-item clearfix" style="width:100%; padding-top:0; box-shadow: 0 4px 12px rgb(0 0 0 / 15%);margin:10px">
+                    <div class="fas fa-arrows-alt" style="width:5%; float:left; padding:20px 10px; font-size:1.3em; color:dodgerblue"></div>
+                    <div style="width:95%; float: left" onclick="edit_menu('@item.menu.Id')">
+                        <input name="menu_id_order" type="hidden" value="@item.menu.Id" />
+                        <div style="padding-top:20px; padding-bottom:10px">
+                            <div>
+                                <span class="name_pr text-primary font-weight-bold">@item.menu.Name</span>
+                                <div class="float-right">
+                                    <a class="anticon anticon-edit text-primary font-size-20"></a>
+                                    @if (item.menu.Fixed != true)
+                                    {
+                                        <a class="anticon anticon-delete text-danger font-size-20 m-l-5" onclick="delete_menu('@item.menu.Id')"></a>
+                                    }
+                                </div>
+                                <div class="form-group hide-menu float-right mr-5">
+                                    <div class="checkbox hide-menu">
+                                        <input type="checkbox" class="hide-menu" id="@($"hide-menu{item.menu.Id}")" @(item.menu.Hidden == true ? "checked" : "") value="true" />
+                                        <label for="@($"hide-menu{item.menu.Id}")" class="hide-menu">Ẩn</label>
+                                    </div>
+                                </div>
+                                @if (item.menu.Id == "2")
+                                {
+                                    <div class="form-group show-cate float-right mr-5">
+                                        <div class="checkbox show-cate">
+                                            <input type="checkbox" class="show-cate" id="@($"show-cate{item.menu.Id}")" @(item.menu.ShowCategory == true ? "checked" : "") name="ShowCategory" value="true" />
+                                            <label for="@($"show-cate{item.menu.Id}")" class="show-cate">Hiển thị danh mục tự động</label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <label>URL: </label><span class="url_pr">@item.menu.URL</span>
+                    </div>
+
+                    <div style="margin-left:5%;">
+                        <br style="clear:both" /><hr style="margin:0; border-color:lightgray" />
+                        <div class="sortable2 connectedSortable" draggable="true">
+                            @foreach (var sub in item.child)
+                            {
+                                <div id="@sub.Id" class="sub_item_menu">
+                                    <input name="menu_id_order" type="hidden" value="@sub.Id" />
+                                    <div class="input-group" style="margin:5px;width:100%; text-align:left">
+                                        <div class="input-group-btn" onclick="edit_menu('@sub.Id')" style="width:30%">
+                                            <div class="btn btn-primary" style="width:100%; text-align:left">
+                                                <i class="fas fa-arrows-alt"></i><span class="name_ch">&nbsp; @sub.Name </span>
+                                                <div class="btn btn-success btn-sm float-right" style="margin: -7px -15px" onclick="edit_menu('@sub.Id')"><i class="anticon anticon-edit"></i></div>
+                                            </div>
+
+                                        </div>
+                                        <input class="form-control url_ch" value="URL: @(!string.IsNullOrEmpty(sub.URL) ? sub.URL : "")" readonly style="cursor:context-menu" />
+                                        <div class="input-group-btn"><button class="btn btn-danger pl-3 pr-3" onclick="delete_menu('@sub.Id', 'sub')"><i class="fa fa-times"></i></button></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <a href="javascript:void(0)" style=" margin:5px; display:inline-block" onclick="new_menu('@item.menu.Id')"><i class="fa fa-plus"></i> Thêm</a>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<template id="menu-template">
+    <div id="{Id}" class="list-group-item clearfix ui-sortable-handle" style="width:100%; padding-top:0; box-shadow: 0 4px 12px rgb(0 0 0 / 15%);margin:10px">
+        <div class="fas fa-arrows-alt" style="width:5%; float:left; padding:20px 10px; font-size:1.3em; color:dodgerblue"></div>
+        <div style="width:95%; float: left" onclick="edit_menu('{Id}')">
+            <input name="menu_id_order" type="hidden" value="{Id}" />
+            <div style="padding-top:20px; padding-bottom:10px">
+                <div>
+                    <span class="name_pr text-primary font-weight-bold">{Name}</span>
+                    <div class="float-right">
+                        <a class="anticon anticon-edit text-primary font-size-20"></a>
+                        <a class="anticon anticon-delete text-danger font-size-20 m-l-5 {classHide}" onclick="delete_menu('{Id}')"></a>
+                    </div>
+                    <div class="form-group hide-menu float-right mr-5">
+                        <div class="checkbox hide-menu">
+                            <input type="checkbox" class="hide-menu" id="hide-menu{Id}" value="true" />
+                            <label for="hide-menu{Id}" class="hide-menu">Ẩn</label>
+                        </div>
+                    </div>
+                </div>
+                <label>URL: </label><span class="url_pr">{Url}</span>
+            </div>
+        </div>
+        <div style="margin-left: 5%;">
+            <br style="clear: both;" />
+            <hr style="margin: 0; border-color: lightgray;" />
+            <div class="sortable2 connectedSortable ui-sortable" draggable="true"></div>
+            <a href="javascript:void(0)" style="margin: 5px; display: inline-block;" onclick="new_menu('{Id}')"><i class="fa fa-plus"></i> Thêm</a>
+        </div>
+    </div>
+</template>
+
+<template id="sub-menu-template">
+    <div id="{Id}" class="sub_item_menu ui-sortable-handle">
+        <input name="menu_id_order" type="hidden" value="{Id}" />
+        <div class="input-group" style="margin: 5px; width: 100%; text-align: left;">
+            <div class="input-group-btn" onclick="edit_menu('{Id}')" style="width: 30%;">
+                <div class="btn btn-primary" style="width: 100%; text-align: left;">
+                    <i class="fas fa-arrows-alt"></i><span class="name_ch">&nbsp; {Name}</span>
+                    <div class="btn btn-success btn-sm float-right" style="margin: -7px -15px;" onclick="edit_menu('{Id}')"><i class="anticon anticon-edit"></i></div>
+                </div>
+            </div>
+            <input class="form-control url_ch" value="URL: {Url}" readonly="" style="cursor: context-menu;" />
+            <div class="input-group-btn">
+                <button class="btn btn-danger pl-3 pr-3" onclick="delete_menu('{Id}', 'sub')"><i class="fa fa-times"></i></button>
+            </div>
+        </div>
+    </div>
+</template>
+
+
+
+<div id="menu_modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Menu</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <form id="menu_form" action="/Menu/Save" method="post">
+                <div class="modal-body post-body">
+                    <input type="hidden" name="ParentMenuId" />
+                    <input type="hidden" name="Id" />
+                    <input type="hidden" name="LangCode" value="@lang" />
+                    <div class="form-group">
+                        <label>Tên <span style="color:red">*</span></label>
+                        <input name="Name" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Liên kết</label>
+                        <input name="URL" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer" style="justify-content: space-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Đóng</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Lưu</button>
+
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var lang = "@lang";
+        $(function () {
+            load_event();
+        })
+
+        function load_event() {
+            $(".sortable").sortable({
+                start: function () {
+                    $("[data-toggle=tooltip]").tooltip('hide');
+                    $("[data-toggle=tooltip]").tooltip('disable');
+                },
+                stop: function () {
+                    $("[data-toggle=tooltip]").tooltip('enable');
+                },
+            }).disableSelection();
+            $(".sortable2").sortable({
+                connectWith: ".connectedSortable",
+                start: function () {
+                    $("[data-toggle=tooltip]").tooltip('hide');
+                    $("[data-toggle=tooltip]").tooltip('disable');
+                    $(".connectedSortable").addClass("sorting");
+                },
+                sort: function () {
+
+                },
+                stop: function () {
+                    $("[data-toggle=tooltip]").tooltip('enable');
+                    $(".connectedSortable").removeClass("sorting");
+                },
+            }).disableSelection();
+            $(".sortable").on("sortchange", function () {
+                $("#save_sort_btn").show();
+
+            });
+        };
+
+        function new_menu(parent_id = null) {
+            $("[name=ParentMenuId]").val(parent_id);
+            $("[name=Id]").val('');
+            $("[name=URL]").prop("readonly", false);
+            $("#menu_modal").modal("show");
+            $("#delete_btn").hide();
+            $("#menu_modal").find(".modal-title").html("Menu mới");
+            $("#menu_form").resetForm();
+        };
+
+        function edit_menu(id, parent_id = null) {
+            if ($(event.target).hasClass("show-cate") || $(event.target).hasClass("hide-menu")) {
+                event.preventDefault();
+                let _class = $(event.target).hasClass("show-cate") ? "show-cate" : "hide-menu";
+                if ($(`input[type='checkbox']#${_class + id}`).prop("checked") == false) {
+                    $(`input[type='checkbox']#${_class + id}`).prop("checked", true);
+                }
+                else {
+                    $(`input[type='checkbox']#${_class + id}`).prop("checked", false);
+                }
+                ShowCategory(id, _class);
+            }
+            else {
+                $.ajax({
+                    method: "POST",
+                    url: "/menu/getMenu",
+                    data: { id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0]) {
+                        $("[name=ParentMenuId]").val("");
+                        $("[name=Id]").val(data[1].Id);
+                        $("[name=Name]").val(data[1].Name);
+                        $("[name=URL]").val(data[1].URL);
+                        $("[name=URL]").prop("readonly", data[1].Fixed);
+                        $("#delete_btn").show();
+                        $("#menu_modal").find(".modal-title").html("Sửa Menu");
+                        $("#menu_modal").modal("show");
+                    } else {
+                        error(data[1]);
+                    }
+                }).fail(function () {
+                    //...
+                }).always(function () {
+                    //...
+                });
+            }
+        };
+
+        function delete_menu(id, type) {
+            event.stopPropagation();
+            let msg_confirm = type == "sub" ? "Bạn muốn xóa menu này?" : "Xóa menu đồng thời sẽ xóa các menu con của nó. Bạn có chắc muốn xóa?";
+            if (confirm(msg_confirm)) {
+                id = id || $("[name=Id]").val();
+                $.ajax({
+                    method: "POST",
+                    url: "/menu/DeleteMenu",
+                    data: { id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (cnoty(data)) {
+                        $("#" + id).remove();
+                        $("#menu_modal").modal("hide");
+                    }
+                }).fail(function () {
+                    //...
+                }).always(function () {
+                    //...
+                });
+            }
+        };
+
+        $("#menu_form").ajaxForm(function (data) {
+            if (cnoty(data)) {
+                var id = $("[name=Id]").val();
+                var name = data[2].Name;
+                var pr_id = data[2].ParentMenuId;
+                if (pr_id) {
+                    if (id) {
+                        $("#" + id).find(".name_ch").html(name);
+                        $("#" + id).find(".url_ch").val("URL: " + (data[2].URL || ""));
+                    }
+                    else
+                    {
+                        let subMenuTemplate = $("#sub-menu-template").html().replace(/{Id}/g, data[2].Id).replace(/{Name}/g, data[2].Name).replace(/{Url}/g, data[2].URL ?? "");
+                        $(`#${pr_id}`).find(".sortable2").append(subMenuTemplate);
+                    }
+                }
+                else {
+                    if (id) {
+                        $("#" + id).find(".name_pr").html(name);
+                        $("#" + id).find(".url_pr").html(data[2].URL || "");
+                    } else {
+                        let menuTemplate = $("#menu-template").html().replace(/{Id}/g, data[2].Id).replace(/{Name}/g, data[2].Name).replace(/{Url}/g, data[2].URL ?? "");
+                        $("#list_menu").append(menuTemplate);
+                    }
+                }
+                $("#menu_modal").resetForm();
+                load_event();
+                $("#menu_modal").modal("hide");
+            }
+        });
+
+        function save_sort() {
+            var list_id = [];
+            $("[name=menu_id_order]").each(function () {
+                list_id.push($(this).val());
+            });
+            $.ajax({
+                method: "POST",
+                url: "/menu/SaveSort",
+                data: { list_id },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    $("#save_sort_btn").hide(500);
+                }
+            }).fail(function () {
+                //...
+            }).always(function () {
+                //...
+            });
+        };
+
+        function ShowCategory(id, _class) {
+            $.ajax({
+                method: "POST",
+                url: "/menu/ShowCategory",
+                data: {
+                    id: id,
+                    show_cate: $(`input[type='checkbox']#show-cate${id}`).prop("checked"),
+                    hide_menu: $(`input[type='checkbox']#hide-menu${id}`).prop("checked"),
+                },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    msg_success(data[1], "", "top center");
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                    if ($(`input[type='checkbox']#${_class + id}`).prop("checked") == false) {
+                        $(`input[type='checkbox']#${_class + id}`).prop("checked", true);
+                    }
+                    else {
+                        $(`input[type='checkbox']#${_class + id}`).prop("checked", false);
+                    }
+                }
+            }).fail(function () {
+                msg_error("Lưu thất bại. Đã có sự cố xảy ra", "", "top center");
+                if ($(`input[type='checkbox']#${_class + id}`).prop("checked") == false) {
+                    $(`input[type='checkbox']#${_class + id}`).prop("checked", true);
+                }
+                else {
+                    $(`input[type='checkbox']#${_class + id}`).prop("checked", false);
+                }
+            });
+        };
+    </script>
+}
+<style>
+
+    .list-group-item {
+        cursor: pointer;
+    }
+
+        .list-group-item:hover {
+            background-color: #e2edfe;
+        }
+
+    .sortable2 {
+        min-height: 30px;
+    }
+
+    .sorting {
+        border-radius: 5px;
+        border: 1px solid #00db7b;
+        background-color: #c8f3e0;
+    }
+</style>
+

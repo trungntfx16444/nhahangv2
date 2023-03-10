@@ -1,0 +1,70 @@
+﻿@model List<(AdminPage.Models.comment comment, AdminPage.Models.product product)>
+@using AdminPage.Services
+@using AdminPage.Utils
+@using AdminPage.AppLB
+@{
+    var listLang = SiteLang.GetListLangs();
+    string lang = "vi";
+    var webLicense = new PackageServices().WebPackInfo();
+    var clientSite = CommonFunc.GetClientSite();
+}
+
+
+@if (Model == null || Model.Count == 0)
+{
+    <tr>
+        <td colspan="6" class="text-center">Không tìm thấy bình luận nào</td>
+    </tr>
+}
+else
+{
+    foreach (var item in Model)
+    {
+        <tr>
+            <td class="align-top">
+                @(item.comment.CreateAt?.ToString("HH:mm dd/MM/yyyy"))
+            </td>
+            <td class="align-top">
+                <div class="d-flex">
+                    <img src="@(item.product.Picture)" alt="ảnh đại diện" style="width:100px" />
+                    <div>
+                        <a class="ml-2 font-weight-bold" href="@clientSite@($"/{item.product.Url}-pd{item.product.ReId}")" target="_blank">@item.product.ProductName</a>
+                    </div>
+                </div>
+            </td>
+            <td class="align-top">
+                <span>Tên: </span> @item.comment.PeopleName<br />
+                <span>Email: </span> @item.comment.Email<br />
+                <span>Đánh giá: </span>@item.comment.StarNumber sao<br />
+                <span>Bình luận: </span>  @item.comment.Content
+            </td>
+            <td>
+                @if (item.comment.IsActive == true)
+                {
+                    <span class="badge badge-success">Đã duyệt</span>
+                }
+                else
+                {
+                    <span class="badge badge-warning">Chưa duyệt</span>
+                }
+            </td>
+            <td class="align-top lang_col">
+                @if (item.comment.IsActive != true)
+                {
+                    <a class="btn btn-success btn-xs m-b-5" data-toggle="tooltip" title="Duyệt bình luận" data-placement="left" onclick="activeComment('@item.comment.Id')">
+                        <i class="anticon anticon-check"></i>
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-warning btn-xs m-b-5" data-toggle="tooltip" title="Đặt lại chưa duyệt" data-placement="left" onclick="activeComment('@item.comment.Id')">
+                        <i class="anticon anticon-undo"></i>
+                    </a>
+                }
+                <a onclick="deleteComment('@item.comment.Id')" class="btn btn-danger btn-xs" data-toggle="tooltip" title="Xóa" data-placement="left">
+                    <i class="anticon anticon-delete"></i>
+                </a>
+            </td>
+        </tr>
+    }
+}

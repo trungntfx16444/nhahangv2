@@ -1,0 +1,593 @@
+﻿@model IEnumerable<PKWebShop.Models.sectionfeature>
+@using PKWebShop.Models
+@{
+    ViewBag.Title = "Thành phần giao diện";
+    List<category> ctg_prods = ViewBag.Category ?? new List<category>();
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+    var lang = Request["lang"]?.ToString() ?? PKWebShop.Services.SiteLang.GetDefault().Code;
+}
+
+
+<style type="text/css">
+    .mb-10px {
+        margin-bottom: 10px;
+    }
+
+    .p-14px {
+        padding: 14px;
+    }
+
+    .card-custom:hover, .card-custom.active {
+        border: 1px solid #3f87f5;
+        border-left: 3px solid #3f87f5;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .img-custom {
+        height: 180px !important;
+        object-fit: cover;
+    }
+
+    .bg-overlay:before {
+        background: unset;
+    }
+
+    .scrollbar {
+        overflow: auto;
+    }
+
+    .scroll-style-1::-webkit-scrollbar {
+        width: 4px;
+        height: 6px;
+        background-color: #F5F5F5;
+    }
+
+    .scroll-style-1::-webkit-scrollbar-thumb {
+        background-color: #3f87f5;
+    }
+
+    .scroll-style-1::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        background-color: #F5F5F5;
+    }
+
+    .meta-des {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 1; /* number of lines to show */
+        -webkit-box-orient: vertical;
+        /*padding-bottom: 0px;*/
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <span class="breadcrumb-item">Cài đặt giao diện</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">@ViewBag.Title</h4>
+    </div>
+    <div class="card-body pt-0">
+        <div>
+            @if (langs.Count > 1)
+            {
+                <ul class="nav nav-tabs" id="langTab" role="tablist">
+                    @foreach (var item in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(item.Code==lang ? "active" : "")" href="/admin/feature?lang=@(item.Code)">
+                                <i class="flag-icon @(item.Icon)"></i> @(item.Name)
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            <div class="tab-content m-t-15" id="myTabContent">
+                <div class="tab-pane fade show active" id="home">
+                    @foreach (var item in Model)
+                    {
+                        <div id="@($"{item.ReId}-card")" class="card card-custom mb-10px">
+                            <div class="card-body p-14px">
+                                <div class="d-flex justify-content-between align-items-center cursor-pointer" onclick="GetFeatureDetail('@(item.ReId)')">
+                                    <span class="font-weight-semibold">
+                                        <span id="@($"{item.ReId}-title")" class="text-uppercase text-dark font-size-15">
+                                            @(item.Title)
+                                        </span><br />
+                                        <span class="font-size-11 text-lowercase" style="color:#eb2f96">
+                                            <i class="anticon anticon-left"></i>@(item.ReId)<i class="anticon anticon-right"></i>
+                                        </span><br />
+                                        <span id="@($"{item.ReId}-desc")" class="font-size-13">
+                                            <span class="text-dark">Mô tả:</span>
+                                            @(item.Description)
+                                        </span>
+                                    </span>
+                                    <div>
+                                        <div class="form-group d-flex align-items-center font-size-16">
+                                            <span id="@($"{item.ReId}-status")" class="m-r-10 badge badge-pill @(item.Status == true ? "badge-geekblue" : "badge-red")">
+                                                @(item.Status == true ? "Đang kích hoạt" : "Đã tắt")
+                                            </span>
+
+                                            <span class="m-r-10" onclick="ChangeOrder('@item.Code', '', false)">
+                                                <i class="anticon anticon-arrow-up"></i>
+                                            </span>
+                                            <span class="font-size-14 font-weight-semibold m-r-10">Vị trí: @item.Order</span>
+                                            <span class="m-r-20" onclick="ChangeOrder('@item.Code', '', true)">
+                                                <i class="anticon anticon-arrow-down"></i>
+                                            </span>
+
+                                            <span class="m-r-10" data-toggle="tooltip" title="Chỉnh sửa" onclick="GetFeature('@(item.Code)')">
+                                                <i class="anticon anticon-edit"></i>
+                                            </span>
+                                            <span class="m-r-10" data-toggle="tooltip" title="Hiện chi tiết" @*onclick="GetFeatureDetail('@(item.Code)')"*@>
+                                                <i id="@($"{item.ReId}-zoom")" class="anticon anticon-plus zoom"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="@($"{item.ReId}-detail")" class="div-detail" style="display:none;">
+                                    <hr />
+                                    <button id="@($"{item.ReId}-btnAdd")" class="btn-addDetail btn btn-primary btn-tone m-b-10" style="float:right">
+                                        <i class="anticon anticon-plus"></i> Thêm nội dung
+                                    </button>
+                                    <div class="clearfix"></div>
+                                    <div class="scrollbar scroll-style-1" style="overflow-x:hidden; max-height:500px;">
+                                        <div id="@($"{item.ReId}-content")"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!--Edit feature-->
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="frmsave" action="/admin/feature/save" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Chỉnh sửa</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input name="Code" type="hidden" />
+                    <div class="form-group">
+                        <label class="font-weight-semibold">Code</label>
+                        <input type="text" class="form-control" name="ReId" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-semibold">Tiêu đề *</label>
+                        <input type="text" id="Title" class="form-control" name="Title" placeholder="Nhập tiêu đề">
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-semibold">Tiêu đề phụ</label>
+                        <input type="text" class="form-control" name="SubTitle" placeholder="Nhập tiêu đề phụ">
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-semibold">Mô tả</label>
+                        <textarea rows="3" class="form-control" name="Description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-semibold">Url</label>
+                        <input type="text" class="form-control" name="Url" placeholder="Nhập liên kết">
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <input id="gridCheck" type="checkbox" name="Status" value="true">
+                            <label for="gridCheck" class="font-weight-semibold">Hiển thị</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveFeature()">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!--Them sua chi tiet chuc nang-->
+<div class="modal fade" id="myModal1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="frmdetail" action="/admin/feature/SaveDetail" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal1Title">Thêm nội dung</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="anticon anticon-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="SectionCode" />
+                    <input type="hidden" name="Id" />
+                    <input type="hidden" name="LangCode" value="@lang" />
+                    <div class="form-group row">
+                        <label class="col-md-2 col-form-label font-weight-semibold">Tiêu đề</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" name="Title" placeholder="Nhập tiêu đề" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-md-2 col-form-label font-weight-semibold">Tiêu đề phụ</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" name="SubTitle" placeholder="Nhập tiêu đề phụ" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-md-2 col-form-label font-weight-semibold">Banner</label>
+                        <div class="col-md-10" id="banners">
+                            @Html.Partial("_UploadImages", new List<uploadmorefile>())
+                        </div>
+                    </div>
+                    <div id="desc_default">
+                        <div class="form-group row">
+                            <label class="col-md-2 col-form-label font-weight-semibold">Mô tả</label>
+                            <div class="col-md-10">
+                                <textarea rows="4" id="desc" name="Description" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-2 col-form-label font-weight-semibold">URL:</label>
+                            <div class="col-md-10">
+                                <input type="text" name="URL" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row" id="desc_sanpham" style="display:none">
+                        <label class="col-md-2 col-form-label font-weight-semibold">Sản phẩm</label>
+                        <div class="col-md-10">
+                            <select class="form-control" name="Description">
+                                <option value="sanpham|sanphambanchay">Sản phẩm bán chạy</option>
+                                <option value="sanpham|sanphamkhuyenmai">Sản phẩm khuyến mãi</option>
+                                @foreach (var item in ctg_prods.Where(x => x.Level == 1))
+                                {
+                                    <option value="danhmuc|@(item.UrlCode)-pc@(item.ReId)|@item.UrlCode">@(item.CategoryName)</option>
+
+                                    foreach (var item1 in ctg_prods.Where(x => x.Level == 2 && x.ParentId == item.Id))
+                                    {
+                                        <option value="danhmuc|@(item.UrlCode)-pc@(item1.ReId)|@item1.UrlCode">--@(item1.CategoryName)</option>
+
+                                        foreach (var item2 in ctg_prods.Where(x => x.Level == 3 && x.ParentId == item1.Id))
+                                        {
+                                            <option value="danhmuc|@(item2.UrlCode)-pc@(item2.ReId)|@item2.UrlCode">----@(item2.CategoryName)</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-md-2 col-form-label font-weight-semibold">Thứ tự sắp xếp</label>
+                        <div class="col-md-10">
+                            <input type="text" id="VolumeNumber" class="form-control" name="VolumeNumber" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveDetail()">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section scripts
+{
+    <script src="~/Content/admin/js/notify/notify.min.js"></script>
+    <script>
+        const imgDefault = "/Content/admin/img/no_image.jpg";
+
+        //SECTION FEATURE
+        function GetFeature(code) {
+            event.stopPropagation();
+            $.ajax({
+                method: "GET",
+                url: "/admin/feature/getfeaturebycode",
+                data: { code },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    $("#frmsave").resetForm();
+                    $("#frmsave").loadJSON(data[1]);
+                    $('#myModal').modal('show');
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function (data) {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function SaveFeature() {
+            if ($('#frmsave input[name="Title"]').val().trim() == "") {
+                msg_info("Vui lòng nhập tiêu đề", "Title");
+                return false
+            }
+            $("#frmsave").submit();
+        };
+
+        $("#frmsave").ajaxForm(function (data) {
+            if (data[0] == true) {
+                $(`#${data[1].Code}-title`).html(data[1].Title);
+                $(`#${data[1].Code}-desc`).html(`Mô tả: ${data[1].Description}`);
+                $(`#${data[1].Code}-status`).addClass(data[1].Status ? "badge-geekblue" : "badge-red").removeClass(data[1].Status ? "badge-red" : "badge-geekblue").html(data[1].Status ? "Đang kích hoạt" : "Đã tắt");
+
+                msg_success("Lưu thành công", "", "top center");
+                $('#myModal').modal('hide');
+            }
+            else {
+                msg_error(data[1], "", "top center");
+            }
+        }, function (response) {
+            msg_error("Lưu không thành công. Đã có lỗi xảy ra", "", "top center");
+        });
+
+
+        //SECTION FEATURE DETAIL
+        CKEDITOR.replace('desc', {
+            // Define the toolbar groups as it is a more accessible solution.
+            toolbarGroups: [
+                { "name": "styles", "groups": ["styles"] },
+                { "name": "basicstyles", "groups": ["basicstyles"] },
+                { "name": "links", "groups": ["links"] },
+                { "name": "paragraph", "groups": ["list", "blocks"] },
+
+            ],
+            // Remove the redundant buttons from toolbar groups defined above.
+            removeButtons: 'Underline,Strike,Subscript,Superscript,Anchor,Styles,Specialchar'
+        });
+        //CKEDITOR.replace('desc', {
+        //    toolbar: [
+        //        { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', '-', 'Templates'] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
+        //        ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],			// Defines toolbar group without name.
+        //        { name: 'basicstyles', items: ['Bold', 'Italic'] }                                      // Line break - next group will be placed in new line.
+        //    ], height: 100
+        //});
+
+        function GetFeatureDetail(code, reload = false) {
+            if ($(`#${code}-detail`).hasClass("already") && reload == false) {
+                $('.card-custom').removeClass("active");
+                $(`#${code}-card`).addClass("active");
+                if ($(`#${code}-detail`).hasClass("open")) {
+                    $(`#${code}-detail`).hide(500).removeClass("open").addClass("close");
+                    $(`#${code}-zoom`).removeClass("anticon-minus").addClass("anticon-plus").parent().attr("title", "Hiện chi tiết");
+                    $(`#${code}-zoom`).parent().attr("data-original-title", "Hiện chi tiết");
+                }
+                else {
+                    $('.div-detail').not(`#${code}-detail`).hide(500).removeClass("open").addClass("close");
+                    $(`#${code}-detail`).show(500).removeClass("close").addClass("open");
+                    $(`#${code}-zoom`).removeClass("anticon-plus").addClass("anticon-minus").parent().attr("title", "Ẩn chi tiết");
+                    $(`#${code}-zoom`).parent().attr("data-original-title", "Ẩn chi tiết");
+                }
+                return false;
+            }
+
+            $.ajax({
+                method: "GET",
+                url: "/admin/feature/FeatureDetail",
+                data: {
+                    code: code,
+                    lang: $("#frmdetail input[name='LangCode']").val()
+                },
+                dataType: "html"
+            }).done(function (data) {
+                $(`#${code}-content`).html(data);
+                if ($(`#${code}-errMsg`).val() == "") {
+                    if (reload == false) {
+                        $('.card-custom').removeClass("active");
+                        $('.div-detail').hide(500).removeClass("open").addClass("close");
+                        $('.div-detail').hide(500).removeClass("open").addClass("close");
+                        $(`.zoom`).removeClass("anticon-minus").addClass("anticon-plus").parent().attr("title", "Hiện chi tiết");
+                        $(`.zoom`).parent().attr("data-original-title", "Hiện chi tiết");
+
+                        $(`#${code}-card`).addClass("active");
+                        $(`#${code}-detail`).show(500).removeClass("close").addClass("open already");
+                        $(`#${code}-zoom`).removeClass("anticon-plus").addClass("anticon-minus").parent().attr("title", "Ẩn chi tiết");
+                        $(`#${code}-zoom`).parent().attr("data-original-title", "Ẩn chi tiết");
+                    }
+                }
+                else {
+                    msg_error($(`#${code}-errMsg`).val(), "", "top center");
+                }
+            }).fail(function (data) {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function SaveDetail() {
+            $("#desc").val(CKEDITOR.instances.desc.getData());
+            $("#frmdetail").submit();
+        };
+
+        $("#frmdetail").ajaxForm(function (data) {
+            if (data[0] == true) {
+                let sectionCode = $("#frmdetail input[name='SectionCode']").val();
+                GetFeatureDetail(sectionCode, true);
+                $('#myModal1').modal('hide');
+                msg_success(data[1], "", "top center");
+            }
+            else {
+                msg_error(data[1], "", "top center");
+            }
+        }, function (response) {
+            msg_error("Lưu không thành công. Đã có lỗi xảy ra", "", "top center");
+        });
+
+        $(".btn-addDetail").click(function () {
+            let sectionCode = $(this).prop("id").replace("-btnAdd", "");
+            //$("#frmdetail").clearForm();
+            $("#frmdetail input").val("");
+            $("#frmdetail input[name='SectionCode']").val(sectionCode);
+
+            //customize for thuocsaigon
+            var tg = (sectionCode == "trangchu_sanpham");
+            $("#desc_default").toggle(!tg).find("textarea").prop("disabled", tg);
+            $("#desc_sanpham").toggle(tg).find("select").prop("disabled", !tg);
+
+            if (!$("#desc_sanpham select").prop("disabled")) {
+                $("select[name=Description]").val("sanpham|sanphambanchay");
+            }
+
+            $("#Picture").val(imgDefault);
+            $("#img_more").empty();
+            $("#desc").val("");
+            CKEDITOR.instances.desc.setData("");
+            $("#modal1Title").html("Thêm nội dung");
+            $("#myModal1").modal("show");
+        });
+
+        function EditFeatureDetail(id, sectionCode) {
+            $('#frmdetail input[name="SectionCode"]').val(sectionCode);
+            //customize for thuocsaigon
+            var tg = (sectionCode == "trangchu_sanpham");
+            $("#desc_default").toggle(!tg).find("textarea").prop("disabled", tg);
+            $("#desc_sanpham").toggle(tg).find("select").prop("disabled", !tg);
+
+
+            $.ajax({
+                method: "POST",
+                url: "/admin/feature/getfeatureDetail",
+                data: { id },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0]) {
+                    $("#frmdetail").clearForm();
+                    $("#frmdetail").loadJSON(data[1]);
+
+                    if (!$("#desc_default textarea").prop("disabled")) {
+                        CKEDITOR.instances.desc.setData(data[1].Description);
+                    }
+                    else if (!$("#desc_sanpham select").prop("disabled")) {
+                        if (data[1].URL.search("-pc") != -1) {
+                            let _url = data[1].URL.replace("/", "");
+                            $("select[name=Description]").val(`danhmuc|${_url}|${_url.split("-pc")[0]}`);
+                        }
+                        else {
+                            $("select[name=Description]").val(`sanpham|${data[1].URL.split("?")[1].replace("=1", "")}`);
+                        }
+                    }
+
+                    $("#banners").html(data[2]);
+                    $("#modal1Title").html("Chỉnh sửa nội dung");
+                    $("#myModal1").modal("show");
+                } else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function (data) {
+                msg_error("Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        function DeleteFeatureDetail(id) {
+            if (confirm('Bạn có chắc muốn xóa nội dung này?')) {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/feature/DeleteDetail",
+                    data: { id },
+                    dataType: "json"
+                }).done(function (data) {
+                    if (data[0] == true) {
+                        $(`#${id}-sfDetail`).remove();
+                        msg_success(data[1], "", "top center");
+                    }
+                    else {
+                        msg_error(data[1], "", "top center");
+                    }
+                }).fail(function (data) {
+                    msg_error("Xóa không thành công. Đã có lỗi xảy ra", "", "top center");
+                });
+            }
+        };
+
+        function ChangeOrder(sectionCode, id, isPlus) {
+            event.stopPropagation();
+            $.ajax({
+                method: "POST",
+                url: "/admin/feature/ChangeOrder",
+                data: { sectionCode, id, isPlus, lang: $("#frmdetail input[name='LangCode']").val() },
+                dataType: "json"
+            }).done(function (data) {
+                if (data[0] == true) {
+                    if (sectionCode != "") {
+                        if (data[1] != "") {
+                            window.location.reload();
+                        }
+                    }
+                    else {
+                        msg_success(data[1], "", "top center");
+                        if (data[2] != "") {
+                            GetFeatureDetail(data[2], true);
+                        }
+                    }
+                }
+                else {
+                    msg_error(data[1], "", "top center");
+                }
+            }).fail(function (data) {
+                msg_error("Cập nhật vị trí không thành công. Đã có lỗi xảy ra", "", "top center");
+            });
+        };
+
+        $("#VolumeNumber").on("input", function () {
+            $(this).val($(this).val().replace(/[^0-9]/g, ''));
+            if ($(this).val() != "") {
+                if ($(this).val() > 100) {
+                    $(this).val("100");
+                }
+                else if ($(this).val() < 1) {
+                    $(this).val("1");
+                }
+            }
+        });
+    </script>
+}

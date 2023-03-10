@@ -1,0 +1,307 @@
+﻿@model PKWebShop.Models.popupad
+@using PKWebShop.Models
+@{
+
+    ViewBag.Title = "Tuỳ biến các Banner";
+
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="#">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-book"></i> @ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                <form role="form" action="/admin/bannerads/save" method="post" enctype="multipart/form-data">
+
+                    @*<div class="form-group">
+                            <label>Image background ở đầu trang web</label>
+                            <input type="file" class="input-sm" name="TopBackGround" id="TopBackGround" onchange="reviewUpload(this)" />
+
+                            <div style="padding-left:0px;display:none" class="col-md-12" id="review_TopBackGround">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img id="img_TopBackGround" style="height:100px;margin-left:0" alt="xem trước" />
+                                    <i style="padding-left:5px" id="fname_TopBackGround"></i>
+                                    <a onclick="upload_delete('TopBackground')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                </p>
+
+                            </div>
+
+                            @if (string.IsNullOrWhiteSpace(Model?.TopBackGroundBanner) == false)
+                            {
+                                <div style="padding-left:0px;" class="col-md-12" id="rv_TopBackGround">
+                                    <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                        <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.TopBackGroundBanner" />
+                                        <i style="padding-left:5px">@Model.TopBackGroundBanner</i>
+
+                                        <a style="padding-left:10px" href="@Model.TopBackGroundBanner" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                            <i class="glyphicon glyphicon-zoom-in"></i>
+                                        </a>
+                                        <a style="padding-left:10px" onclick="PicDelete('TopBackGround')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                            <i class="glyphicon glyphicon-trash"></i>
+                                        </a>
+                                        &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_TopBackGround" style="display:none" />
+                                    </p>
+
+                                </div>
+                            }
+
+                        </div>*@
+
+
+                    @*<div class="form-group">
+                            <label>Image background ở danh sách các dịch vụ</label>
+                            <input type="file" class="input-sm" name="ServiceBackGround" id="ServiceBackGround" onchange="reviewUpload(this)" />
+
+                            <div style="padding-left:0px;display:none" class="col-md-12" id="review_ServiceBackGround">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img id="img_ServiceBackGround" style="height:100px;margin-left:0" alt="xem trước" />
+                                    <i style="padding-left:5px" id="fname_ServiceBackGround"></i>
+                                    <a onclick="upload_delete('ServiceBackGround')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                </p>
+
+                            </div>
+
+                            @if (string.IsNullOrWhiteSpace(Model?.ServiceBackGroundBanner) == false)
+                            {
+                                <div style="padding-left:0px;" class="col-md-12" id="rv_ServiceBackGround">
+                                    <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                        <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.ServiceBackGroundBanner" />
+                                        <i style="padding-left:5px">@Model.ServiceBackGroundBanner</i>
+
+                                        <a style="padding-left:10px" href="@Model.ServiceBackGroundBanner" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                            <i class="glyphicon glyphicon-zoom-in"></i>
+                                        </a>
+                                        <a style="padding-left:10px" onclick="PicDelete('ServiceBackGround')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                            <i class="glyphicon glyphicon-trash"></i>
+                                        </a>
+                                        &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_ServiceBackGround" style="display:none" />
+                                    </p>
+
+                                </div>
+                            }
+
+                        </div>*@
+
+
+                    <div class="form-group">
+                        <label>Banner giữa trang chủ</label>
+                        <input type="file" class="input-sm" name="HomeCenterPage" id="HomeCenterPage" onchange="reviewUpload(this)" />
+
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_HomeCenterPage">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_HomeCenterPage" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_HomeCenterPage"></i>
+                                <a onclick="upload_delete('HomeCenterPage')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @*@if (string.IsNullOrWhiteSpace(Model?.HomeCenterPageBanner) == false)
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="rv_HomeCenterPage">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.HomeCenterPageBanner" />
+                                    <i style="padding-left:5px">@Model.HomeCenterPageBanner</i>
+
+                                    <a style="padding-left:10px" href="@Model.HomeCenterPageBanner" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete('HomeCenterPage')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_HomeCenterPage" style="display:none" />
+                                </p>
+
+                            </div>
+                        }*@
+
+                    </div>
+
+
+                    <h4>Slide banner</h4>
+                    <div class="form-group">
+                        <label>Slide banner 1</label>
+                        <input type="file" class="input-sm" name="OtherSlideBanner1" id="OtherSlideBanner1" onchange="reviewUpload(this)" />
+
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_OtherSlideBanner1">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_OtherSlideBanner1" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_OtherSlideBanner1"></i>
+                                <a onclick="upload_delete('OtherSlideBanner1')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @*@if (string.IsNullOrWhiteSpace(Model?.OtherSlideBanner1) == false)
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="rv_OtherSlideBanner1">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.OtherSlideBanner1" />
+                                    <i style="padding-left:5px">@Model.OtherSlideBanner1</i>
+
+                                    <a style="padding-left:10px" href="@Model.OtherSlideBanner1" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete('OtherSlideBanner1')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_OtherSlideBanner1" style="display:none" />
+                                </p>
+
+                            </div>
+                        }*@
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Slide banner 2</label>
+                        <input type="file" class="input-sm" name="OtherSlideBanner2" id="OtherSlideBanner2" onchange="reviewUpload(this)" />
+
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_OtherSlideBanner2">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_OtherSlideBanner2" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_OtherSlideBanner2"></i>
+                                <a onclick="upload_delete('OtherSlideBanner2')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @*@if (string.IsNullOrWhiteSpace(Model?.OtherSlideBanner2) == false)
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="rv_OtherSlideBanner2">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.OtherSlideBanner2" />
+                                    <i style="padding-left:5px">@Model.OtherSlideBanner2</i>
+
+                                    <a style="padding-left:10px" href="@Model.OtherSlideBanner2" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete('OtherSlideBanner2')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_OtherSlideBanner2" style="display:none" />
+                                </p>
+
+                            </div>
+                        }*@
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Slide banner 3</label>
+                        <input type="file" class="input-sm" name="OtherSlideBanner3" id="OtherSlideBanner3" onchange="reviewUpload(this)" />
+
+                        <div style="padding-left:0px;display:none" class="col-md-12" id="review_OtherSlideBanner3">
+                            <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                <img id="img_OtherSlideBanner3" style="height:100px;margin-left:0" alt="xem trước" />
+                                <i style="padding-left:5px" id="fname_OtherSlideBanner3"></i>
+                                <a onclick="upload_delete('OtherSlideBanner3')" href="#" data-toggle="tooltip" class="pull-right" title="Xóa file này">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                </a>
+                            </p>
+
+                        </div>
+
+                        @*@if (string.IsNullOrWhiteSpace(Model?.OtherSlideBanner3) == false)
+                        {
+                            <div style="padding-left:0px;" class="col-md-12" id="rv_OtherSlideBanner3">
+                                <p class="col-md-6" style="border:1px dotted red; padding:3px">
+                                    <img style="height:100px;margin-left:0" alt="hình ảnh" src="@Model.OtherSlideBanner3" />
+                                    <i style="padding-left:5px">@Model.OtherSlideBanner3</i>
+
+                                    <a style="padding-left:10px" href="@Model.OtherSlideBanner3" target="_blank" data-toggle="tooltip" class="pull-right" title="Xem tập tin">
+                                        <i class="glyphicon glyphicon-zoom-in"></i>
+                                    </a>
+                                    <a style="padding-left:10px" onclick="PicDelete('OtherSlideBanner3')" href="#" target="_blank" data-toggle="tooltip" class="pull-right" title="Xóa tập tin">
+                                        <i class="glyphicon glyphicon-trash"></i>
+                                    </a>
+                                    &nbsp; <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" id="loading_OtherSlideBanner3" style="display:none" />
+                                </p>
+
+                            </div>
+                        }*@
+
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts
+{
+    <script src="~/Scripts/upload_and_review.js"></script>
+
+    <script type="text/javascript">
+        function PicDelete(t) {
+            if (confirm("Xác nhận muốn xóa picture này?")) {
+                $("#floading").show();
+                $.ajax({
+                    url: "/admin/bannerads/bannerdelete/",
+                    type: "post",
+                    datatype: "json",
+                    contenttype: "application/json",
+                    data: { "type": t }
+                })
+                    .success(function (data) {
+                        if (data == true) {
+                            $("#rv_" + t).hide(500);
+                            alert("Delete successfully");
+                        }
+
+                    })
+                    .error(function () { alert("Can not delete."); $("#loading_" + t).hide(); })
+                    .complete(function () { $("#loading_" + t).hide(); });
+
+            }
+
+        }
+
+    </script>
+
+}

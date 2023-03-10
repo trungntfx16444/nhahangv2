@@ -1,0 +1,202 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Utils
+@using PKWebShop.Enums
+@using Inner.Libs.Helpful
+
+@{
+    List<vn_district> huyens = ViewBag.vn_district;
+    List<vn_province> tinhs = ViewBag.vn_province;
+    customer cus = ViewBag.cus;
+    Int64 free_ship = Convert.ToInt64(ViewBag.free_ship);
+    var pkg = new PKWebShop.Services.PackageServices().packageInfoSS();
+}
+@{
+    ViewBag.Class = "shop";
+}
+
+<style>
+    .free-ship {
+        /*text-decoration: line-through;*/
+        color: #28a745 !important;
+    }
+</style>
+
+<div class="checkout-main-area pt-15 pb-20">
+    <div class="container bg-white">
+        <div class="section-title-tab-wrap align-items-inherit py-3 mb-20">
+            <div class="section-title-3">
+                <h2>Thanh toán</h2>
+            </div>
+        </div>
+        @*<div class="customer-zone mb-20">
+                <p class="cart-page-title"><a class="checkout-click3" href="#">Nhấp vào đây để sử dụng mã giảm giá</a></p>
+                <div class="checkout-login-info3">
+                    <form action="#">
+                        <input type="text" placeholder="Coupon code" value="@gf.code">
+                        <input type="submit" value="Apply Coupon">
+                    </form>
+                </div>
+            </div>*@
+
+        <div class="checkout-wrap">
+            @if (cus?.Id == null && pkg.SocialLogin==true)
+            {
+                <div class="customer-zone mb-20">
+                    <p class="cart-page-title">
+                        Bạn đã có tài khoản? Vui lòng
+                        <a class="checkout-click1 text-success" data-toggle="modal" data-target="#login" onclick="$('[href=#lg1]').trigger('click')">đăng nhập</a>
+                        hoặc
+                        <a href="#" class="checkout-click1 text-success" data-toggle="modal" data-target="#login" onclick="$('[href=#lg2]').trigger('click')">đăng ký</a>
+                    </p>
+                </div>
+            }
+
+            @if (TempData["e"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["e"].ToString()
+                </div>
+            }
+
+            <form id="checkoutform" method="post" action="/cart/CheckOut_submit" class="row">
+                <input type="hidden" id="cart" name="cart" value="" />
+                <div class="col-lg-6">
+                    <div class="billing-info-wrap">
+                        <a href="/gio-hang" class="btn btn-theme" style="border-radius:unset; margin-bottom:20px;">
+                            <i class="fas fa-chevron-left"></i> Trở lại
+                        </a>
+
+                        <h3>Thông tin thanh toán</h3>
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6">
+                                <div class="billing-info mb-20">
+                                    <label>Họ và Tên <abbr class="required" title="bắt buộc">*</abbr></label>
+                                    <input type="text" name="Shipping_Name" class="form-control flat" value="@cus.FullName" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6">
+                                <div class="billing-info mb-20">
+                                    <label>Số điện thoại <abbr class="required" title="bắt buộc">*</abbr></label>
+                                    <input type="tel" value="@cus.Phone" class="form-control flat" name="Shipping_Phone" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6">
+                                <div class="billing-info mb-20">
+                                    <label>Email <abbr class="required" title="bắt buộc">*</abbr></label>
+                                    <input type="email" value="@cus.Email" class="form-control flat" name="Shipping_Email" va required>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6">
+                                <div class="billing-info mb-20">
+                                    <label>Địa chỉ <abbr class="required" title="bắt buộc">*</abbr></label>
+                                    <input class="billing-address form-control flat" placeholder="Số nhà và tên đường" type="text" name="ShippingAddress" value="@cus.Address" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="billing-info mb-20">
+                                    <label>Tỉnh / Thành Phố <abbr class="required" title="bắt buộc">*</abbr></label>
+                                    <select id="province" name="Shipping_Province" class="form-control flat" required>
+                                        <option hidden>Chọn Tỉnh/Thành Phố</option>
+                                        @foreach (var t in tinhs)
+                                        {
+                                            <option value="@t.provinceid" @(t.provinceid==cus.Province?"selected":"")>@t.type @t.name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-md-12" id="district-form" style="display:none">
+                                <div class="billing-info mb-20">
+                                    <label>Quận / Huyện <abbr class="required" title="bắt buộc">*</abbr></label>
+                                    <select id="district" name="Shipping_District" class="form-control flat" required>
+                                        <option value="" hidden>Chọn Quận/Huyện</option>
+                                    </select>
+                                    <select id="district-template" class="d-none">
+                                        @foreach (var h in huyens)
+                                        {
+                                            <option value="@h.districtid" data-province="@h.provinceid"  @(h.districtid==cus.District?"selected":"")>@h.type @h.name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-md-12" id="ward-form" style="display:none">
+                                <div class="billing-info mb-20">
+                                    <label>Xã / phường <abbr class="required" title="bắt buộc">*</abbr></label>
+                                    <select id="ward" name="Shipping_Ward" class="form-control flat" required onchange="localStorage.setItem('wardid', $(this).val())">
+                                        <option selected value="@cus.Ward"></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            @*<div class="col-lg-12 col-md-12">
+                                    <div class="billing-info mb-20">
+                                        <label>Email:<abbr class="required" title="bắt buộc">*</abbr></label>
+                                        <input type="text" value="@cus.Email" name="Email">
+                                    </div>
+                                </div>*@
+                        </div>
+                        <div class="additional-info-wrap">
+                            <label>Ghi chú đơn hàng</label>
+                            <textarea placeholder="Ghi chú cho cửa hàng hoặc đơn vị vận chuyển" name="Customer_Comment"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="your-order-area">
+                        <h3>Đơn hàng của tôi</h3>
+                        <div id="my_cart"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        $(function () {
+            bg_loading(true);
+
+            $.ajax({
+                method: "POST",
+                url: "/cart/_CheckOut",
+                data: { cart: cart() },
+                dataType: "html"
+            }).done(function (data) {
+                $("#my_cart").html(data);
+                bg_loading(false);
+            }).fail(function () {
+                bg_loading(false);
+                alert("Oops! Something went wrong");
+            });
+        });
+    </script>
+}
+<script>
+    var submiting = false;
+    function doOrder() {
+        if ($("input[name=PaymentMethod]:checked").val() == "@(PaymentMethod.VNPAY.Code<string>())") {
+            if (confirm('Bạn sẽ được chuyển sang trang thanh toán của VNPAY ! Vui lòng không tắt trình duyệt trước khi hoàn thành thanh toán!')) {
+                $("input[name=PaymentMethod][value=direct]").prop("checked", true);
+                submitOrder();
+            }
+        }
+        else {
+            submitOrder();
+        }
+    }
+
+    function submitOrder() {
+        if (submiting == false) {
+            if (document.getElementById("checkoutform").checkValidity()) {
+                //bg_loading();
+                submiting = true;
+                $("#span-doOrder").html("Đang tạo đơn hàng");
+                $("#doOrder-loading").removeClass("d-none");
+            }
+
+            $('#submit').trigger('click');
+        }
+        else {
+            msg_info("Đang tạo đơn hàng. Vui lòng đợi...", "", "top center");
+        }
+    };
+</script>

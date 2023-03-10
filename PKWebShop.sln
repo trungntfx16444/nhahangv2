@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.32916.344
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PKWebShop", "PKWebShop\PKWebShop.csproj", "{FA123B29-8A87-4A6E-A95F-D4D6039A377C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebDefault", "WebDefault", "{719A9E51-9AC6-47E1-99D0-A58AE59FA792}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminPage", "AdminPage\AdminPage.csproj", "{04B21461-39B9-45C7-8EDB-9ABA4B41FD1E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA123B29-8A87-4A6E-A95F-D4D6039A377C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA123B29-8A87-4A6E-A95F-D4D6039A377C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA123B29-8A87-4A6E-A95F-D4D6039A377C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA123B29-8A87-4A6E-A95F-D4D6039A377C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04B21461-39B9-45C7-8EDB-9ABA4B41FD1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04B21461-39B9-45C7-8EDB-9ABA4B41FD1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04B21461-39B9-45C7-8EDB-9ABA4B41FD1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04B21461-39B9-45C7-8EDB-9ABA4B41FD1E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E8E7DDA0-A827-4492-9CE0-D22B473C4743}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,48 @@
+﻿@model  IEnumerable<PKWebShop.Models.sectionfeaturedetail>
+@{
+}
+
+
+<div class="section-page big-55-height over-hide z-bigger">
+
+    <div class="parallax parallax-top" style="background-image: url('@ViewBag.topbg'); top: 0px;"></div>
+    <div class="dark-over-pages"></div>
+    <div class="hero-center-section pages">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 parallax-fade-top" style="top: 0px; opacity: 1;">
+                    <div class="hero-text">@ViewBag.Title</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_BookingForm")
+
+
+<div class="padding-top-bottom over-hide">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="clearfix"></div>
+            @foreach (var m in Model)
+            {
+                <div class="col-md-4 img-wrap_wrap mb-2">
+                    <a href="@m.Picture" data-fancybox="gallery">
+                        <div class="img-wrap gallery-small img-rounded over-hide">
+                            @if (m.Picture.Contains(".mp4")==true)
+                            {
+                                <video width="370" height="220" style="object-fit:cover" src="@m.Picture" alt=""/>
+                            }
+                            else
+                            {
+                                <img width="370" height="220" style="object-fit:cover" src="@m.Picture" alt=""/>
+                            }
+
+                        </div>
+                    </a>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

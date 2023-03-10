@@ -1,0 +1,108 @@
+﻿@using PKWebShop.Resources
+@{
+    ViewBag.Title = "BookingConfirm";
+    var Roomtype = ViewBag.Roomtype as List<PKWebShop.Models.service>;
+}
+
+<div class="section-page big-55-height over-hide z-bigger">
+
+    <div class="parallax parallax-top" style="background-image: url('@ViewBag.topbg')"></div>
+    <div class="dark-over-pages"></div>
+
+    <div class="hero-center-section pages">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 parallax-fade-top">
+                    <div class="hero-text">@Resource.BookRoom</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="booking-confirm padding-top padding-bottom-smaller z-bigger">
+    <div class="container">
+        <form id="bookroom" class="row" action="/home/BookingSubmit" method="post">
+            <div class="col-lg-6">
+                @*<div class="section">
+                        <div class="post-box">
+                            <h3>
+                                <em>
+                                    Nguyên tắc chung
+                                </em>
+                            </h3>
+                            <p>
+                                • Thời gian nhận phòng 14:00<br>
+                                • Thời gian trả phòng 12:00<br>
+                                • Thanh toán bằng VN Đồng, giá bao gồm VAT. Bao gồm ăn sáng , phí phục vụ.<br>
+                                • Không tính phí trẻ em dưới 05 tuổi đi chung với gia đình, nhưng không có gường phụ.<br>
+                                • Chấp nhận thanh toán Master, Visa…<br>
+                                • Đặt cọc khi đặt phòng.
+                            </p>
+                        </div>
+                    </div>*@
+                <div class="ajax-form">
+                    <input required name="FullName" type="text" placeholder="@Resource.FullName: *" autocomplete="off">
+                </div>
+                <div class="ajax-form">
+                    <input required name="Email" type="text" placeholder="Email: *" autocomplete="off">
+                </div>
+                <div class="ajax-form">
+                    <input required name="Phone" type="text" placeholder="@Resource.Phone: *" autocomplete="off">
+                </div>
+                <div class="ajax-form">
+                    <textarea name="Note" style="text-align:left" type="text" placeholder="@Resource.Note: " autocomplete="off"></textarea>
+                </div>
+            </div>
+            <div class="col-lg-6 mt-4 mt-lg-0">
+
+                <div class="ajax-form">
+                    <span class="fontawesome-calendar"></span>
+                    <input required class="input-sm datepicker " type="text" autocomplete="off" id="start-date-1" name="Start" value="@ViewBag.Start" placeholder="@Resource.CheckInDate" data-date-format="dd.mm.yyyy" />
+                    <span class="date-text date-depart"></span>
+                </div>
+                <div class="ajax-form">
+                    <span class="fontawesome-calendar"></span>
+                    <input required class="input-sm datepicker" type="text" autocomplete="off" id="end-date-1" name="End" value="@ViewBag.End" placeholder="@Resource.CheckOutDate" data-date-format="dd.mm.yyyy" />
+                    <span class="date-text date-return"></span>
+                </div>
+                <div class="ajax-form">
+                    <input required min="1" name="Adults" value="@ViewBag.Adults" type="text" placeholder="@Resource.Adults: *" autocomplete="off">
+                </div>
+
+                <div class="ajax-form">
+                    <input required min="0" name="Children" value="@ViewBag.Children" type="text" placeholder="@Resource.Children: *" autocomplete="off">
+                </div>
+                <div class="ajax-form">
+                    <select name="RoomId" class="form-control">
+                        <option selected>@Resource.RoomType...</option>
+                        @foreach (var t in Roomtype)
+                        {
+                            <option value="@t.ReId">@t.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="text-center">
+                    <button class="send_message btn btn-primary btn-pill" id="send" data-lang="en"><span>@Resource.Confirm</span></button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section scripts{
+    <script src="~/Content/admin/js/jquery.form.min.js"></script>
+    <script>
+
+        $(function () {
+            $(".datepicker").datepicker();
+            $("#bookroom").ajaxForm(function (data) {
+                if (data) {
+                    location.href = '/thank-you';
+                } else {
+                    error(data[1]);
+                }
+            })
+        })
+    </script>
+}
+

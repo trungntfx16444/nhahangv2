@@ -1,0 +1,38 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@{ 
+    string url_product = ViewBag.url_product;
+}
+
+<div class="product-categories-area pt-50 pb-20">
+    <div class="container">
+        <div class="section-title-tab-wrap mb-20">
+            <b class="bg-gradient"></b>
+            <div class="section-title-3 px-2">
+                <h2>@(Model.Feature.Title)</h2>
+            </div>
+            <b class="bg-gradient"></b>
+        </div>
+        <div class="row">
+            @foreach (var item in Model.Details)
+            {
+                var first_pic = item.Files.FirstOrDefault();
+                <div class="col-lg-3 col-6 ">
+                    <div class="categories-product-wrap">
+                        <div class="product-img">
+                            <a href="@(item.Detail.URL)">
+                                <img src="@(first_pic?.FileName)" alt="img" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';">
+                            </a>
+                        </div>
+                        <div class="product-content-categories">
+                            <a href="@(item.Detail.URL)">@(item.Detail.Title)</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="read-more text-center">
+            <a href="@($"/{url_product}")" class="btn bg-gradient text-white">XEM THÊM <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,239 @@
+﻿@model PKWebShop.Models.webconfiguration
+@using PKWebShop.AppLB
+@{
+    var menus = UserContent.GetWebMenu(true);
+    string url_product = ViewBag.url_product;
+    //var pro_cates = UserContent.GetWebCategoryProduct(true);
+    //var cateLv1 = pro_cates.Where(x => x.Level == 1);
+    //var cateLv2 = pro_cates.Where(x => x.Level == 2);
+    //var cateLv3 = pro_cates.Where(x => x.Level == 3);
+}
+
+<link href="~/Content/client/css/header/_Header-06.css" rel="stylesheet" />
+
+<header class="header-area">
+    <div class="header-large-device navbar_top">
+        <div class="header-top bg-img" style="background-image: url('../../../Upload/images/banner/bg-sky.jpg');">
+            <div class="container">
+                <div class="row align-items-center justify-content-end position-relative">
+                    <div class="col-xl-2 col-lg-2 py-2">
+                        <div class="logo">
+                            <a href="/">
+                                <img src="@(Model.LogoPicture ?? Model.LogoHeader ?? Model.LogoFooter)" />
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-xl-9 col-lg-9 py-2">
+                        <div class="header-quick-contect">
+                            <ul>
+                                <li class="col-md-5 pr-0">
+                                    <i class="fas fa-map-marker-alt text-gradient"></i>
+                                    <span>
+                                        @*Địa chỉ:<br />*@
+                                        @(Model.Address)
+                                    </span>
+                                </li>
+                                <li class="col-md-3 pr-0">
+                                    <i class="fas fa-phone-alt text-gradient"></i>
+                                    <span>
+                                        Hotline:<br />
+                                        @if (!string.IsNullOrEmpty(Model.Hotline))
+                                        {
+                                            <a href="tel:@(CommonFunc.CleanPhoneNumber(Model.Hotline))">@(Model.Hotline)</a>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.CompanyPhone))
+                                        {
+                                            <a href="tel:@(CommonFunc.CleanPhoneNumber(Model.CompanyPhone?.Split(',')?.FirstOrDefault()))">
+                                                @(Model.CompanyPhone?.Split(',')?.FirstOrDefault())
+                                            </a>
+                                        }
+                                    </span>
+                                </li>
+                                <li class="col-md-4">
+                                    <i class="fas fa-clock text-gradient"></i>
+                                    <span>Thời gian:<br />@(Model.WorkTime)</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xl-1 col-lg-1 py-2">
+                        <div class="header-action header-action-flex">
+                            <div class="same-style-2 same-style-2-white same-style-2-font-inc header-cart">
+                                <a class="cart-active" href="#">
+                                    <i class="fas fa-shopping-bag text-gradient"></i><span class="pro-count pro-count_cart black">0</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="header-bottom bg-gradient">
+            <div class="container">
+                <div class="row align-items-center justify-content-center">
+                    <div class="col-lg-9">
+                        <div class="main-menu">
+                            <nav>
+                                @if (menus != null && menus.Count > 0)
+                                {
+                                    <ul>
+                                        @foreach (var item in menus)
+                                        {
+                                            <li class="@(item.child?.Count > 0 ? "has-dropdown" : "")">
+                                                <a class="menu@(item.menu.URL?.Replace("/","_"))" href="@item.menu.URL">
+                                                    @item.menu.Name
+                                                    @if (item.child?.Count > 0)
+                                                    {
+                                                        @Html.Raw("<i class='fas fa-chevron-down'></i>");
+                                                    }
+                                                </a>
+                                                @if (item.child?.Count > 0)
+                                                {
+                                                    <ul class="submenu has-dropdown-wrapper has-dropdown">
+                                                        @foreach (var i in item.child)
+                                                        {
+                                                            <li><a href="@i.URL">@i.Name</a></li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-3 px-0">
+                        <div class="header-action header-action-flex">
+                            <div class="same-style-2 same-style-2-white header-search-1">
+                                <div class="categori-search-wrap categori-search-wrap-modify-1">
+                                    <div class="search-wrap-3">
+                                        <form class="input-group" action="@($"/{url_product}")">
+                                            <input type="text" class="form-control" name="search" placeholder="Tìm sản phẩm ...">
+                                            <button type="submit" class="input-group-btn btn btn-dark flat-left">
+                                                <b><i class="icon-magnifier"></i></b>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-small-device small-device-ptb-1 navbar_top">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-9">
+                    <div class="mobile-logo">
+                        <a href="/">
+                            <img height="50" src="@(Model.LogoPicture ?? Model.LogoHeader ?? Model.LogoFooter)">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="header-action header-action-flex" style="">
+                        <!--
+                        <div class="same-style-2 same-style-2-font-inc">
+                            <a href="#"><i class="icon-heart"></i><span class="pro-count red">03</span></a>
+                        </div>
+                        -->
+                        <div class="same-style-2 same-style-2-font-inc header-cart">
+                            <a class="cart-active" href="#">
+                                <i class="bi bi-bag"></i><span class="pro-count pro-count_cart red">0</span>
+                            </a>
+                        </div>
+                        <div class="same-style-2 main-menu-icon">
+                            <a class="mobile-header-button-active" href="#">
+                                <i class="icon-menu"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="mobile-header-active mobile-header-wrapper-style " style="background-color: #fffff0 ">
+    <div class="clickalbe-sidebar-wrap">
+        <a class="sidebar-close"><i class="icon_close"></i></a>
+        <div class="mobile-header-content-area">
+            <div class="mobile-search mobile-header-padding-border-1">
+                <form class="search-form" action="@($"/{url_product}")">
+                    <input type="text" name="search" value="" placeholder="Nhập tên sản phẩm">
+                    <button type="submit" class="button-search"><i class="icon-magnifier"></i></button>
+                </form>
+            </div>
+
+            <div class="mobile-menu-wrap mobile-header-padding-border-2">
+                <!-- mobile menu start -->
+                <nav>
+                    @if (menus != null && menus.Count > 0)
+                    {
+                        <ul class="mobile-menu">
+                            @foreach (var item in menus)
+                            {
+                                <li class="@(item.child?.Count > 0 ? "menu-item-has-children" : "")">
+                                    @if (item.child?.Count > 0)
+                                    {
+                                        @Html.Raw("<span class='menu-expand'><i></i></span>");
+                                    }
+                                    <a class="menu@(item.menu.URL?.Replace("/","_"))" href="@item.menu.URL">@item.menu.Name</a>
+                                    @if (item.child?.Count > 0)
+                                    {
+                                        <ul class="dropdown">
+                                            @foreach (var i in item.child)
+                                            {
+                                                <li><a href="@i.URL">@i.Name</a></li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </nav>
+                <!-- mobile menu end -->
+            </div>
+
+            <div class="mobile-contact-info mobile-header-padding-border-4">
+                <ul>
+                    <li>
+                        <i class="icon-phone"></i>
+                        @if (!string.IsNullOrEmpty(Model.Hotline))
+                        {
+                            <a href="tel:@(Model.Hotline)">@(Model.Hotline)</a>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.CompanyPhone))
+                        {
+                            <a href="tel:@(Model.CompanyPhone?.Split(',')?.FirstOrDefault())">
+                                @(Model.CompanyPhone?.Split(',')?.FirstOrDefault())
+                            </a>
+                        }
+                    </li>
+                    <li>
+                        <i class="icon-envelope-open "></i>
+                        <a href="mailto:@(Model.ContactEmail)">@(Model.ContactEmail)</a>
+                    </li>
+                    <li><i class="icon-home"></i> @(Model.Address)</li>
+                </ul>
+            </div>
+            <div class="mobile-social-icon">
+                <a href="@(Model.FacebookUrl)" target="_blank">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="@(Model.YoutubeUrl)" target="_blank">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="@(Model.InstagramUrl)" target="_blank">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="@(Model.TwitterUrl)" target="_blank">
+                    <i class="fab fa-twitter"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

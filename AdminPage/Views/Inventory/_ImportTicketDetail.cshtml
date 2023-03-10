@@ -1,0 +1,245 @@
+﻿@model import_ticket
+@using AdminPage.Models
+@using AdminPage.Models.CustomizeModels
+@using Newtonsoft.Json;
+@using Inner.Libs.Helpful;
+@using AdminPage.Enums;
+@{
+    List<(submit_product s, product p)> details = ViewBag.details;
+    var orther_cost = JsonConvert.DeserializeObject<Dictionary<string, decimal>>(Model.Other_costs ?? string.Empty);
+}
+<style>
+    table td, table th {
+        padding: 10px;
+    }
+
+    .text-black {
+        color: black !important;
+    }
+</style>
+
+<div class="row">
+    <table style="margin: auto; border: 1px solid #2a2a2a;">
+        <tbody>
+            <tr>
+                <td>
+                    <table style="width: 100.0%; border-collapse: collapse;" border="0" cellspacing="0" cellpadding="0" width="100%">
+                        <tbody>
+                            <tr>
+                                <td class="p-l-0">
+                                    <p class="font-weight-bold text-black">PHIẾU NHẬP KHO</p>
+                                    <p class="text-black">@(Model.CreatedAt.Value.ToString("'Ngày 'dd' tháng 'MM' năm 'yyyy"))</p>
+                                    <p class="text-black">Mã Phiếu <span class="font-weight-bold">@(Model.Code)</span></p>
+                                </td>
+                                <td class="p-r-0">
+                                    <p class="text-black font-italic text-right">NCC: @ViewBag.VendorName</p>
+                                    <p class="text-black font-italic text-right">Thanh toán: @(Ext.EnumParse<ImportTicket_PaymentStatus>(Model.PayStatus).Text())</p>
+                                    <p class="text-black font-italic text-right">Nhận hàng: @(Ext.EnumParse<ImportTicket_ImportStatus>(Model.ImportStatus).Text())</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table><br />
+                    @if (Model.OrderDate.HasValue)
+                    {
+                        <span class="text-black"><span class="font-weight-semibold">Thời gian đặt:</span> @Model.OrderDate.Value.ToString("dd' tháng 'MM' năm 'yyyy")</span><br />
+                    }
+                    @if (Model.ReceivedDate.HasValue)
+                    {
+                        <span class="text-black"><span class="font-weight-semibold">Thời gian nhận:</span> @Model.ReceivedDate.Value.ToString("HH:mm', 'dd' tháng 'MM' năm 'yyyy")</span><br />
+                    }
+                    <br />
+                    <table style="border: none;" border="1" class="text-black">
+                        <thead class="text-center font-weight-bold">
+                            <tr>
+                                <td colspan="6" style="background-color: #eee;">SẢN PHẨM</td>
+                            </tr>
+                            <tr>
+                                <td>STT</td>
+                                <td>Sản phẩm</td>
+                                <td>Giá nhập</td>
+                                <td>Số lượng</td>
+                                <td>Đơn vị tính</td>
+                                <td>Thành tiền</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int i = 0;}
+                            @foreach (var item in details)
+                            {
+                                i++;
+                                <tr>
+                                    <td>@i</td>
+                                    <td>@item.p.ProductName</td>
+                                    <td style="text-align:right">@item.s.EntryPrice.ToString("#,##0")</td>
+                                    <td style="text-align:right">@item.s.ImportQty</td>
+                                    <td>@item.s.ImportUnit</td>
+                                    <td style="text-align:right">@((item.s.EntryPrice* item.s.ImportQty).ToString("#,##0"))</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td style="text-align:right" colspan="5">Tổng tiền sản phẩm </td>
+                                <td style="text-align:right">@details.Sum(item => item.s.EntryPrice * item.s.ImportQty).ToString("#,##0")</td>
+                            </tr>
+                        </tbody>
+                        @if (orther_cost.Count > 0)
+                        {
+                            <thead class="text-center font-weight-bold">
+                                <tr>
+                                    <td colspan="6" style="background-color: #eee;">PHỤ PHÍ</td>
+                                </tr>
+                                <tr>
+                                    <td>STT</td>
+                                    <td colspan="4">Tên phụ phí</td>
+                                    <td>Số tiền</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{i = 0;}
+                                @foreach (var item in orther_cost)
+                                {
+                                    i++;
+                                    <tr>
+                                        <td>@i</td>
+                                        <td colspan="4">@item.Key</td>
+                                        <td style="text-align:right">@((item.Value).ToString("#,##0"))</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td style="text-align:right" colspan="5">Tổng phụ phí </td>
+                                    <td style="text-align:right">@orther_cost.Sum(item => item.Value).ToString("#,##0")</td>
+                                </tr>
+                            </tbody>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <thead class="text-center font-weight-bold">
+                                <tr>
+                                    <td colspan="6" style="background-color: #eee;">GHI CHÚ</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6">@Html.Raw(Model.Note)</td>
+                                </tr>
+                            </tbody>
+                        }
+                        <thead class="font-weight-bold">
+                            <tr>
+                                <td class="text-right" colspan="5">TỔNG CỘNG</td>
+                                <td class="text-right">@((Model.Total??0).ToString("#,##0"))</td>
+                            </tr>
+                        </thead>
+                    </table>
+                    <p>&nbsp;</p>
+                    <table width="100%">
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td style="width: 220.7pt; padding: 0in 5.4pt 0in 5.4pt;">
+                                    <p class="text-black font-italic text-center">@(DateTime.Now.ToString("'Ngày 'dd' tháng 'MM' năm 'yyyy"))</p>
+                                    <p class="text-black font-weight-semibold text-center">Người lập phiếu</p>
+                                    <p class="text-black text-center mt-5">@Model.CreatedBy</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+
+@*<div class="row">
+        <div class="col-md-12">
+            <label class="font-weight-bold">Nhà cung cấp: </label> <span>@ViewBag.VendorName</span>
+        </div>
+        <div class="col-md-12">
+            <label class="font-weight-bold mr-2">Tổng tiền: </label>
+            <span>@(Model.Total?.ToString("#,###"))</span>
+        </div>
+        <div class="col-md-12">
+            <label class="font-weight-bold">Trạng Thái Giao Hàng: </label>
+            <span>@ViewBag.ImportStatus</span>
+        </div>
+        <div class="col-md-12">
+            <label class="font-weight-bold">Trạng Thái Thanh Toán: </label>
+            <span>@ViewBag.PayStatus</span>
+        </div>
+        <div class="col-md-12">
+            <label class="font-weight-bold">Thời gian đặt: </label>
+            <span>@(Model.OrderDate?.ToString("dd/MM/yyyy HH:mm"))</span>
+        </div>
+        <div class="col-md-12">
+            <label class="font-weight-bold">Thời gian nhận: </label>
+            <span>@(Model.ReceivedDate?.ToString("dd/MM/yyyy HH:mm"))</span>
+        </div>
+        <div class="col-md-12 mb-2">
+            <label class="font-weight-bold">Sản phẩm: </label>
+            <div class="products">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td>Sản Phẩm</td>
+                            <td>Giá bán</td>
+                            <td>Trong Kho</td>
+                            <td>Giá nhập</td>
+                            <td>Số lượng</td>
+                            <td>đơn vị nhập</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in details)
+                        {
+                            <tr>
+                                <td>@d.p.ProductName<br /><span class="badge badge-info">@d.p.CategoryName</span></td>
+                                <td>@(d.p.Price?.ToString("#,###"))</td>
+                                <td>@d.p.Quantity</td>
+                                <td>@(d.s.EntryPrice.ToString("#,###"))</td>
+                                <td>@d.s.ImportQty</td>
+                                <td>@d.s.ImportUnit</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6 form-group ">
+            <label class="font-weight-bold">Chi phí khác:</label>
+            @if (orther_cost==null || orther_cost.Count == 0)
+            {
+                <span>Không</span>
+            }
+            else
+            {
+                <div class="OtherPriceGroup">
+
+                    <table class="table">
+                        <tbody>
+                            @foreach (var c in orther_cost)
+                            {
+                                <tr>
+                                    <td>@c.Key</td>
+                                    <td>@c.Value.ToString("#,###")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-12 @(Model.PayStatus != "Unpaid" ? "" : "d-none")">
+            <label class="font-weight-bold">
+                <a href="/dept/expense?search=@(Model.Id)" target="_blank">Xem thông tin phiếu chi <i class="anticon anticon-double-right"></i></a>
+            </label>
+        </div>
+        <div class="col-md-12 form-group">
+            <label class="font-weight-bold">Ghi chú:</label>
+            <span>@Html.Raw(Model.Note)</span>
+        </div>
+    </div>*@

@@ -1,0 +1,135 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.Resources
+@using PKWebShop.Utils
+@{
+    var sanpham = ViewBag.sanpham as sectionfeature;
+    List<Products_SectionView> sanpham_list = ViewBag.sanpham_list ?? new List<Products_SectionView>();
+}
+@foreach (var nhom_sp in sanpham_list)
+{
+    if (!string.IsNullOrEmpty(nhom_sp.section_detail.Picture))
+    {
+        <div class="banner-area pt-25 pb-25">
+            <div class="container">
+                <div class="banner-wrap">
+                    <div class="banner-img banner-img-zoom">
+                        <div class="box-img" style="padding-top:27%">
+                            <a href="@nhom_sp.section_detail.URL">
+                                <img src="@nhom_sp.section_detail.Picture" loading="lazy" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!--Sản phẩm-->
+    <div class="product-area section-padding-1 pt-25 pb-25">
+        <div class="container">
+            <div class="section-title-btn-wrap mb-25">
+                <div class="section-title">
+                    <a href="@nhom_sp.section_detail.URL"><h2>@nhom_sp.section_detail.Title</h2></a>
+                </div>
+                <div class="section-readmore">
+
+                    <a href="@nhom_sp.section_detail.URL">@Resource.ViewMore <i class="icon-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="row">
+                @foreach (var p in nhom_sp.list_products)
+                {
+                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-6">
+                        @{ var urlProduct = $"/{p.Url}-pd{p.ReId}";}
+                        <div class="single-product-wrap mb-35">
+                            <div class="product-img product-img-zoom mb-15">
+                                <div class="box-img">
+                                    <a href="@urlProduct">
+                                        <img src="@p.Picture" alt="@(p.ImageAlt)" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy" />
+                                    </a>
+                                    @if (p.SalePrice < p.Price)
+                                    {
+                                        <span class="pro-badge left">-@((100 - (p.SalePrice / p.Price) * 100)?.ToString("0"))%</span>
+                                    }
+
+                                </div>
+                                <div class="product-action-2 tooltip-style-2">
+                                    <button title="Wishlist"><i class="icon-heart"></i></button>
+                                    <button title="Quick View" data-toggle="modal" data-target="#exampleModal"><i class="icon-size-fullscreen icons"></i></button>
+                                    <button title="Compare"><i class="icon-refresh"></i></button>
+                                </div>
+                            </div>
+                            <div class="product-content-wrap-2 text-center">
+                                <div class="product-rating-wrap">
+                                    <div class="product-rating">
+                                        @for (int i = 0; i < 5; i++)
+                                        {
+                                            if (p.Rating > (i + 0.5))
+                                            {
+                                                <i class="icon_star"></i>
+                                            }
+                                            else if (p.Rating == (i + 0.5))
+                                            {
+                                                <i class=" icon_star-half_alt"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="icon_star_alt"></i>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <h3><a href="@urlProduct">@p.ProductName</a></h3>
+                                <div class="product-price-2">
+
+                                    @if (p.SalePrice <= 0 || p.Price <= 0)
+                                    {
+                                        <span class="new-price">Liên hệ</span>
+                                    }
+                                    else if (p.SalePrice > 0 && p.SalePrice != p.Price)
+                                    {
+                                        <span class="new-price">@((p.SalePrice ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                        <span class="old-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="new-price">@((p.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="product-content-wrap-2 product-content-position text-center">
+                                <div class="product-rating-wrap">
+                                    <div class="product-rating">
+                                        @for (int i = 0; i < 5; i++)
+                                        {
+                                            if (p.Rating > (i + 0.5))
+                                            {
+                                                <i class="icon_star"></i>
+                                            }
+                                            else if (p.Rating == (i + 0.5))
+                                            {
+                                                <i class=" icon_star-half_alt"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="icon_star_alt"></i>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <h3><a href="@urlProduct">@p.ProductName</a></h3>
+                                <div class="product-price-2">
+                                    <span>@p.Price.Value.ToString("0,###") đ</span>
+                                </div>
+                                <div class="pro-add-to-cart">
+                                    <button title="Add to Cart" onclick="add_to_card('@p.ReId'),location.href='/gio-hang'">Mua ngay</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

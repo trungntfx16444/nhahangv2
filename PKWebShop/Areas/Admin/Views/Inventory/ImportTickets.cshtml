@@ -1,0 +1,504 @@
+﻿@using PKWebShop.Models
+@using Inner.Libs.Helpful;
+@using PKWebShop.Enums;
+@{
+    ViewBag.Title = "Nhập kho";
+    //string p_select = Cookies["parentId"]?.ToString() ?? Model.FirstOrDefault()?.Id;
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+    var arrObj = ViewBag.ArrObj as object[];
+    var listVendor = arrObj[0] as List<vendor>;
+    var listStatus = arrObj[1] as List<(string value, string text)>;
+    var listProd = arrObj[2] as List<product>;
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Tổng quan
+            </a>
+            <span class="breadcrumb-item">Quản lý kho</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["e"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-close-circle"></i>
+            </span>
+            <span>@TempData["e"]</span>
+        </div>
+    </div>
+}
+@if (TempData["s"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check-circle"></i>
+            </span>
+            <span>@TempData["s"]</span>
+        </div>
+    </div>
+}
+
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="card-title">QUẢN LÝ PHIẾU NHẬP</h4>
+            <div class="card-toolbar">
+                <button id="addnew_btn" class="btn btn-primary" onclick="NewImportTicket()">
+                    <i class="anticon anticon-plus"></i> Tạo phiếu nhập
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="partial_content">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="text" id="search" class="form-control" name="search" style="width:250px" placeholder="Nhập mã phiếu cần tìm..." />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="m-b-15">
+                    <select id="s_vendor" class="select2" name="s_vendor">
+                        <option value="">-- Tất cả NCC --</option>
+                        @foreach (var item in listVendor)
+                        {
+                            <option value="@(item.Id)">@(item.Name)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="m-b-15">
+                    <select id="s_status" class="select2" name="s_status">
+                        <option value="">--Tất cả trạng thái--</option>
+                        @foreach (var item in listStatus)
+                        {
+                            <option value="@(item.value)">@(item.text)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="dataTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Tổng tiền</th>
+                        <th class="no-sort">Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th class="no-sort"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--Append table using dataTable-->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal" id="modalImportticket" aria-modal="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <form id="Importticket" name="Importticket" class="modal-content" action="/admin/inventory/ImportTicketSave" method="post">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm Phiếu Nhập</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="Id" name="Id" value="">
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label class="font-weight-semibold required">Nhà cung cấp</label>
+                        <a class="font-weight-semibold float-right" href="/admin/inventory/vendors" target="_blank"><i class="fas fa-cogs"></i></a>
+                        @Html.DropDownList("Vendor_Id", (IEnumerable<SelectListItem>)ViewBag.vendors, new { @class = "select2", @required = "required" })
+                    </div>
+                    <div class="col-md-12 form-group mb-2">
+                        <label class="font-weight-semibold">Sản Phẩm</label>
+                        <button type="button" class="btn-inline-plus  float-right" onclick="$('.products').append($('template.ProductTemp').html());$('.select2').select2()"></button>
+                        <div class="products">
+                            <!--Append template ProductTemp-->
+                        </div>
+                    </div>
+                    <div class="col-md-6 form-group ">
+                        <label class="font-weight-semibold">Ghi chú</label>
+                        <textarea class="form-control" id="Note" name="Note" rows="6"></textarea>
+                    </div>
+                    <template class="ProductTemp">
+                        <div class="input-group product">
+                            <div style="flex: 0 0 40%">
+                                <select class="select2" name="[_id_].Product_Id" required>
+                                    <option value="">-- Sản phẩm --</option>
+                                    @foreach (var item in listProd)
+                                    {
+                                        <option value="@(item.ReId)">@($"{item.ProductName} ({item.Unit})")</option>
+                                    }
+                                </select>
+                                @*@Html.DropDownList("[_id_].Product_Id", (IEnumerable<SelectListItem>)ViewBag.products, new { @class = "select2", @value = "", @required = "required" })*@
+                            </div>
+                            <input type="number" class="form-control" id="EntryPrice" name="[_id_].EntryPrice" value="" placeholder="đơn giá">
+                            <input type="number" class="form-control" id="ImportQty" name="[_id_].ImportQty" value="" placeholder="số lượng nhập">
+                            <input type="text" class="form-control" id="ImportUnit" name="[_id_].ImportUnit" value="" placeholder="đơn vị">
+                            <input type="number" class="form-control" id="QtyExchange" name="[_id_].QtyExchange" value="1" placeholder="số lượng quy đổi">
+                            <button type="button" class="btn-inline-close" onclick="$(this).closest('.product').remove()"></button>
+                        </div>
+                    </template>
+                    <template class="OtherPriceTemp">
+                        <div class="input-group OtherPrice">
+                            <input type="text" class="form-control" name="OtherPriceName" value="" placeholder="Tên chi phí *" required>
+                            <input type="number" class="input-group-append form-control" style="flex: 0 0 45%;" name="OtherPriceAmount" value="" placeholder="số tiền">
+                            <button type="button" class="btn-inline-close" onclick="$(this).closest('.OtherPrice').remove()"></button>
+                        </div>
+                    </template>
+                    <div class="col-md-6" style=" padding-top: 8px;">
+                        <div class="form-group">
+                            <label class="font-weight-semibold">Chi phí khác</label>
+                            <button type="button" class="btn-inline-plus float-right" onclick="$('.OtherPriceGroup').append($('template.OtherPriceTemp').html());$"></button>
+                            <div class="OtherPriceGroup">
+                                <!--Append template OtherPriceTemp-->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-semibold mr-2 required">Tổng tiền</label>
+                            <button type="button" class="btn btn-success btn-xs float-right" onclick="getTotal()"><i class="fas fa-equals"></i></button>
+                            <p class="mb-0 float-right m-r-5 font-size-12 p-t-5">
+                                Click để tính lại tổng tiền<i class="anticon anticon-arrow-right"></i>
+                            </p>
+                            <input type="number" class="form-control" id="Total" name="Total" value="" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-semibold">Trạng Thái Giao Hàng</label>
+                            <select id="ImportStatus" name="ImportStatus" class="form-control">
+                                @foreach (var s in (ImportTicket_ImportStatus[])Enum.GetValues(typeof(ImportTicket_ImportStatus)))
+                                {
+                                    <option value="@s.ToString()">@s.Text()</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-semibold">Trạng Thái Thanh Toán</label>
+                            <select id="PayStatus" name="PayStatus" class="form-control">
+                                @foreach (var s in (ImportTicket_PaymentStatus[])Enum.GetValues(typeof(ImportTicket_PaymentStatus)))
+                                {
+                                    <option value="@s.ToString()">@s.Text()</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="font-weight-semibold">Thời gian đặt</label>
+                            <p class="float-right cursor-pointer mb-0" onclick="$('#modalImportticket [name=OrderDate],#modalImportticket [name=OrderTime]').val('').trigger('change');">
+                                <i class="anticon anticon-left"></i>clear<i class="anticon anticon-right"></i>
+                            </p>
+                            <div class="input-group">
+                                <input type="date" name="OrderDate" class="form-control" placeholder="Ngày" data-date="" data-date-format="DD/MM/YYYY" value="" autocomplete="off">
+                                <input type="time" name="OrderTime" class="input-group-append form-control d-none" style="flex: 0 0 45%; height: 41px;" value="" placeholder="Giờ">
+                            </div>
+                        </div>
+                        <div id="divReceived" class="form-group">
+                            <label class="font-weight-semibold">Thời gian nhận</label>
+                            <p class="float-right cursor-pointer mb-0" onclick="$('#modalImportticket [name=ReceivedDate],#modalImportticket [name=ReceivedTime]').val('').trigger('change');">
+                                <i class="anticon anticon-left"></i>clear<i class="anticon anticon-right"></i>
+                            </p>
+                            <div class="input-group">
+                                <input type="date" name="ReceivedDate" class="form-control" placeholder="Ngày" data-date="" data-date-format="DD/MM/YYYY" value="" autocomplete="off">
+                                <input type="time" name="ReceivedTime" class="input-group-append form-control" style="flex: 0 0 45%; height: 41px;" value="" placeholder="Giờ">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 form-group">
+                        <div class="checkbox text-right">
+                            <input id="IsStorage" name="IsStorage" type="checkbox" value="True">
+                            <label class="font-weight-bold text-uppercase text-danger" for="IsStorage">Lưu kho</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer px-0">
+                    <!--
+                    <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-outline-success active">
+                            <input type="radio" checked autocomplete="off" name="IsStorage" value="True"><b> Lưu kho</b>
+                        </label>
+                        <label class="btn btn-outline-dark">
+                            <input type="radio" autocomplete="off" name="IsStorage" value="False"><b> Không lưu kho</b>
+                        </label>
+                    </div>-->
+                    <button type="submit" class="btn btn-primary">Lưu Phiếu Nhập</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="viewImportticket" aria-modal="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Chi tiết phiếu nhập</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!--Append _Partial-->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .select2-choice {
+        padding: 0 16px !important;
+    }
+</style>
+<script type="text/javascript">
+    var IsStorageDefault = @(ViewBag.IsStorageDefault==true?"true":"false");
+    $(function () {
+        $("select.select2").select2();
+        table = $('#dataTable').DataTable({
+            "lengthChange": false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': false,
+            'autoWidth': false,
+            "order": [[4, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+
+            "processing": true,
+            //"language": {
+            //    "infoFiltered": "",
+            //   /* "processing": '<img src="/Content/admin/img/loading.gif" width="60px">'*/
+            //},
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/admin/Inventory/_ImportTickets",
+                "data": function (d) {
+                    d.search = $("#search").val();
+                    d.s_vendor = $("#s_vendor").val();
+                    d.s_status = $("#s_status").val();
+                    return d;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    //console.log(json);
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#dataTable tbody").html(json.responseJSON.data);
+
+                        var _changeInterval = null;
+                        $("#search").off().on("input", function () {
+                            if (_changeInterval) clearInterval(_changeInterval);
+                            _changeInterval = setInterval(function () {
+                                table.draw();
+                                clearInterval(_changeInterval)
+                            }, 500);
+                        });
+                    }
+                }
+            },
+        });
+
+        $("#s_vendor, #s_status").change(function () {
+            table.draw();
+        });
+
+        $("#Importticket").on("submit", function () {
+            $(".products .product").each(function (index) {
+                $(this).find("input,select").each(function () {
+                    if ($(this).attr("name")) {
+                        $(this).attr("name", $(this).attr("name").replace("[_id_]", `[${index}]`));
+                    }
+                });
+            });
+        });
+
+        $("#Importticket").ajaxForm(function (data) {
+            if (cnoty(data)) {
+                IsStorageDefault = data[2] ?? IsStorageDefault;
+                $("#modalImportticket").modal("hide");
+                table.draw();
+            }
+        });
+
+        $("#modalImportticket").on('hide.bs.modal', function () {
+            $("#Importticket").resetForm();
+            $("#Importticket [name=Id]").val('');
+            $("#Importticket [name=PayStatus] option").removeAttr("hidden");
+            $("#Importticket .form-control").trigger("change");
+            $("#Importticket .select2").trigger("change");
+        });
+
+        $("#ImportStatus").change(function () {//divReceived
+            if (this.value == "Imported") {
+                $("#divReceived").show(500);
+            }
+            else {
+                $("#divReceived").hide(500);
+            }
+        });
+    });
+
+    function NewImportTicket() {
+        $(".OtherPriceGroup").html($("template.OtherPriceTemp").html());
+        $(".products").html($("template.ProductTemp").html());
+        $(".select2").select2();
+        //$("#Importticket [name=IsStorage][value=" + (IsStorageDefault ? "True" : "False") + "]").trigger("click");
+        $("#IsStorage").prop("checked", false);
+        $("#modalImportticket").find(".modal-title").html("Tạo Phiếu Nhập");
+        $("#ImportStatus").trigger("change");
+        $('#modalImportticket').modal('show');
+    };
+
+    function EditImportTicket(Id) {
+        $.ajax({
+            method: "POST",
+            url: "/admin/inventory/importticketget",
+            data: { Id },
+            dataType: "json"
+        }).done(function (data) {
+            if (data[0]) {
+                $("#Importticket [name=Id]").val(data[1].Id);
+                $("#Importticket [name=Product_Id]").val(data[1].Product_Id).trigger("change");
+                $("#Importticket [name=Vendor_Id]").val(data[1].Vendor_Id).trigger("change");
+                $("#Importticket [name=EntryPrice]").val(data[1].EntryPrice);
+                $("#Importticket [name=ImportQty]").val(data[1].ImportQty);
+                $("#Importticket [name=ImportUnit]").val(data[1].ImportUnit);
+                $("#Importticket [name=Total]").val(data[1].Total);
+                $("#Importticket [name=ImportStatus]").val(data[1].ImportStatus);
+                $("#Importticket [name=IsStorage][value=" + (data[1].IsStorage ? "True" : "False") + "]").trigger("click");
+                $("#Importticket [name=PayStatus]").val(data[1].PayStatus).trigger("change");
+                $("#Importticket [name=PayStatus] option[value=" + data[1].PayStatus + "]").prevAll().prop("hidden","hidden");
+                $("#Importticket [name=Note]").val(data[1].Note);
+                if (data[1].OrderDate) {
+                    $("#Importticket [name=OrderDate]").val(moment(data[1].OrderDate).format("YYYY-MM-DD")).trigger("change");
+                    $("#Importticket [name=OrderTime]").val(moment(data[1].OrderDate).format("HH:mm")).trigger("change");
+                }
+                if (data[1].ReceivedDate) {
+                    $("#Importticket [name=ReceivedDate]").val(moment(data[1].ReceivedDate).format("YYYY-MM-DD")).trigger("change");
+                    $("#Importticket [name=ReceivedTime]").val(moment(data[1].ReceivedDate).format("HH:mm")).trigger("change");
+                }
+                $("#ImportStatus").trigger("change");
+                try {
+                    $(".products").html('');
+                    var products = JSON.parse(data[1].ProductDetail);
+                    $.each(products, function (i, item) {
+                        var new_item = $($("template.ProductTemp").html());
+                        new_item.find("[name='[_id_].Product_Id']").val(item.Product_Id);
+                        new_item.find("[name='[_id_].EntryPrice']").val(item.EntryPrice);
+                        new_item.find("[name='[_id_].ImportQty']").val(item.ImportQty);
+                        new_item.find("[name='[_id_].ImportUnit']").val(item.ImportUnit);
+                        new_item.find("[name='[_id_].QtyExchange']").val(item.QtyExchange);
+                        $(".products").append(new_item);
+                    })
+                    $("select.select2").select2();
+                } catch { }
+
+                try {
+                    $(".OtherPriceGroup").html('');
+                    var Other_costs = JSON.parse(data[1].Other_costs);
+                    Object.entries(Other_costs).forEach(([key, value]) => {
+                        var new_item = $($("template.OtherPriceTemp").html());
+                        new_item.find("[name=OtherPriceName]").val(key);
+                        new_item.find("[name=OtherPriceAmount]").val(value);
+                        $(".OtherPriceGroup").append(new_item);
+                    })
+
+                } catch { }
+
+                $("#delete_btn").show();
+                $("#modalImportticket").find(".modal-title").html("Cập Nhật Phiếu Nhập");
+                $("#modalImportticket").modal("show");
+            } else {
+                error(data[1]);
+            }
+        }).fail(function () {
+            //...
+        }).always(function () {
+            //...
+        });
+    };
+
+    function ViewDetailImportTicket(Id) {
+        $.ajax({
+            method: "POST",
+            url: "/admin/inventory/_ImportTicketDetail",
+            data: { Id},
+            dataType: "html"
+        }).done(function (data) {
+            $("#viewImportticket .modal-body").html(data);
+            $("#viewImportticket").modal("show");
+        }).fail(function () {
+            //...
+        }).always(function () {
+            //...
+        });
+    };
+
+    function DeleteImportTicket(Id) {
+        if (confirm("Xóa phiếu nhập?")) {
+            $.ajax({
+                method: "POST",
+                url: "/admin/inventory/importticketDelete",
+                data: { Id },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    table.draw();
+                };
+            }).fail(function () {
+                //...
+            }).always(function () {
+                //...
+            });
+        }
+    };
+
+    function getTotal() {
+        var OtherPriceAmount = 0;
+        $(".products .product").each(function () {
+            let EntryPrice = $(this).find("[name='[_id_].EntryPrice']").val();
+            let ImportQty = $(this).find("[name='[_id_].ImportQty']").val();
+            OtherPriceAmount += (EntryPrice * ImportQty) ?? 0;
+        });
+        $("#modalImportticket [name=OtherPriceAmount]").each(function () {
+            OtherPriceAmount += Number($(this).val());
+        });
+        $("#modalImportticket [name=Total]").val(OtherPriceAmount);
+    };
+
+    function printImportTickets(id) {
+        ajaxLoading("on");
+            $("<iframe>")
+                .hide()
+                .attr("onload", "ajaxLoading(\"off\")")
+                .attr("src", "/admin/Inventory/ImportTicketsprint/"+id)
+                .appendTo("body");
+    };
+</script>
+

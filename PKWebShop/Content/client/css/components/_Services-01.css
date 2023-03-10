@@ -1,0 +1,54 @@
+﻿.services-1 .services-small{
+    background-color: #fff;
+    margin-bottom: 20px;
+}
+.services-1 .services-small .services-img a{
+    position: relative;
+    display: block;
+    width: 100%;
+    padding-top: 100%;
+}
+.services-1 .services-small .services-img a > img{
+    position: absolute;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 100%;
+}
+.services-1 .services-small .services-img a .icon{
+    position: absolute;
+    bottom:0;
+    right: 0;
+    border-radius: 100%;
+    color: #fff;
+    background-color: #ff0066;
+    width: 30px;
+    height: 30px;
+}
+.services-1 .services-small .services-img a .icon > *{
+    position: relative;
+    bottom: -5px;
+    right: -8px;
+}
+.services-1 .services-small .services-content{
+    text-align: center;
+    font-family: var(--font-second);
+    padding: 15px;
+}
+.services-1 .services-small .services-content .services-title{
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.services-1 .services-small .services-content .services-number{
+   font-style: italic;
+   font-weight: 300;
+   font-family: var(--font-primary);
+}
+@media(max-width: 767px){
+    .services-1 .services-small .services-content .services-title{
+        font-size: calc(18px * 0.8);
+    }
+}

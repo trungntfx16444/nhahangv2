@@ -1,0 +1,130 @@
+﻿@model PKWebShop.Models.order
+@using Inner.Libs.Helpful
+@using PKWebShop.AppLB
+@using PKWebShop.Enums
+@using PKWebShop.Models
+@using PKWebShop.Utils
+
+@{
+    //var host = $"{Request.Url.Scheme}://{Request.Url.Authority}";
+    webconfiguration info = UserContent.GetWebInfomation(true);
+    var listStatus = UserContent.OrderStatus();
+    var listProductItem = ViewBag.ListOrderDetail as List<orders_detail>;
+    var listProp = ViewBag.ListProp as List<product_properties>;
+    var cusAddress = ViewBag.CusAddress as string;
+    var Shipping = ViewBag.Shipping as string;
+}
+
+<div style="max-width: 1140px;width: 100%;padding-right: 15px;padding-left: 15px;margin-right: auto;margin-left: auto;box-sizing: border-box;color: #53535f;font-size: 14px;font-family: 'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif;">
+    <div style="position: relative;display: flex;flex-direction: column;min-width: 0;word-wrap: break-word;background-color: #fff;background-clip: border-box;border: 1px solid rgba(0,0,0,0.125);border-radius: 0.25rem;margin-bottom: 1.25rem;transition: all 0.3s ease-in-out;-webkit-transition: all 0.3s ease-in-out;-moz-transition: all 0.3s ease-in-out;-o-transition: all 0.3s ease-in-out;-ms-transition: all 0.3s ease-in-out;">
+        <div style="padding: 1.5rem;position: relative;flex: 1 1 auto;width: 100%;">
+            <div style="line-height: 2 !important; margin-top: 15px !important; padding-left: 10px !important;">
+                <span>Chào bạn <span style="font-weight: 600 !important; color: black">@(Model.CustomerName)</span>,</span><br>
+                <span>Chúng tôi đã nhận được đơn hàng của bạn và sẽ liên hệ với bạn sớm nhất.</span>
+            </div><br>
+            <div style="line-height: 2 !important; padding-left: 10px !important;">
+                <span style="font-weight: 600 !important; color: black">THÔNG TIN KHÁCH HÀNG</span><br>
+                <span><span style="font-weight: 600 !important;">Họ tên:</span> @(Model.CustomerName)</span><br>
+                <span><span style="font-weight: 600 !important;">Số điện thoại:</span> @Model.CustomerPhone</span><br>
+                @*<span><span style="font-weight: 600 !important;">Địa chỉ:</span> @(cusAddress.Trim(new char[] { ',', ' ' }))</span><br>*@
+                <span><span style="font-weight: 600 !important;">Email:</span> @(Model.CustomerEmail)</span>
+            </div><br>
+            <div style="line-height: 2 !important; padding-left: 10px !important;">
+                <span style="font-weight: 600 !important; color:black">THÔNG TIN ĐƠN HÀNG</span><br>
+                <span><span style="font-weight: 600 !important;">Mã đơn hàng:</span> #@(Model.Id)</span><br>
+                <span><span style="font-weight: 600 !important;">Ngày tạo:</span> @($"{Model.CreatedAt:dd/MM/yyyy}")</span><br>
+                <span><span style="font-weight: 600 !important;">Trạng thái:</span>  @(listStatus.FirstOrDefault(x => x.Key == Model.Status).Value)</span><br>
+                <span><span style="font-weight: 600 !important;">Hình thức thanh toán:</span> @(Ext.EnumParse<PaymentMethod>(Model.PaymentMethod).Text())</span><br />
+                <span><span style="font-weight: 600 !important;">Địa chỉ giao hàng:</span> @(Shipping.Trim(new [] {'-', ' '}))</span>
+            </div><br>
+
+            <div style="margin-top: 20px !important;">
+                <div style="display: block;width: 100%;overflow-x: auto;">
+                    <table style="color: #53535f;width: 100%;margin-bottom: 1rem;border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="color: #2a2a2a;border-bottom: 1px solid #ededed;font-weight: 600;padding: 15px;text-align: inherit;">STT.</th>
+                                <th style="color: #2a2a2a;border-bottom: 1px solid #ededed;font-weight: 600;padding: 15px;text-align: inherit;">Sản phẩm</th>
+                                <th style="color: #2a2a2a;border-bottom: 1px solid #ededed;font-weight: 600;padding: 15px;text-align: inherit;">Đơn giá</th>
+                                <th style="color: #2a2a2a;border-bottom: 1px solid #ededed;font-weight: 600;padding: 15px;text-align: inherit;">Số lượng</th>
+                                <th style="color: #2a2a2a;border-bottom: 1px solid #ededed;font-weight: 600;padding: 15px;text-align: right;">Tạm tính</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in listProductItem)
+                            {
+                                <tr>
+                                    <th style="color: #2a2a2a;font-weight: 600;border-color: #ededed;padding: 15px;border-top: 1px solid #dee2e6;text-align: inherit;">
+                                        @(listProductItem.IndexOf(item) + 1)
+                                    </th>
+                                    <td style="border-color: #ededed;padding: 15px;border-top: 1px solid #dee2e6;">
+                                        <span style="font-weight: 600 !important;">@(item.ProductName)</span><br />
+                                        @foreach (var prop in listProp.Where(x => (item.ParentPropertiesId ?? "").Contains(x.ReId) && x.is_parrent == true))
+                                        {
+                                            <span style="font-size: 13px;">
+                                                <b style="font-weight: 600 !important;">@(prop.name):</b>
+                                                @(listProp.FirstOrDefault(x => (item.PropertiesId ?? "").Contains(x.ReId) && x.parrent_properties_id == prop.id)?.name + ", ")
+                                            </span>
+                                        }
+                                    </td>
+                                    <td style="border-color: #ededed;padding: 15px;border-top: 1px solid #dee2e6;">
+                                        @(item.Price?.ToString("#,###")) @Constant.CURRENCY_SIGN
+                                    </td>
+                                    <td style="border-color: #ededed;padding: 15px;border-top: 1px solid #dee2e6;">
+                                        @(item.Quantity)
+                                    </td>
+                                    <td style="border-color: #ededed;padding: 15px;border-top: 1px solid #dee2e6;text-align: right;">
+                                        @((item.Price * item.Quantity)?.ToString("#,###")) @Constant.CURRENCY_SIGN
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div style="line-height: 1.8 !important;margin-top: 10px !important;display: flex;flex-wrap: wrap;margin-right: -15px;margin-left: -15px;width: 100%;">
+                    <div style="flex: 0 0 100%;max-width: 100%;position: relative;width: 100%;padding-right: 15px;padding-left: 15px;line-height: 1.8 !important;">
+                        <div style="text-align: right !important;float: right !important;">
+                            <span style="line-height: 1.5;margin-bottom: 0.5rem;margin-top: 0;">
+                                Tổng cộng: @(Model.SubTotal?.ToString("#,###")) @Constant.CURRENCY_SIGN
+                            </span><br />
+                            @if (Model.Shipping > 0)
+                            {
+                                <span style="line-height: 1.5;margin-bottom: 0.5rem;margin-top: 0;">
+                                    Phí giao hàng:@*<span style="text-decoration: @(Model.SubTotal == Model.GrandTotal + Model.DiscountAmount && Model.Shipping.Value > 0 ? "line-through" : "")">*@ @((Model.Shipping != null && Model.Shipping > 0) ? Model.Shipping?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN@*</span>*@
+                                </span><br />
+                            }
+                            @if (Model.DiscountAmount > 0)
+                            {
+                                <span style="line-height: 1.5;margin-bottom: 0.5rem;margin-top: 0;">
+                                    Giảm giá: @((Model.DiscountAmount != null && Model.DiscountAmount > 0) ? Model.DiscountAmount?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN
+                                </span><br />
+                            }
+                            <hr style="border: 0;border-top: 1px solid #edf2f9;box-sizing: content-box;height: 0;overflow: visible;">
+                            @if ((Model.BonusPointsUsed ?? 0) > 0)
+                            {
+                                <h6 style="font-size: 14px;color: #2a2a2a;line-height: 1.5;font-weight: 600;margin-bottom: 0.5rem;margin-top: 0;">
+                                    Sử dụng điểm tích lũy giảm @(Model.BonusPointsDiscount?.ToString("#,###")) @Constant.CURRENCY_SIGN
+                                </h6>
+                            }
+                            <span style="font-weight: 600 !important; color:black">Tổng thanh toán: @(Model.GrandTotal> 0 ? Model.GrandTotal?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex;flex-wrap: wrap;margin-right: -15px;margin-left: -15px;width: 100%;box-sizing: border-box;line-height: 2 !important;">
+                    <div style="flex: 0 0 100%;max-width: 100%;position: relative;width: 100%;padding-right: 15px;padding-left: 15px;">
+                        <div style="padding-top: 20px !important;padding-bottom: 20px !important;line-height: 2 !important;box-sizing: border-box;">
+                            <h5 style="font-size: 16px;color: #2a2a2a;line-height: 1.5;font-weight: 600;margin-bottom: 0.5rem;margin-top: 0;">Ghi chú:</h5>
+                            <p style="font-size: 13px !important;margin-bottom: 0 !important;margin-top: 0;color: #72849a;line-height: 1.8; font-style: italic;">
+                                @Html.Raw(Model.Customer_Comment?.Replace("\r\n", "<br/>"))
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="line-height: 2 !important; text-align: center; font-style: italic;">
+                    <span style="color: black;">Vui lòng gọi số hotline @(info.CompanyPhone) nếu cần hỗ trợ<br />Cảm ơn quý khách</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

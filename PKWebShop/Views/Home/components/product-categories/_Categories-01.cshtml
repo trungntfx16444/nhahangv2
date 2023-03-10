@@ -1,0 +1,38 @@
+﻿@using PKWebShop.Models
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    var tienich = ViewBag.tienich as sectionfeature;
+    var Tienich_list = ViewBag.Tienich_list as List<ProductsHome> ?? new List<ProductsHome>();
+}
+@if (tienich != null && Tienich_list.Count > 0)
+{
+    <div class="product-categories-area pb-20">
+        <div class="container bg-white">
+            <div class="section-title-tab-wrap align-items-inherit py-2">
+                <div class="section-title-3">
+                    <h2>@(tienich.Title)</h2>
+                </div>
+            </div>
+            <div class="row">
+                @foreach (var item in Tienich_list)
+                {
+                    var picURL = item.Pics.FirstOrDefault()?.FileName ?? "/Content/Client/images/no_image.png";
+
+                    <div class="col">
+                        <div class="list-featured-category__item">
+                            <a href="@(item.Section_detail.URL)" class="item">
+                                <div class="img">
+                                    <img src="@(picURL)" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                </div>
+                                <div class="name">
+                                    <span>@(item.Section_detail.Title)</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

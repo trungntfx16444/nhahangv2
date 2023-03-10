@@ -1,0 +1,84 @@
+﻿@model List<PKWebShop.Models.product>
+@using PKWebShop.Utils
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    string url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+    var adminSite = UserContent.GetAdminSite();
+    var info = UserContent.GetWebInfomation(true);
+    var hotline = CommonFunc.CleanPhoneNumber(info.Hotline);
+}
+
+<style type="text/css">
+    .slick-track {
+        margin-left: unset !important;
+    }
+    @@media (max-width: 1599px) and (min-width: 1200px) {
+        .product-area .col-xl-2 {
+            -ms-flex: 0 0 16.666667%;
+            flex: 0 0 16.666667%;
+            max-width: 16.666667%;
+        }
+    }
+</style>
+
+<div class="product-area pb-0">
+    <div class="container bg-white">
+        <div class="section-title-tab-wrap py-2 mb-20">
+            <div class="section-title-3">
+                <h2>@(Request.Url.AbsolutePath.Contains("/gio-hang") ? "Có thể phù hợp với bạn" : "Có thể bạn thích")</h2>
+            </div>
+            <b></b>
+            <div class="btn-style-5 pl-3">
+                <a class="pr-2" href="@(ViewBag.MoreUrl ?? $"/{url_product}")">Xem tất cả <i class="icon-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="row product-row">
+            @foreach (var product in Model.Take(6))
+            {
+                var prdUrl = $"/{product.Url}-pd{product.ReId}";
+                <div class="col-xl-2 col-md-4 col-6">
+                    <div class="single-product-wrap">
+                        <div class="product-img product-img-zoom">
+                            <a href="@(prdUrl)" tabindex="-1">
+                                <img src="@($"{adminSite}{product.Picture}")" alt="@product.ProductName" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                            </a>
+                            @if (product.SalePrice > 0 && product.SalePrice < product.Price && product.Quantity != 0)
+                            {
+                                <span class="pro-badge"> @(((product.SalePrice ?? 0)/ (product.Price ?? 0) * 100 - 100).ToString("0"))%</span>
+                            }
+                        </div>
+                        <div class="product-content-wrap">
+                            <div class="product-content">
+                                <div class="div-text">
+                                    <div class="product-title"><a href="@(prdUrl)" tabindex="-1">@product.ProductName</a></div>
+                                    @if (product.Quantity != 0 && product.Price > 0)
+                                    {
+                                        <div class="product-price">
+                                            @if (product.SalePrice > 0 && product.SalePrice < product.Price)
+                                            {
+                                                <span class="new-price">@((product.SalePrice ?? 0).ToString("#,##0"))@Constant.CURRENCY_SIGN</span>
+                                                <span class="old-price">@((product.Price ?? 0).ToString("#,##0"))@Constant.CURRENCY_SIGN</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="new-price">@((product.Price ?? 0).ToString("#,##0"))@Constant.CURRENCY_SIGN</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $(".product-content-left .div-text").matchHeight();
+    })
+</script>

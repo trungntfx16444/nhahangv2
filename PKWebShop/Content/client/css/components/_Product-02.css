@@ -1,0 +1,10 @@
+﻿.product-2{
+    background-color: #f4f8fa;
+}
+.product-2 .product-small .product-img{
+    margin-bottom: 8px;
+}
+.product-2 .product-small .product-img img,
+.product-2 .product-small .product-content{
+    border-radius: 10px;
+}

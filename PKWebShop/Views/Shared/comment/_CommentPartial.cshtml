@@ -1,0 +1,194 @@
+﻿@model string
+@using PKWebShop.Resources
+@{
+    bool? comment = false;// bool.Parse(ViewData["comment"].ToString());
+    string type = ViewData["type"].ToString();
+}
+
+<style type="text/css">
+    .comm-name {
+        font-weight: 500;
+    }
+
+    .comm-content {
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+
+    .comm-time {
+        font-size: 15px;
+        font-style: italic;
+    }
+
+        .comm-time i.icons {
+            font-size: 12px;
+        }
+
+    .ul_star {
+        display: flex;
+    }
+
+    .li_star {
+        padding: 2px 10px;
+        border-right: 1px solid #ced4da;
+        color: #ced4da;
+        cursor: pointer;
+    }
+
+        .li_star:first-child {
+            padding-left: 0px;
+        }
+
+        .li_star:last-child {
+            border-right: none;
+        }
+
+        .li_star:hover, .li_star.active {
+            color: gold;
+        }
+</style>
+
+<div id="divStarNumber">
+    <!--Append _StarNumberPartial using ajax-->
+</div>
+@if (comment == true)
+{
+    <div class="blog-comment-wrapper mt-4 no-print">
+        <div>
+            
+            <div id="divComments" style="max-height:550px; overflow-y:auto;">
+                <!--Append _ListComments using ajax-->
+            </div>
+            <form id="frmComm" class="mt-4" action="/home/AddComment" method="post" style="border: 2px solid #009cd7; padding:15px 25px;">
+                <input type="hidden" name="ReId" value="@(Model)" />
+                <input type="hidden" name="Type" value="@(type)" />
+                <input type="hidden" name="StarNumber" value="0" />
+                <p class="mb-1 font-weight-bold">Đánh giá của bạn *</p>
+                <ul class="ul_star">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <li class="li_star" data-star="@i">
+                            @for (int x = 1; x <= i; x++)
+                            {
+                                <i class="fas fa-star"></i>
+                            }
+                        </li>
+                    }
+                </ul>
+                <p class="mb-1 mt-3 font-weight-bold">Nhận xét của bạn *</p>
+                <textarea class="form-control" rows="3" name="Content"></textarea>
+                <div class="row">
+                    <div class="col-md-12 mt-3">
+                        <p class="mb-1 font-weight-bold">Họ tên *</p>
+                        <input type="text" class="form-control" name="PeopleName" />
+                    </div>
+                    <div class="col-md-12 mt-3">
+                        <p class="mb-1 font-weight-bold">Email *</p>
+                        <input type="text" class="form-control" name="Email" />
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button type="submit" id="btn-sendComm" class="btn btn-primary mt-3" onclick="return SendComm()">
+                        Gửi <img id="send-loading" class="d-none" src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" />
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+
+<script src="~/Content/admin/js/jquery.form.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+
+        @if (comment == true)
+        {
+           <text>LoadStrarNumber(); LoadComments();</text>
+        }
+
+        $(".li_star").click(function () {
+            $(".li_star").removeClass("active");
+            $(this).addClass("active");
+            $("#frmComm input[name='StarNumber']").val($(this).data("star"));
+        });
+    });
+
+    function LoadStrarNumber() {
+        $.ajax({
+            method: "POST",
+            url: "/home/LoadStrarNumber",
+            data: {
+                mappingId: '@(Model)',
+                type: '@(type)'
+            },
+            dataType: "html"
+        }).done(function (data) {
+            $("#divStarNumber").html(data);
+        }).fail(function () {
+            msg_error("Tải đánh giá thất bại");
+        });
+    };
+
+    function LoadComments() {
+        $.ajax({
+            method: "POST",
+            url: "/home/LoadComments",
+            data: {
+                mappingId: '@(Model)',
+                type: '@(type)'
+            },
+            dataType: "html"
+        }).done(function (data) {
+            $("#divComments").html(data);
+        }).fail(function () {
+            msg_error("Tải bình luận thất bại");
+        });
+    };
+
+    function SendComm() {
+        if ($("#btn-sendComm").hasClass("is-loading")) {
+            msg_info("Hệ thống đang xử lý. Vui lòng đợi trong giây lát.", "", "top center");
+            return false;
+        };
+        if ($("#frmComm input[name='StarNumber']").val() == "0") {
+            msg_info("Vui lòng đánh giá sao cho sản phẩm", "", "top center");
+            return false;
+        }
+        if ($("#frmComm textarea[name='Content']").val()?.trim() == "") {
+            msg_info("Vui lòng nhập nhận xét của bạn", "", "top center");
+            return false;
+        };
+        if ($("#frmComm input[name='PeopleName']").val()?.trim() == "") {
+            msg_info("Vui lòng nhập tên", "", "top center");
+            return false;
+        };
+        if ($("#frmComm input[name='Email']").val()?.trim() == "") {
+            msg_info("Vui lòng nhập email", "", "top center");
+            return false;
+        };
+        $("#btn-sendComm").addClass("is-loading");
+        $("#send-loading").removeClass("d-none");
+        return true;
+    };
+
+    $("#frmComm").ajaxForm(function (data) {
+        $("#btn-sendComm").removeClass("is-loading");
+        $("#send-loading").addClass("d-none");
+
+        if (data[0] == true) {
+            msg_success(data[1], "", "top center");
+            LoadStrarNumber();
+            LoadComments();
+            $(".li_star").removeClass("active");
+            $("#frmComm input[name='StarNumber']").val("0");
+            $("#frmComm textarea[name='Content']").val("");
+            $("#frmComm input[name='PeopleName']").val("");
+            $("#frmComm input[name='Email']").val("");
+        }
+        else {
+            msg_error(data[1], "", "top center");
+        }
+    });
+
+</script>

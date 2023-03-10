@@ -1,0 +1,52 @@
+﻿@model string
+@{
+    string Checked = ViewBag.Checked ?? "";
+    var tags = new AdminPage.Models.AdminEntities().n_news_tags.OrderBy(t => t.tag_name).ToList();
+}
+<div class="form-group post-body">
+    <label>Tags</label> <a style="cursor:pointer" onclick="$('#tags_modal').modal('show')"><i class="fa fa-gear"></i></a>
+    <br />
+    @foreach (var tag in tags)
+    {
+        <label style="margin:10px; cursor:pointer"><input name="tag_selected" style="width:20px;height:20px;vertical-align: text-bottom;" type="checkbox" value="[@tag.tag_code]@tag.tag_name" @(Model.Contains("[" + tag.tag_code + "]") ? "checked" : "") /> @tag.tag_name</label>
+    }
+    <br />
+    <div class="input-group input-group-sm add_tag_toggle" style="max-width:250px; display:none">
+        <div class="input-group-btn">
+            <a class="btn btn-sm btn-danger text-white" onclick="$('.add_tag_toggle').toggle()"><i class="anticon anticon-close"></i></a>
+        </div>
+        <input id="tag_name" class="form-control small" placeholder="Nhập tên tag" />
+        <div class="input-group-btn">
+            <a class="btn btn-sm btn-success text-white" onclick="create_tag($('#tag_name').val())"><i class="fa fa-check"></i></a>
+        </div>
+    </div>
+    <a class="add_tag_toggle" style="cursor:pointer" onclick="$('.add_tag_toggle').toggle()"><i class="fa fa-plus"></i> Tạo tag mới</a>
+</div>
+<div id="tags_modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Loại bỏ Tag</h4>
+            </div>
+            <div class="modal-body post-body">
+                @foreach (var tag in tags)
+                {
+                    <label style="margin:10px; cursor:pointer"><input name="tags_remove" style="width:20px;height:20px;vertical-align: text-bottom;" type="checkbox" value="@tag.id" /> @tag.tag_name</label>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" onclick="remove_tags()">Xóa đã chọn</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<style type="text/css">
+    .post-body {
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer */
+        -webkit-user-select: none; /* Chrome, Safari, and Opera */
+        -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
+    }
+</style>

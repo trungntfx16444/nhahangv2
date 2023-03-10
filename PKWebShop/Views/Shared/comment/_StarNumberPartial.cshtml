@@ -1,0 +1,35 @@
+﻿@using PKWebShop.Resources
+@{ 
+    double? starNumber = ViewBag.StarNumber as double? ?? 0;
+    int? commNumber = ViewBag.CommNumber as int? ?? 0;
+}
+
+@if (commNumber > 0)
+{
+    int star_active = (int)(starNumber ?? 0);
+    <div class="no-print">
+        <ul class="d-flex">
+            <li style="font-size:30px; margin-right:10px;">@(String.Format("{0:0.0#}", Math.Round(starNumber ?? 0, 1)))</li>
+            @for (int i = 1; i <= star_active; i++)
+            {
+                <li><i class="fas fa-star" style="color:gold; font-size:18px;"></i></li>
+            }
+            @if (starNumber < 5 && (starNumber - Math.Truncate(starNumber ?? 0)) > 0)
+            {
+                <li>
+                    <i class="fas fa-star-half" style="margin-right: -6px; color: gold; font-size: 18px;"></i>
+                    <i class="far fa-star-half" style="margin-left: -18px; color: gold; font-size: 18px; transform: scaleX(-1);"></i>
+                </li>
+            }
+            else if (starNumber < 5 && (starNumber - Math.Truncate(starNumber ?? 0)) == 0)
+            {
+                <li><i class="far fa-star" style="color:gold; font-size:18px;"></i></li>
+            }
+            @for (int i = 1; i <= (4 - star_active); i++)
+            {
+                <li><i class="far fa-star" style="color:gold; font-size:18px;"></i></li>
+            }
+        </ul>
+        <span style="color:gray; font-size:14px; font-weight:500;">@(commNumber) Đánh giá</span>
+    </div>
+}

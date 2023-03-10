@@ -1,0 +1,225 @@
+﻿@model List<PKWebShop.Models.category>
+@using PKWebShop.Services;
+@{
+    ViewBag.Title = "Tồn kho";
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Tổng quan
+            </a>
+            <span class="breadcrumb-item">Quản lý kho</span>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Danh sách sản phẩm</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-group row">
+            <div class="col-md-3 col-sm-6 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-append">
+                        <span class="input-group-text">Danh mục SP</span>
+                    </div>
+                    <select id="category" class="form-control">
+                        <option value="">--- Tất cả ---</option>
+                        @foreach (var item in Model.Where(x => x.Level == 1))
+                        {
+                            <option value="@(item.ReId)">@(item.CategoryName)</option>
+                            foreach (var item1 in Model.Where(x => x.Level == 2 && x.ParentId == item.ReId))
+                            {
+                                <option value="@(item1.ReId)">--@(item1.CategoryName)</option>
+                                foreach (var item2 in Model.Where(x => x.Level == 3 && x.ParentId == item1.ReId))
+                                {
+                                    <option value="@(item2.ReId)">----@(item2.CategoryName)</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-append">
+                        <span class="input-group-text">Tồn kho</span>
+                    </div>
+                    <select id="stock_status" class="form-control">
+                        <option value="">--- Tất cả ---</option>
+                        <option value="empty">Hết hàng</option>
+                        <option value="low">Sắp hết hàng</option>
+                        <option value="stocking">Còn hàng</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6 col-sm-6 m-t-5">
+                <div class="input-group">
+                    <input type="text" id="search" class="form-control" value="" placeholder="Nhập tên sản phẩm" autocomplete="off" />
+                    <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                        <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-0">
+                <button class="btn btn-success create_import_ticket" style="display:none" onclick="createImport()">Tạo Phiếu nhập</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="product_table" class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="no-sort" style="width:0% !important"></th>
+                        <th>Tên sản phẩm</th>
+                        <th>Số lượng tồn</th>
+                        <th>Cảnh báo tồn tối thiểu</th>
+                        <th class="no-sort" style="width:35px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--Append data using dataTable-->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="ImportticketQuick" aria-modal="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <form id="QuickImport" action="../inventory/ImportTicketQuickSave" method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Tạo Phiếu Nhập</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <i class="anticon anticon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Tạo Phiếu Nhập</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            table = $('#product_table').DataTable({
+                "lengthChange": false,
+                'paging': true,
+                'searching': false,
+                'ordering': true,
+                'info': true,
+                'autoWidth': false,
+                "order": [[2, "asc"]],
+                "columnDefs": [{
+                    "targets": 'no-sort',
+                    "orderable": false,
+                }],
+
+                "processing": true,
+                //"language": {
+                //    "infoFiltered": "",
+                //    "processing": '<i class="anticon anticon-loading" style="font-size:35px"></i>'
+                //},
+                "serverSide": true,
+                "ajax": {
+                    "type": "POST",
+                    "url": "/admin/Inventory/Load_table",
+                    "data": function (data) {
+                        data.category = $("#category").val();
+                        data.search = $("#search").val();
+                        data.stock_status = $("#stock_status").val();
+                        data.key = "inventory";
+                        return data;
+                    },
+                    "dataSrc": function () {
+                        return '';
+                    },
+                    "complete": function (json) {
+                        if (json.responseJSON.data) {
+                            if (json.responseJSON.data[0] == -1) {
+                                window.location.reload();
+                            }
+                            $("#product_table tbody").html(json.responseJSON.data);
+                        }
+                    }
+                }
+            });
+            table.on('draw', function () {
+                //...
+            });
+
+            $("#search").keypress(function () {
+                if (event.keyCode == 13) {
+                    table.draw();
+                }
+            });
+
+            $("#category, #stock_status").change(function () {
+                table.draw();
+            });
+
+            $("#btn_search").click(function () {
+                table.draw();
+            });
+
+            $("#QuickImport").ajaxForm(function (data) {
+                console.log(data);
+                if (cnoty(data)) {
+                    window.location.href = "/admin/inventory/importtickets";
+                }
+            })
+        });
+
+        function createImport() {
+            var Ids = $('#product_table :checkbox:checked').map(function () { return $(this).val() }).toArray();
+            if (!Ids) {
+                return warning("chọn ít nhất 1 sản phẩm để tạo phiếu nhập!");
+            }
+            $.ajax({
+                method: "POST",
+                url: "/admin/inventory/_ImportTicketQuick",
+                data: { Ids },
+                dataType: "html"
+            }).done(function (data) {
+                $("#ImportticketQuick .modal-body").html(data);
+                $("#ImportticketQuick").modal("show");
+            }).fail(function () {
+                //...
+            }).always(function () {
+                //...
+            });
+        };
+    </script>
+}

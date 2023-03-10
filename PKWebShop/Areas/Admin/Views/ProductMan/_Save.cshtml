@@ -1,0 +1,417 @@
+﻿@model PKWebShop.Models.product
+@using PKWebShop.Models
+@using PKWebShop.Services
+@using PKWebShop.Utils
+
+@{
+    string imgDefault = "/Content/admin/img/no_image.jpg";
+    var listProperty = ViewBag.ListProperty as List<product_properties>;
+    var listOptPrice = ViewBag.ListOptPrice as List<ProductOptionPrice>;
+    var webLicense = new PackageServices().WebPackInfo();
+    var id12char = !string.IsNullOrEmpty(Model.ReId) ? Model.ReId : (DateTime.UtcNow.Ticks - new DateTime(2021, 1, 1).Ticks).ToString("x");
+    var urlProduct_full = $"{Request.Url.Scheme}://{Request.Url.Authority}/{Model.Url}-pd{(!string.IsNullOrEmpty(Model.ReId) ? Model.ReId : id12char)}";
+}
+
+
+<form id="product_form" role="form" action="/admin/productman/save" method="post" enctype="multipart/form-data">
+    @Html.HiddenFor(p => p.Id)
+    @Html.HiddenFor(p => p.ReId)
+    <input type="hidden" id="id12char" name="id12char" value="@(id12char)" />
+    <input type="hidden" name="LangCode" value="@(Model.LangCode)" />
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="detail-tab" data-toggle="tab" href="#detail-tabpanel" role="tab" aria-controls="detail-tabpanel" aria-selected="true">THÔNG TIN SẢN PHẨM</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="desc-tab" data-toggle="tab" href="#desc-tabpanel" role="tab" aria-controls="desc-tabpanel" aria-selected="false">MÔ TẢ</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="prop-tab" data-toggle="tab" href="#prop-tabpanel" role="tab" aria-controls="prop-tabpanel" aria-selected="false">THUỘC TÍNH</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="seo-tab" data-toggle="tab" href="#seo-tabpanel" role="tab" aria-controls="seo-tabpanel" aria-selected="false">CẤU HÌNH SEO</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="warehouse-tab" data-toggle="tab" href="#warehouse-tabpanel" role="tab" aria-controls="warehouse-tabpanel" aria-selected="false">KHO</a>
+        </li>
+    </ul>
+    <div class="tab-content m-t-15" id="myTabContent">
+        <div class="tab-pane fade show active" id="detail-tabpanel" role="tabpanel" aria-labelledby="detail-tab">
+            <div class="row">
+                <div class="col-md-7 col-xs-12" style="border-right:1px solid lightgrey">
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label class="font-weight-semibold required">Tên sản phẩm</label>
+                            <input type="text" id="ProductName" name="ProductName" class="form-control" placeholder="Tên sản phẩm" value="@(Model.ProductName)" required>
+                        </div>
+                        <div class="form-group col-md-12">
+                            <label class="font-weight-semibold">Danh mục sản phẩm</label>
+                            <select id="CategoryId" name="CategoryId" class="form-control select2" multiple="multiple" style="width:100%">
+                                <option value="">-- Chọn danh mục sản phẩm --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label class="font-weight-semibold">Loại sản phẩm</label>
+                            <select class="form-control" name="Sellable">
+                                <option value="True" @(Model.Sellable != false ? "selected" : "")>Sản phấm kinh doanh</option>
+                                <option value="False" @(Model.Sellable == false ? "selected" : "")>Sản phẩm không kinh doanh</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-12">
+                            <label class="font-weight-semibold">Đơn vị</label>
+                            <input type="text" class="form-control" id="Unit" name="Unit" value="@(Model.Unit)">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-md-12">
+                            <label class="label-toolbar">
+                                <span class="font-weight-semibold">Giá bán</span>
+                                <span class="border cursor-pointer" data-toggle="tooltip" title="Thêm giá tùy chọn" onclick="GetPrice('add', '')">
+                                    <i class="fas fa-plus text-success" style="margin-left:7px;"></i>
+                                </span>
+                            </label>
+                            <div class="input-affix m-b-10">
+                                <input type="text" class="form-control p-r-50" name="Price" placeholder="Giá bán" value="@(Model.Price?.ToString("#,###"))" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" onkeyup="$(this).val(toMoney($(this).val()))">
+                                <span class="suffix-icon">@Constant.CURRENCY_SIGN</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div id="div_product_price" class="border @(listOptPrice.Count > 0 ? "" : "d-none")">
+                            @foreach (var item in listOptPrice)
+                            {
+                                <p id="price_@(item.ReId)" class="p-5 border border-dee2e6">
+                                    <span class="font-weight-semibold text-dark label_name">@(item.LabelName)</span>
+                                    <span class="float-right">
+                                        <span class="text-primary font-weight-semibold m-r-25 price_value">@(item.Price > 0 ? item.Price.Value.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</span>
+                                        <i class="anticon anticon-form text-warning cursor-pointer m-r-5 font-size-17" data-toggle="tooltip" title="Chỉnh sửa" onclick="GetPrice('edit', '@(item.ReId)')"></i>
+                                        <i class="anticon anticon-close text-danger cursor-pointer font-size-17" data-toggle="tooltip" title="Xóa" onclick="DeletePrice('@(item.ReId)')"></i>
+                                    </span>
+                                </p>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="col-md-12">
+                            <label class="font-weight-semibold">Giá Khuyến mãi</label>
+                            <div class="input-affix m-b-10">
+                                <input type="text" class="form-control p-r-50" name="SalePrice" placeholder="Giá khuyến mãi" value="@(Model.SalePrice?.ToString("#,###"))" oninput="this.value = this.value.replace(/[^0-9.]/g, '');" onkeyup="$(this).val(toMoney($(this).val()))">
+                                <span class="suffix-icon">@Constant.CURRENCY_SIGN</span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-group m-t-10">
+                        <label class="font-weight-semibold">
+                            Tags sản phẩm
+                            <i class="anticon anticon-info-circle" data-toggle="tooltip" title="Chọn hoặc nhập tag cho sản phẩm và Enter"></i>
+                        </label>
+                        <input id="tags" name="TagName" class="form-control" value="@Model.TagName" />
+                    </div>
+                    <div class="form-row">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="checkbox text-primary">
+                                <input id="gridCheck" type="checkbox" name="ShowHomePage" @(string.IsNullOrEmpty(Model.Id) || Model.ShowHomePage == true ? "checked" : "") value="true">
+                                <label for="gridCheck">Sản phẩm nổi bật</label>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+                <div class="col-md-5 col-xs-12">
+                    <!--Upload hinh anh chinh-->
+                    <div>
+                        <label class="text-uppercase title">Hình ảnh chính:</label><br />
+                        <div class="btn-group">
+                            <button type="button" id="add_pic0" class="btn btn-default" onclick="uploadpic($(this))">
+                                <i class="anticon anticon-picture font-size-18 text-success"></i>
+                                <span class="m-l-5 font-weight-bolder">Chọn ảnh -</span>
+                                <span class="m-l-3" id="span_pic0">@(string.IsNullOrEmpty(Model.Picture) ? "no_image.jpg" : Model.Picture.Split('/').Last())</span>
+                                <i class="anticon anticon-paper-clip"></i>
+                            </button>
+                            <button type="button" id="del_pic0" class="btn btn-default" onclick="delpic($(this))">
+                                <i class="anticon anticon-delete font-size-18 text-danger"></i>
+                                <span class="m-l-5 font-weight-bolder">Xóa</span>
+                            </button>
+                        </div>
+                        <div class="mt-1 img_main">
+                            <p class="col-sm-12 box_border">
+                                <img id="img_pic0" src="@(string.IsNullOrEmpty(Model.Picture) ? imgDefault : Model.Picture)" alt="Review picture" />
+                            </p>
+                            <input type="hidden" id="input_pic0" name="Picture" value="@(string.IsNullOrEmpty(Model.Picture) ? imgDefault : Model.Picture)" onchange="$('#ImageAlt').val($(this).val().split('/').pop().replace(`.${$(this).val().split('.').pop()}`, ''))" />
+                            <div class="input-group mb-3 d-none">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-addon1">img alt:</span>
+                                </div>
+                                <input type="text" class="form-control" id="ImageAlt" name="ImageAlt" value="@(Model.ImageAlt)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Upload hinh anh phu-->
+                    <div>
+                        <label class="text-uppercase">Hình ảnh khác:</label><br />
+                        <div id="img_more" class="img_more">
+                            @if (ViewBag.uploadFiles != null)
+                            {
+                                foreach (var item in ViewBag.uploadFiles as List<uploadmorefile>)
+                                {
+                                    <p class="img_more_p">
+                                        <img src="@(item.FileName)" alt="review picture" />
+                                        <button type="button" class="btn btn-danger btn-xs" onclick="del_more_pic($(this))">
+                                            <i class="anticon anticon-close"></i>
+                                        </button>
+                                        <input type="hidden" name="picmore" value="@(item.FileName)" />
+                                    </p>
+                                }
+                            }
+                        </div>
+                        <div id="clearboth"><div class="clearfix"></div></div>
+                        <br />
+                        <button type="button" class="btn btn-default" onclick="upload_more_pic()">
+                            <i class="anticon anticon-picture font-size-18 text-success"></i>
+                            <span class="m-l-5 font-weight-bolder">Thêm hình ảnh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="prop-tabpanel" role="tabpanel" aria-labelledby="prop-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-row">
+                        <div class="col-md-5">
+                            <label class="label-toolbar">
+                                <span class="font-weight-semibold">Chọn thuộc tính</span>
+                                <span>
+                                    <i class="anticon anticon-plus text-success" data-toggle="tooltip" title="Thêm thuộc tính" data-action="add" onclick="GetProperty($(this))"></i>
+                                    <i class="anticon anticon-edit text-warning" data-toggle="tooltip" title="Chỉnh sửa" data-action="edit" onclick="GetProperty($(this))"></i>
+                                    <i class="anticon anticon-delete text-danger" data-toggle="tooltip" title="Xóa thuộc tính" data-action="property" onclick="DelProperty($(this))"></i>
+                                </span>
+                            </label>
+                            <select id="list_parent_prop" class="form-control" onchange="LoadValue($(this))">
+                                <option value="">-- Chọn thuộc tính --</option>
+                                @foreach (var item in listProperty)
+                                {
+                                    <option value="@(item.ReId)">@(item.name)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="label-toolbar">
+                                <span class="font-weight-semibold">Chọn giá trị</span>
+                                <span>
+                                    <i class="anticon anticon-plus text-success" data-toggle="tooltip" title="Thêm giá trị" data-action="add" onclick="GetValue($(this))"></i>
+                                    <i class="anticon anticon-edit text-warning" data-toggle="tooltip" title="Chỉnh sửa" data-action="edit" onclick="GetValue($(this))"></i>
+                                    <i class="anticon anticon-delete text-danger" data-toggle="tooltip" title="Xóa giá trị" data-action="value" onclick="DelProperty($(this))"></i>
+                                </span>
+                            </label>
+                            <select id="list_prop" class="form-control selectpicker" multiple>
+                                <!--Append option using ajax-->
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <br />
+                            <button type="button" class="btn btn-primary" style="margin-top:7px" onclick="SelectProperty()">
+                                <i class="anticon anticon-plus"></i> Chọn
+                            </button>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="hidden" id="list_parent_properties" name="list_parent_properties" value="@(!string.IsNullOrEmpty(Model.list_parent_properties) ? $",{Model.list_parent_properties}" : "")" />
+                        <input type="hidden" id="list_properties" name="list_properties" value="@(!string.IsNullOrEmpty(Model.list_properties) ? $",{Model.list_properties}" : "")" />
+                        <div id="div_product_prop" class="file-wrapper m-t-10">
+                            <!--Append _PropertyPartial using ajax-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="desc-tabpanel" role="tabpanel" aria-labelledby="desc-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="font-weight-semibold">Mô tả ngắn</label>
+                        <textarea rows="6" id="ShortDesc" oninput="if ($('[name=checkbox_SEO_Desc]').is(':checked')) { $('[name=SEO_Desc]').val($(this).val())}" name="ShortDesc" class="form-control">@Html.Raw(Model?.ShortDescription)</textarea>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="font-weight-semibold">Mô tả sản phẩm</label>
+                        <textarea rows="7" id="desc" name="desc" class="form-control" placeholder="Mô tả chi tiết sản phẩm">@Html.Raw(Model?.Description)</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="seo-tabpanel" role="tabpanel" aria-labelledby="seo-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <fieldset class="m-t-10">
+                        <legend class="font-size-16 font-weight-semibold text-dark" style="width:auto">Xem trước kết quả tìm kiếm</legend>
+                        <h4 class="mb-0">
+                            <span id="sp-SEO_Title" style="color:#1a0dab">@(Model.SEO_Title)</span>
+                        </h4>
+                        <p class="mb-0">
+                            <span id="sp-url" style="color:green">@(urlProduct_full)</span>
+                        </p>
+                        <p id="sp-SEO_Desc" class="mb-0">@Html.Raw(Model.SEO_Desc?.Replace("\r\n", "<br/>"))</p>
+                    </fieldset>
+                    <br />
+                    <div class="form-group">
+                        <label class="font-weight-normal w-100">
+                            <span class="text-dark font-weight-semibold">Thẻ tiêu đề</span>
+                            <span class="float-right">
+                                Số ký tự đã dùng: <span class="font-weight-bold" id="title_char">@(!string.IsNullOrEmpty(Model.SEO_Title) ? Model.SEO_Title.Length : 0)</span>/70
+                            </span>
+                        </label>
+                        <input type="text" id="SEO_Title" name="SEO_Title" class="form-control" placeholder="Nhập tiêu đề website" value="@Model.SEO_Title" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-normal w-100">
+                            <span class="text-dark font-weight-semibold">Thẻ mô tả</span>
+                            <span class="float-right">
+                                Số ký tự đã dùng: <span class="font-weight-bold" id="desc_char">@(!string.IsNullOrEmpty(Model.SEO_Desc) ? Model.SEO_Desc.Replace("\r\n", "").Length : 0)</span>/320
+                            </span>
+                        </label>
+                        <textarea wrap="soft" class="form-control" id="SEO_Desc" name="SEO_Desc" rows="4" placeholder="Nhập đoạn mô tả website">@Html.Raw(Model.SEO_Desc)</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-semibold w-100 text-dark">Đường dẫn / Alias</label>
+                        <input type="text" class="form-control" id="Url" name="Url" value="@(Model.Url)" placeholder="URL sản phẩm" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-pane fade" id="warehouse-tabpanel" role="tabpanel" aria-labelledby="warehouse-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-semibold">Số lượng tồn</label>
+                            <input type="number" min="0" name="Quantity" class="form-control" value="@Model.Quantity" />
+                        </div>
+                        @if (webLicense.Warehouse)
+                        {
+                            <div class="form-group col-md-6">
+                                <label class="font-weight-semibold">Cảnh báo tồn tối thiểu</label>
+                                <input type="number" min="0" name="WarningQuantity" class="form-control" value="@Model.WarningQuantity" />
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row d-none">
+        @*<div class="col-md-7 col-xs-12">
+                <div class="form-row">
+                    @if (webLicense.Warehouse)
+                    {
+                        <div class="form-group col-md-6">
+                            <label class="text-uppercase">Nhà Cung Cấp</label>
+                            @Html.DropDownList("VendorId", (IEnumerable<SelectListItem>)ViewBag.vendors, new { @class = "select2" })
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="text-uppercase">Quy đổi mỗi đơn vị nhập</label>
+                            <input type="number" min="1" name="ValueExchange" class="form-control" value="@Model.ValueExchange" />
+                        </div>
+                    }
+                    <div class="clearfix"></div>
+                </div>
+            </div>*@
+        <div class="col-md-12">
+            <button type="submit" id="btn-submit" class="btn btn-primary"><i class="fa fa-check"></i> Lưu sản phẩm</button>
+        </div>
+    </div>
+</form>
+
+
+<script type="text/javascript">
+    $(function () {
+        $("#btn-save").click(function () {
+            $("#btn-submit").trigger("click");
+        });
+
+        $(".select2").select2().removeClass("select2");
+        $("#list_prop").selectpicker();
+        LoadCategoryByLang();
+        LoadProductProperties();
+
+        //customize toolbar ckeditor
+        CKEDITOR.replace('desc', { height: 450 });
+
+        //CKEDITOR.replace('ShortDesc', {
+        //    height: 200,
+        //    toolbar: [
+        //        { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', '-', 'Templates'] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
+        //        ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],			// Defines toolbar group without name.
+        //        //'/',																					// Line break - next group will be placed in new line.
+        //        { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline'] },
+        //        { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi'], items: ['NumberedList', 'BulletedList', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-'] },
+        //        { name: 'colors', items: ['TextColor', 'BGColor'] }
+        //    ]
+        //});
+
+        $("#tags").tagsInput({
+            'autocomplete': {
+                source:  @Html.Raw(ViewBag.tags_auto),
+                delay: 100
+            }
+        });
+
+        $("#ProductName, #ShortDesc").blur(function () {
+            let _value = $(this).val();
+            if ($(this).prop("id") == "ProductName") {
+                $('#SEO_Title').val(_value);
+                $("#title_char").html(_value.length);
+                $("#sp-SEO_Title").html(_value);
+
+                let _url = U2A(_value);
+                $('#Url').val(_url);
+                $("#sp-url").html(`${window.location.protocol}//${window.location.host}/${_url}-pd${$('#id12char').val()}`);
+            }
+            else if ($(this).prop("id") == "ShortDesc") {
+                $('#SEO_Desc').val(_value);
+                $("#desc_char").html(_value.length);
+                $("#sp-SEO_Desc").html(_value.replace(/\n/g, '<br/>'));
+            }
+        });
+
+        $("#SEO_Title, #SEO_Desc, #Url").keyup(function () {
+            let _id = $(this).prop("id");
+            let _value = $(this).val();
+            if (_id == "SEO_Title") {
+                $("#title_char").html(_value.length);
+                $("#sp-SEO_Title").html(_value);
+            }
+            else if (_id == "SEO_Desc") {
+                $("#desc_char").html(_value.length);
+                $("#sp-SEO_Desc").html(_value.replace(/\n/g, '<br/>'));
+            }
+            else if (_id == "Url") {
+                let _url = U2A(_value);
+                $('#Url').val(_url);
+                $("#sp-url").html(`${window.location.protocol}//${window.location.host}/${_url}-pd${$('#id12char').val()}`);
+            }
+        });
+
+        $('#product_form button[type=submit]').on("click", function () {
+            $(':required:invalid', '#product_form').each(function () {
+                var id = $('.tab-pane').find(':required:invalid').closest('.tab-pane').attr('id');
+                $('.nav a[href="#' + id + '"]').tab('show');
+            });
+        });
+    })
+</script>

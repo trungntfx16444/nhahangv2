@@ -1,0 +1,726 @@
+﻿@model product
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@using Newtonsoft.Json;
+@using PKWebShop.Models.CustomizeModels;
+
+@{
+    ViewBag.Title = string.IsNullOrEmpty(Model.SEO_Title) ? Model.ProductName : Model.SEO_Title;
+    ViewBag.SEO_Description = string.IsNullOrEmpty(Model.SEO_Desc) ? Model.ProductName : Model.SEO_Desc;
+
+    webconfiguration info = UserContent.GetWebInfomation(true);
+    if (!string.IsNullOrEmpty(Model.Picture))
+    {
+        ViewBag.og_image = Model.Picture;
+    }
+    else if (!string.IsNullOrEmpty(info.ImageShared))
+    {
+        ViewBag.og_image = info.ImageShared;
+    }
+    var adminSite = UserContent.GetAdminSite();
+    var arrObj = ViewBag.ArrObj as object[];
+    var pictures = arrObj[0] as List<uploadmorefile> ?? new List<uploadmorefile>();
+    var category = arrObj[1] as List<category> ?? new List<category>();
+    var ListProperties = arrObj[2] as List<product_properties> ?? new List<product_properties>();
+    //var ListPriceOpt = arrObj[3] as List<ProductOptionPrice> ?? new List<ProductOptionPrice>();
+    var ListProducts = arrObj[4] as List<product> ?? new List<product>();
+
+    var listParentProp = ListProperties.Where(x => x.is_parrent == true).ToList();
+    var listChildProp = ListProperties.Where(x => x.is_parrent == false).ToList();
+    //var trangkhac_topbg = ViewBag.trangkhac_topbg as SectionFeatureModel;
+
+    var listURL = new List<(string text, string url)>();
+    if (!string.IsNullOrEmpty(info.SEO_Meta))
+    {
+        var list_SEO = JsonConvert.DeserializeObject<List<SiteSEO.SEO_Meta>>(info.SEO_Meta);
+        var SEO_sanpham = list_SEO.FirstOrDefault(x => x.code == SiteSEO.code_SEO.SanPham);
+        listURL.Add(("Sản phẩm", $"/{SEO_sanpham.url}"));
+    }
+    listURL.AddRange(GetUrl(category.LastOrDefault(), new List<(string text, string url)>()));
+    var cur_cus = UserContent.getCurrentCustomer();
+    var listOpts = ViewBag.ListOpt as List<product_option>;
+    var Price_range = ViewBag.Price_range;
+}
+
+@functions{
+    public List<(string text, string url)> GetUrl(category cate, List<(string text, string url)> _listURL)
+    {
+        if (cate != null)
+        {
+            _listURL.Insert(0, (cate.CategoryName, $"/{cate.UrlCode}-pc{cate.ReId}"));
+            if (cate.Level > 1)
+            {
+                var _db = new DBLangCustom();
+                var cateParent = _db.categories.FirstOrDefault(x => x.ReId == cate.ParentId);
+                GetUrl(cateParent, _listURL);
+            }
+        }
+        return _listURL;
+    }
+}
+
+
+
+
+<style type="text/css">
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .pro-details-size-content ul li label {
+        padding: 5px 12px !important;
+        width: unset !important;
+        line-height: 17px !important;
+        color: black !important;
+        background-color: white !important;
+    }
+
+        .pro-details-size-content ul li label:hover, .pro-details-size-content ul li label.active, .pro-details-color-content ul li label.active {
+            color: #ea1c00 !important;
+            border: 1px solid #ea1c00 !important;
+        }
+
+    .description-wrap img {
+        height: auto !important;
+        max-width: 100%;
+    }
+
+    .breadcrumb-content ul li.active > a {
+        color: var(--color-theme-primary) !important;
+    }
+
+    .description-wrap {
+        overflow-x: auto;
+        font-weight: 300;
+    }
+
+        .description-wrap p {
+            font-weight: 300;
+        }
+
+        .description-wrap table thead {
+            text-align: center;
+        }
+
+        .description-wrap table th, description-wrap table td {
+            min-width: 100px;
+        }
+</style>
+
+<section class="breadcrumbs">
+    <div class="container">
+
+        <ol>
+            <li><a href="/">Trang chủ</a></li>
+            @foreach (var item in listURL)
+            {
+                <li><a href="@(item.url)">@(item.text)</a></li>
+            }
+            <li class="active"><a href="@($"/{Model.Url}-pd{Model.ReId}")">@(Model.ProductName)</a></li>
+        </ol>
+
+    </div>
+</section>
+<section class="product-single">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="product-single-img">
+                    <div class="swiper productsingleSwiper2 mb-2">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <a href="~/Content/client/img/gallery-1.jpg" data-fancybox="gallery">
+                                        <img class="img-fluid" src="~/Content/client/img/gallery-1.jpg" />
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <a href="~/Content/client/img/gallery-2.jpg" data-fancybox="gallery">
+                                        <img class="img-fluid" src="~/Content/client/img/gallery-2.jpg" />
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <a href="~/Content/client/img/gallery-3.jpg" data-fancybox="gallery">
+                                        <img class="img-fluid" src="~/Content/client/img/gallery-3.jpg" />
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <a href="~/Content/client/img/gallery-4.jpg" data-fancybox="gallery">
+                                        <img class="img-fluid" src="~/Content/client/img/gallery-4.jpg" />
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <a href="~/Content/client/img/gallery-5.jpg" data-fancybox="gallery">
+                                        <img class="img-fluid" src="~/Content/client/img/gallery-5.jpg" />
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                    </div>
+                    <div thumbsSlider="" class="swiper productsingleSwiper1">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <img class="img-fluid" src="~/Content/client/img/gallery-1.jpg" />
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <img class="img-fluid" src="~/Content/client/img/gallery-2.jpg" />
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <img class="img-fluid" src="~/Content/client/img/gallery-3.jpg" />
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <img class="img-fluid" src="~/Content/client/img/gallery-4.jpg" />
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="gallery">
+                                    <img class="img-fluid" src="~/Content/client/img/gallery-5.jpg" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="product-single-content">
+                    <h1 class="product-name">Lorem Ipsum is simply dummy text</h1>
+                    <div class="product-price">
+                        <ins>250.000 VNĐ</ins>
+                        <del>250.000 VNĐ</del>
+                    </div>
+                    <div class="product-decription">
+                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s
+                    </div>
+
+                    <div class="quantity-wrap">
+                        <div class="input-group">
+                            <input type="button" value="-" class="button-minus btn" data-field="quantity">
+                            <input type="text" step="1" max="10" value="1" name="quantity" class="quantity-field">
+                            <input type="button" value="+" class="button-plus btn" data-field="quantity">
+                        </div>
+                    </div>
+                    <div class="product-action">
+                        <a href="#" class="btn  btn-cart">Thêm vào giỏ hàng</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<div id="m-product" class="product-details-area pt-30 pb-50 d-none">
+    <div class="container bg-white py-3">
+        <div class="row">
+            <div class="col-lg-6 col-md-5">
+                <div class="product-details-tab">
+                    <div class="pro-dec-big-img-slider" style="border: 1px solid #ececec">
+                        @foreach (var p in pictures)
+                        {
+                            <div class="easyzoom-style">
+                                <div class="easyzoom easyzoom--overlay">
+                                    <a tabindex="0">
+                                        <img src="@($"{adminSite}{p.FileName}")" alt="@(p == pictures.FirstOrDefault() ? Model.ImageAlt : p.FileName?.Split('/').LastOrDefault().Replace($".{p.FileName?.Split('.').LastOrDefault()}", ""))" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" loading="lazy">
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="product-dec-slider-small product-dec-small-style1">
+                        @foreach (var p in pictures)
+                        {
+                            <div class="product-dec-small active">
+                                <div class="product-dec-small-img">
+                                    <img src="@($"{adminSite}{p.FileName}")" alt="@(p == pictures.FirstOrDefault() ? Model.ImageAlt : p.FileName?.Split('/').LastOrDefault().Replace($".{p.FileName?.Split('.').LastOrDefault()}", ""))" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" loading="lazy">
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <form id="addtocart" class="col-lg-6 col-md-7" action="/cart/addtocart" method="post">
+                <div class="product-details-content pro-details-content-mrg">
+                    <input name="ProductId" value="@Model.ReId" hidden />
+                    <h2 id="h2_ProductName">@Model.ProductName</h2>
+
+                    <p>
+                        <span style="font-weight:500">Danh mục:</span>
+                        @foreach (var item in category)
+                        {
+                            <a class="href" href="@($"/{item.UrlCode}-pc{item.ReId}")">
+                                @(item != category.LastOrDefault() ? $"{item.CategoryName}, " : item.CategoryName)
+                            </a>
+                        }
+                        <br />
+                        @if (Model.Quantity > 0)
+                        {
+                            <span>@(Model.Quantity) sản phẩm có sẵn</span>
+                        }
+                        else
+                        {
+                            <span>@(Model.Quantity == -1 ? "Sản phẩm còn hàng" : "Đã hết hàng")</span>
+                        }
+                    </p>
+
+                    <div class="pro-details-price">
+                        @if (!string.IsNullOrEmpty(Price_range))
+                        {
+                            <span class="new-price"> @Price_range</span>
+                        }
+                        else
+                        {
+                            if (Model.Price > 0)
+                            {
+                                if (Model.SalePrice > 0 && Model.SalePrice < Model.Price)
+                                {
+                                    <span class="new-price" data-pricedefault="@(Model.SalePrice ?? 0)">@((Model.SalePrice ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                    <span class="old-price font-weight-semibold" data-priceold="@(Model.Price ?? 0)">@((Model.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                }
+                                else
+                                {
+                                    <span class="new-price" data-pricedefault="@(Model.Price ?? 0)">@((Model.Price ?? 0).ToString("0,###")) @Constant.CURRENCY_SIGN</span>
+                                }
+                            }
+                        }
+                    </div>
+                    <input type="hidden" id="price_submit" value="@($"|{(Model.SalePrice > 0 && Model.SalePrice < Model.Price ? Model.SalePrice : Model.Price)}|{Model.ProductName}")" />
+                    @{ int i = 0;
+
+                        var lastProp = cur_cus?.Role == "Partner" ? listOpts?.ElementAtOrDefault(1) : null;
+                        listOpts.Remove(lastProp);
+
+                    }
+
+                    @foreach (var option_group in listOpts)
+                    {
+                        i++;
+                        var properties = ListProperties.FirstOrDefault(x => x.is_parrent == true && x.name == option_group.name);
+                        <div class="pro-details-size">
+                            <span>@option_group.name:</span>
+                            @if (properties == null)
+                            {
+                                <div class="pro-details-size-content">
+                                    <ul>
+                                        @foreach (var item in option_group.ListOption)
+                                        {
+                                            <li class="price_option_item">
+                                                <input type="radio" name="option_@i" id="option_@item.id" value="@item.id" required style=" position: absolute; z-index: -1; width:auto">
+                                                <label for="option_@item.id"> @(item.name)</label>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="pro-details-color-content">
+                                    <ul>
+                                        @foreach (var item in option_group.ListOption)
+                                        {
+                                            var prop = ListProperties?.FirstOrDefault(x => x.is_parrent == false && x.name == item.name);
+                                            <li class="price_option_item">
+                                                <input type="radio" name="option_@i" id="aaoption_@item.id" value="@item.id" required style=" position: absolute; z-index: -1; width:auto">
+                                                <label for="aaoption_@item.id"><img src="@adminSite@(prop?.image)" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" class="img-fluid" title="@item.name" /></label>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    }
+                    @if (lastProp != null)
+                    {
+                        <table id="wholeSaleTable" class="table table-bordered" style="max-width: 400px;display:none">
+                            <thead>
+                                <tr>
+                                    <th>@lastProp.name</th>
+                                    <th>Giá sỉ</th>
+                                    <th>SL còn</th>
+                                    <th>SL muốn đặt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int j = 0;}
+                                @foreach (var item in lastProp.ListOption)
+                                {
+                                    <tr class="price_option_item">
+                                        <td class="p-1">@item.name</td>
+                                        <td class="p-1"><span class="price_@item.id"></span></td>
+                                        <td class="p-1"><span class="qty_@item.id"></span></td>
+                                        <td class="p-1">
+                                            <div class="pro-details-quality d-flex justify-content-center">
+                                                <div class="cart-plus-minus">
+                                                    <input type="hidden" name="Options[@j].Id" value="@item.id">
+                                                    <input class="cart-plus-minus-box input_qty_@item.id" type="text" name="Options[@(j++)].Quantity" data-min="0" value="0" readonly>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+
+
+
+                            </tbody>
+                        </table>
+
+
+                        <style>
+                            tbody .price_option_item td {
+                                text-align: center;
+                                vertical-align: middle;
+                            }
+                        </style>
+                    }
+                    else
+                    {
+                        <div class="pro-details-quality mb-2">
+                            <div class="mb-1"><b>Số lượng:</b><text id="stock_product" style="display: none"> <text id="stock_count"></text> sản phẩm có sẵn </text></div>
+                            <div class="cart-plus-minus">
+                                <input class="cart-plus-minus-box input_qty" type="text" name="Quantity" value="1" readonly>
+                            </div>
+                        </div>
+                    }
+                    @*<div id="div_required" class="mb-1" style="margin:-7px; padding:7px;">
+                            @{ i = 0;}
+                            @foreach (var parent in listParentProp)
+                            {
+                                var listChild = listChildProp.Where(x => x.parrent_properties_id == parent.id).ToList();
+
+                                <div class="pro-details-size mb-0">
+                                    <span>@(parent.name):</span>
+                                    <div class="pro-details-size-content">
+                                        <ul>
+                                            @foreach (var child in listChild)
+                                            {
+                                                <li class="mb-2 mr-2 price_prop_item">
+                                                    <input type="radio" name="prop[@(i)]" id="prop_@child.id" value="@(child.ReId)" required style=" position: absolute; z-index: -1;">
+                                                    <label class="price_option_label" for="prop_@child.id"> @(child.name)</label>
+                                                </li>
+                                                @*<li class="mb-2 mr-2">
+                                        <a href="javascript:void(0)" class="a_prop a_prop_@(parent.ReId)" data-prop="@($"prop_c_{parent.ReId}")">@(child.name)</a>
+                                    </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                                i++;
+                            }
+                        </div>*@
+                    @if (!string.IsNullOrEmpty(Model.ShortDescription))
+                    {
+                        <div class="p-2" style="background-color: #34a105"><label class="text-white font-weight-bold ml-1 mb-0" style="font-size:16px">Khuyến mãi đặc biệt</label></div>
+                        <div class="border p-2 mb-3 font-size-15">
+                            <div style="color: #222222;">@Html.Raw(Model.ShortDescription?.Replace("\r\n", "<br/>"))</div>
+                        </div>
+                    }
+                    <div class="pro-details-action-wrap row">
+
+                        @if ((Model.Quantity == -1 || Model.Quantity > 0) && Model.Price > 0)
+                        {
+                            <div class="pro-details-add-to-cart col-xl-4 col-md-6 mb-3">
+                                <button id="add_to_cart_btn" class="btn-base w-100" title="Thêm giỏ hàng" @*onclick="CheckProduct('@(Model.ReId)', '@(listParentProp.Count + 1)')"*@>
+                                    <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
+                                </button>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(info.Hotline))
+                        {
+                            <div class="pro-details-add-to-cart col-xl-4 col-md-6 mb-3">
+                                <div id="call-from-product">
+                                    <a class="btn-base w-100" title="Gọi đặt hàng" href="tel:@CommonFunc.CleanPhoneNumber(info.Hotline)">
+                                        <i class="icon_phone"></i> Gọi đặt hàng
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                        <div class="pro-details-add-to-cart col-xl-4 col-md-6 mb-3">
+                            <div id="call-from-product">
+                                <a class="btn-base w-100" title="Gửi yêu cầu" href="/lien-he">
+                                    Gửi yêu cầu
+                                </a>
+                            </div>
+                        </div>
+                        <div class="pro-details-add-to-cart col-xl-4 col-md-6 mb-3 d-none">
+                            <div id="chat-from-product">
+                                <a class="" title="Chat trực tiếp" onclick="DirectChatPopup();">
+                                    <i class="icon_chat"></i> Chat trực tiếp
+                                </a>
+                            </div>
+                        </div>
+
+                        <style>
+                            .price_option_label {
+                                display: inline-block;
+                                border: 1px solid #E3E4E9;
+                                text-align: center;
+                                padding: 10px 15px !important;
+                                width: unset !important;
+                                line-height: 17px !important;
+                                color: black !important;
+                                background-color: white !important;
+                            }
+
+                                .price_option_label:hover, input[type="radio"]:checked + .price_option_label {
+                                    color: orangered !important;
+                                    border: 1px solid orangered !important;
+                                }
+                        </style>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="description-review-wrapper pb-50">
+    <div class="container bg-white py-3">
+        <div class="row">
+            <div class="col-lg-12 border-right mb-20">
+                <div class="dec-review-topbar nav mb-45">
+                    <a class="active" data-toggle="tab" href="#des-details1">Giới thiệu sản phẩm</a>
+                    @*<a data-toggle="tab" href="#des-details2">THÔNG SỐ</a>*@
+                </div>
+                <div class="tab-content dec-review-bottom">
+                    <div id="des-details1" class="tab-pane active">
+                        <div class="description-wrap">
+                            @Html.Raw(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả" : Model.Description)
+                        </div>
+                        @*<div class="pro-details-add-to-cart text-center mt-20">
+                                <img alt="" src="~/Content/client/images/Muangay.gif" style="box-sizing: border-box;outline: none; border: 0px; vertical-align: middle; max-width: 100%; width: 125px; height: 70px;"><br />
+                                <button class="btn btn-pill btn-green" title="Mua ngay" onclick="CheckProduct('@(Model.ReId)', '@(listParentProp.Count + 1)')"><i class="icon_cart"></i> Đặt ngay</button>
+                            </div>*@
+                    </div>
+                    @*<div id="des-details2" class="tab-pane">
+                            <div class="description-wrap">
+                                @Html.Raw(string.IsNullOrEmpty(Model.Unit) ? "Chưa có thông tin" : Model.Unit)
+                            </div>
+                        </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*<div class="description-review-wrapper pb-50">
+        <div class="container bg-white py-3">
+            <div class="row">
+                <div class="col-lg-12">
+                    @Html.Partial("comment/_CommentPartial", Model.ReId, new ViewDataDictionary { { "comment", true }, { "type", "products" } })
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+
+@if (ListProducts != null && ListProducts.Count > 0)
+{
+    var c = category.LastOrDefault(x => (ListProducts.FirstOrDefault()?.CategoryId ?? "").Contains(x.ReId));
+    ViewBag.MoreUrl = c != null ? $"/{c.UrlCode}-pc{c.ReId}" : listURL.FirstOrDefault().url;
+    @Html.Partial("_MoreProducts", ListProducts)
+}
+<div class="add-to-cart-wrap-mobile">
+    <div style="display: flex;">
+        @if (Model.Quantity != 0 && Model.Price > 0)
+        {
+            <button class="product-addcart-btn product-addcart-btn--outline" onclick="$('#add_to_cart_btn').trigger('click')">
+                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
+            </button>
+        }
+        else
+        {
+            <button class="product-addcart-btn product-addcart-btn--outline" onclick="msg_success('Vui lòng liên hệ với shop', '', 'top left')">
+                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
+            </button>
+        }
+        <a class="tel d-none" href="tel:@CommonFunc.CleanPhoneNumber(info.Hotline)"><i class="fas fa-phone-alt"></i></a>
+        <a class="chat d-none" onclick="DirectChatPopup();"><i class="fas fa-comments"></i></a>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        const CURRENCY = '@(Constant.CURRENCY_SIGN)';
+
+        $(function () {
+            @*if ('@(ListPriceOpt.Count)' > 0) {
+                $(".pro-details-size-content a").first().trigger("click");
+            }*@
+            if (typeof FB == 'undefined' || typeof FB.CustomerChat == 'undefined') {
+                $("#chat-from-product").hide();
+            }
+            $("#addtocart").ajaxForm({
+                beforeSubmit: function (arr, form, options) {
+                   let valid = true;
+                    $('.price_option_item .cart-plus-minus-box').map((i, x) => {
+                        if (x.value > $(x).data('max')) {
+                            $('#wholeSaleTable').notify("Số lượng sp không đủ!");
+                            valid = false;
+                        }
+                    })
+                    return valid;
+                },
+                success: function (data) {
+                    if (cnoty(data)) {
+                        loadCartPartial(data[2]);
+                    }
+                }
+            });
+
+
+            @*$(".pro-details-size-content a").click(function () {
+                let key = $(this).data("prop").split("_");
+                if (key[0] == "price") {
+                    let _product_name = $("#h2_ProductName").html().trim();
+                    let _price_default = $("#m-product .new-price").data("pricedefault");
+                    let _price_old = $("#m-product .old-price").data("priceold") || "0";
+                    let _sales_percent = 100 - ((parseFloat(_price_default) * 100) / parseFloat(_price_old));
+
+                    if ($(this).hasClass("active")) {
+                        //$(this).removeClass("active");
+                        //$("#price_submit").val(`|${_price_default}|${_product_name}`);
+                        //$("#m-product .new-price").html(`${toMoney(_price_default)} ${CURRENCY}`);
+                        //$("#m-product .old-price").html(`${toMoney(_price_old)} ${CURRENCY}`);
+                    }
+                    else {
+                        $(`.a_${key[0]}`).removeClass("active");
+                        $(this).addClass("active");
+                        _product_name = `${_product_name} (${$(this).html().trim()})`;
+                        $("#price_submit").val(`${key[1]}|${key[2]}|${_product_name}`);
+                        $("#m-product .new-price").html(`${toMoney(key[2])} ${CURRENCY}`);
+                        //$("#m-product .old-price").html(`${toMoney(((_sales_percent / 100) * _price_old) + parseFloat(key[2]))} ${CURRENCY}`);
+
+                        if (key[1] == "") {
+                            $("#m-product .old-price").html(`${toMoney(((_sales_percent / 100) * _price_old) + parseFloat(key[2]))} ${CURRENCY}`).removeClass("d-none");
+                        }
+                        else {
+                            $("#m-product .old-price").html(`${toMoney(((_sales_percent / 100) * _price_old) + parseFloat(key[2]))} ${CURRENCY}`).addClass("d-none");
+                        }
+                    }
+                }
+                else {
+                    if ($(this).hasClass("active")) {
+                        $(this).removeClass("active");
+                    }
+                    else {
+                        $(`.a_${key[0]}_${key[2]}`).removeClass("active");
+                        $(this).addClass("active");
+                    }
+
+                    let _prop_submit = "";
+                    $(".a_prop").each(function () {
+                        if ($(this).hasClass("active")) {
+                            _prop_submit = _prop_submit + `${$(this).data("prop").split("_")[1]}|`;
+                        }
+                    });
+                    $("#prop_submit").val(_prop_submit);
+                }
+
+                if (($("#prop_submit").val().split("|").length == @(listParentProp.Count + 1))) {
+                    $("#div_required").css("background-color", "#ffffff");
+                }
+            });*@
+
+            /*----------------------------
+                Cart Plus Minus Button
+            ------------------------------ */
+            var CartPlusMinus = $('.cart-plus-minus');
+            CartPlusMinus.prepend('<div class="dec qtybutton">-</div>');
+            CartPlusMinus.append('<div class="inc qtybutton">+</div>');
+            $(".qtybutton").on("click", function () {
+                let $button = $(this);
+                let $input = $button.parent().find(".cart-plus-minus-box");
+                let oldValue = $input.val();
+                let newVal = parseInt(oldValue) + ($button.text() === "+"?1:-1);
+
+                let min = parseInt($input.data("min")) || 0;
+                let max = parseInt($input.data("max"));
+                if (newVal < min) {
+                    newVal = min;
+                }
+                if (newVal > max) {
+                    newVal = max;
+                }
+                $input.val(newVal);
+            });
+
+            $(".price_option_item input").change(function () {
+                if (this.checked) {
+                    let option1 = $(".price_option_item input[name=option_1]:checked").val();
+                    let option2 = $(".price_option_item input[name=option_2]:checked").val();
+                    $.ajax({
+                        method: "POST",
+                        url: "/product/getPricebyOptions",
+                        data: { id: '@Model.ReId', option1, option2 },
+                        dataType: "json"
+                    }).done(function (data) {
+                        if (!data[0]) {
+                            error(data[1]);
+                        } else {
+                            if (data[2]) {
+                                $("#addtocart .new-price").html(data[2]);
+                            }
+                            if (data[1]) {
+                                if (!$("#wholeSaleTable").is(":visible")) {
+                                    $("#wholeSaleTable").slideDown();
+                                }
+                                data[1].map((x) => {
+                                    $(`.qty_${x.option2}`).html(x.qty);
+                                    $(`.input_qty_${x.option2}`).data("max", x.qty).val("0");
+                                    $(`.price_${x.option2}`).html(toMoney(x.wholeSalePrice));
+                                })
+                                let sum_count = data[1].map((x) => { return x.qty; }).reduce((partialSum, a) => partialSum + a, 0);
+                                $(`#stock_count`).html(sum_count);
+                                $(`.input_qty`).data("max", sum_count);
+                                if (parseInt($(`.input_qty`).val()) > sum_count) {
+                                    $(`.input_qty`).val(sum_count);
+                                }
+                                $("#stock_product").show();
+                            } else {
+                                $("#stock_product").hide();
+                            }
+                        }
+                    }).fail(function () {
+                    }).always(function () {
+                    });
+                }
+            });
+        });
+        function likeProduct() {
+            $("#like_btn").toggleClass("liked").prop("disabled", "disabled");
+            $.ajax({
+                method: "POST",
+                url: "/product/LikeProduct",
+                data: { id: '@Model.ReId', like: $("#like_btn").is(".liked") },
+                dataType: "json"
+            }).done(function (data) {
+                if (cnoty(data)) {
+                    $("#like_btn").removeAttr("disabled");
+                    $("#like_count").html(data[2]);
+                } else {
+                    $("#like_btn").toggleClass("liked").removeAttr("disabled");
+                }
+            }).fail(function () {
+            }).always(function () {
+
+            })
+        }
+    </script>
+}

@@ -1,0 +1,46 @@
+﻿@using PKWebShop.Areas.Admin.Controllers
+@model List<CustomerManController.OrderModelCustomer>
+
+@if (ViewBag.LoadOrdersError != null)
+{
+    <script type="text/javascript">
+        msg_error('@(ViewBag.LoadOrdersError)', '', 'top right');
+    </script>
+}
+else
+{
+    if (Model != null && Model.Count > 0)
+    {
+        foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <span class="text-dark font-weight-semibold">#@(item.Id)</span>
+                    <span class="badge badge-pill badge-default">Ngày tạo: @(item.CreatedAt)</span>
+                    <span class="badge badge-pill badge-geekblue">@(item.Status)</span>
+                </td>
+                <td>
+                    <span class="text-success font-weight-semibold">@(item.GrandTotal)</span>
+                    <div class="float-right">
+                        <a href="/admin/orderman/vieworder/@(item.Id)" target="_blank" data-toggle="tooltip" title="xem chi tiết">
+                            <i class="anticon anticon-arrow-right text-secondary"></i>
+                        </a>
+                    </div>
+                    <div class="clearfix"></div>
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr>
+            <td colspan="2">Chưa có đơn hàng</td>
+        </tr>
+    }
+
+    <script type="text/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        })
+    </script>
+}

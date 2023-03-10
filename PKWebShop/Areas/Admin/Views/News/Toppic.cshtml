@@ -1,0 +1,522 @@
+﻿@model IEnumerable<PKWebShop.Models.n_toppic>
+@using PKWebShop.Models
+
+@{
+    ViewBag.Title = "Quản lý chủ đề";
+    var parent_topic = ViewBag.ParentTopic as List<n_parent_topic>;
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+}
+
+
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-warning font-size-18"></i>
+            </span>
+            <span>@Html.Raw(TempData["error"])</span>
+        </div>
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        <div class="d-flex align-items-center justify-content-start">
+            <span class="alert-icon">
+                <i class="anticon anticon-check font-size-18"></i>
+            </span>
+            <span> @Html.Raw(TempData["success"])</span>
+        </div>
+    </div>
+}
+
+<div class="card">
+    @if (langs.Count > 1)
+    {
+        <ul class="nav nav-tabs" id="langTab" role="tablist">
+            @foreach (var l in langs)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(langs.IndexOf(l)==0?"active":"")" data-toggle="tab" href="#anticon-tab" onclick="LoadLang('@l.Code')"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="card-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <h4 class="card-title">@ViewBag.Title</h4>
+            </div>
+        </div>
+    }
+
+    <input type="hidden" id="lang" />
+    <div class="file-manager-wrapper border-0">
+        <div class="file-manager-nav">
+            <div class="d-flex flex-column justify-content-between h-100">
+                <div style="padding-top:8px">
+                    <div style="width: 100%; contain:content; padding:8px">
+                        <button class="btn btn-success" onclick="NewParentTopic()">
+                            <i class="fa fa-plus"></i> Nhóm chủ đề mới
+                        </button>
+                    </div>
+                    <div style="width:100%" id="div_parent_topic">
+                        @Html.Partial("_Partial_ParentTopic", parent_topic)
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="file-manager-content" id="partial_toppic">
+            @Html.Partial("_partial_toppic", Model)
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="AddTopicModal" tabindex="-1" role="dialog" aria-labelledby="AddTopicModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="AddTopicModalLabel">THÊM CHỦ ĐỀ</h4>
+                <input type="hidden" name="hd_toppicId" />
+                <input type="hidden" name="hd_relatedTopicId" />
+            </div>
+            <div class="modal-body" style="padding-bottom:0px;">
+                <div class="form-group">
+                    <label>Tên chủ đề: <span style="color:red">*</span></label>
+                    <input type="text" class="form-control" name="toppicname" required autocomplete="off" />
+                </div>
+                <div class="form-group">
+                    <label>Vị trí:</label>
+                    <input type="number" class="form-control" name="order" autocomplete="off" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        SEO META TITLE:
+                    </label>
+                    <label class="text-success" style="cursor:pointer">
+                        <input id="checkbox_seo_title" type="checkbox" checked="" value="1"> Sử dụng Tiêu đề chủ đề
+                    </label>
+                    <input type="text" class="form-control" name="seo_title" />
+                </div>
+                <div class="form-group">
+                    <label>
+                        SEO META DESCRIPTION
+                    </label>
+                    <textarea class="form-control" name="seo_desc" autocomplete="off" ></textarea>
+                </div>
+                @*<div class="form-group">
+            <label>Chủ đề liên quan:</label>
+            <select id="RelatedTopicId" name="RelatedTopicId" class="form-control">
+                <option value="">--Chọn chủ đề liên quan--</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Hiện trên Menu:</label>
+            <input type="checkbox" id="showMenu" name="showMenu" checked />
+        </div>*@
+                <div class="form-group">
+                    <label>HIỂN THỊ:</label>
+                    <input type="checkbox" id="showNews" name="showNews" checked />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="AddTopic()"><i class="fa fa-check"></i> Lưu</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script>
+        $(function () {
+            $("input[name=toppicname]").on("input", function () {
+                console.log($("#checkbox_seo_title").is(":checked"));
+                if ($("#checkbox_seo_title").is(":checked")) {
+                    $('[name="seo_title"]').val($(this).val());
+                }
+            });
+            $('[name="seo_title"]').on("input", function () {
+                if ($("#checkbox_seo_title").is(":checked")) {
+                    $("#checkbox_seo_title").prop("checked", false);
+                }
+            });
+            $("#checkbox_seo_title").on("change", function(){
+                if ($("#checkbox_seo_title").is(":checked")) {
+                    $('[name="seo_title"]').val($("input[name=toppicname]").val());
+                }
+            })
+        })
+        function LoadLang(lang) {
+            $('#lang').val(lang);
+            refresh_ptopic();
+           
+        }
+        function Search() {
+            let parentId = $(".parent-topic a.active").parent()[0].id;
+            if (parentId.search("all") != -1) {
+                parentId = "";
+            }
+            else {
+                parentId = parentId.replace("divparent_", "");
+            }
+
+            let searchText = $("input[name='search']").val();
+
+            $.ajax({
+                method: "POST",
+                url: "/admin/news/SearchTopic",
+                data: { parentId: parentId, searchText: searchText },
+                dataType: "html"
+            })
+                .done(function (data) {
+                    $("#partial_toppic").html(data);
+
+                    let errMsg = $("input[name='topic_errMsg']").val();
+                    if (errMsg != "" && errMsg != null) {
+                        error(errMsg);
+                    }
+                })
+                .fail(function () {
+                })
+                .always(function () {
+                });
+        };
+        function GetListTopicByParent(parentId) {
+            let topicId = $("input[name='hd_toppicId']").val();
+            let relatedTopicId = $("input[name='hd_relatedTopicId']").val();
+
+            $.ajax({
+                method: "POST",
+                url: "/admin/news/GetListTopicByParent",
+                data: { parentId: parentId },
+                dataType: "json"
+            })
+                .done(function (data) {
+                    var opt = '<option value="">--Chọn chủ đề liên quan--</option>';
+                    if (data[0] = true) {
+                        for (var i = 0; i < data[1].length; i++) {
+                            if (data[1][i].TopicId != topicId) {
+                                if (data[1][i].TopicId == relatedTopicId) {
+                                    opt += '<option selected value="' + data[1][i].TopicId + '">' + data[1][i].Name + '</option>';
+                                }
+                                else {
+                                    opt += '<option value="' + data[1][i].TopicId + '">' + data[1][i].Name + '</option>';
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        error(data[1]);
+                    }
+
+                    $("#RelatedTopicId").html(opt);
+                })
+                .fail(function () {
+                })
+                .always(function () {
+                });
+        }
+        //=======================================================
+        //Parent Toppic
+        function NewParentTopic() {
+            $("#ptopic .modal-title").html("Nhóm chủ đề mới");
+            $("#ptopic [name='id']").val("");
+            $("#ptopic [name='name']").val("");
+            $("#p_topic_relate").show();
+            $("#ptopic").modal("show");
+        }
+        function EditParentTopic(id) {
+            var cur_name = $(".parent-topic .nav-link.active").text().trim();
+            $("#ptopic [name='id']").val(id);
+            $("#ptopic [name='name']").val(cur_name);
+            $("#ptopic .modal-title").html("Sửa nhóm chủ đề " + cur_name);
+            $("#p_topic_relate").hide();
+            $("#ptopic").modal("show");
+        };
+        function refresh_ptopic() {
+            var lang = $('#lang').val();
+            $.ajax({
+                method: "POST",
+                url: "/admin/news/_partial_ptopic",
+                data: { lang },
+                dataType: "html"
+            })
+                .done(function (data) {
+                    $("#div_parent_topic").html(data);
+                    reload('all');
+                })
+                .fail(function () {
+                    error("Đã có sự cố xảy ra.");
+                })
+                .always(function () { });
+        }
+        function SavePTopic() {
+            let id = $("#ptopic [name='id']").val();
+            let name = $("#ptopic [name='name']").val();
+            let RelationPostId = $("#ptopic [name='relation']").val();
+            var lang = $('#lang').val();
+            if (name == "" || name == null) {
+                error("Tên nhóm chủ đề không được trống");
+            }
+            else {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/news/SaveParentTopic",
+                    data: { id, name, lang, RelationPostId },
+                    dataType: "json"
+                })
+                    .done(function (data) {
+                        if (data[0]) {
+                            success(data[1]);
+                            refresh_ptopic();
+                            $("#ptopic").modal("hide");
+                        } else {
+                            error(data[1]);
+                        }
+
+                    })
+                    .fail(function () {
+                        error("Đã có sự cố xảy ra.");
+                    })
+                    .always(function () { });
+            }
+        };
+        function DeleteParentTopic(parentId) {
+            event.stopPropagation();
+            if (confirm("Bạn muốn xóa nhóm chủ đề này?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/admin/news/DeleteParentTopic",
+                    data: { id: parentId },
+                    dataType: "json"
+                })
+                    .done(function (data) {
+                        if (data[0] == true) {
+                            success(data[1]);
+                            refresh_ptopic();
+
+                        }
+                        else {
+                            error(data[1]);
+                        }
+                    })
+                    .fail(function () {
+                        error("Đã có sự cố xảy ra.");
+                    })
+                    .always(function () { });
+            }
+        }
+        //=======================================================
+        //Toppic
+        function reload(parentId) {
+            var lang = $('#lang').val();
+            parentId = parentId || $(".parent-topic .nav-link.active").closest(".parent-topic").data("id");
+            $.ajax({
+                method: "POST",
+                url: "/admin/news/_partial_toppic",
+                data: { parentId, lang },
+                dataType: "html"
+            })
+                .done(function (data) {
+                    if (parentId) {
+                        var act = $("#divparent_" + parentId + " a").addClass("active");
+                        $(".parent-topic .nav-link.active").not(act).removeClass("active");
+                        $("#btn_newptopic").toggle(parentId != null);
+
+                    }
+                    $("#partial_toppic").html(data);
+
+                })
+                .fail(function () {
+                })
+                .always(function () {
+                });
+        };
+        function new_toppic() {
+            $("#AddTopicModalLabel").html("THÊM CHỦ ĐỀ");
+            $("input[name='hd_toppicId']").val("");
+            $("input[name='toppicname']").val("");
+            $("input[name='order']").val("");
+            $("#checkbox_seo_title").prop('checked', true);
+            $("#showMenu").prop('checked', true);
+            $("input[name='seo_title']").val("");
+            $("textarea[name='seo_desc']").val("");
+
+            $(".span-new, .span-edit").hide();
+            $("select[name='parent_toppicId']").val("");
+            /*GetListTopicByParent("");*/
+            //$("#AddTopicModal").modal("show");
+            $("#AddTopicModal").modal({ backdrop: 'static', keyboard: false });
+        };
+        //add toppic
+        function AddTopic() {
+            let parentId = $(".nav-link.active").closest(".parent-topic").data("id");
+            var toppicname = $("input[name='toppicname']").val();
+
+            if (parentId == "" || parentId == null) {
+                error("Vui lòng chọn nhóm chủ đề");
+            }
+            else if (toppicname == "" || toppicname == null) {
+                error("Tên chủ đề không được trống");
+            }
+            else {
+                var toppic_Id = $("input[name='hd_toppicId']").val();
+                var order = $("input[name='order']").val();
+                var seo_title = $("input[name='seo_title']").val();
+                var seo_desc = $("textarea[name='seo_desc']").val();
+                var show_menu = $("#showMenu").prop("checked");
+                var show_news = $("#showNews").prop("checked");
+                var relatedTopicId = $("#RelatedTopicId").val();
+
+                var obj = {};
+                obj.url = "/admin/news/savetoppic";
+                obj.dataType = "json";
+                obj.type = "POST";
+                obj.data = {
+                    Id: toppic_Id,
+                    Name: toppicname,
+                    Order: order,
+                    ShowMenu: show_menu,
+                    ShowNews: show_news,
+                    parentId: parentId,
+                    relatedTopicId: relatedTopicId,
+                    seo_title,
+                    seo_desc
+                };
+                //obj.data = JSON.stringify({ Id: toppic_Id, Name: toppicname, Order: order, ShowMenu: show_menu, ShowNews: show_news });
+                obj.success = function (result) {
+                    //object[] {true / false, listToppic / msg, topicID}
+
+                    if (result[0] == true) {
+                        if (toppic_Id != null && toppic_Id != "") {
+                            success("Cập nhật thành công.");
+                        }
+                        else {
+                            success("Thêm chủ đề thành công.");
+                        }
+
+                        reload();
+                        $("#AddTopicModal").modal("hide");
+                    }
+                    else {
+                        error(result[1]);
+                    }
+                };
+                obj.complete = function () {
+
+                };
+                obj.error = function () {
+                    error("Không thể thực hiện. Vui lòng thử lại sau.");
+                };
+
+                $.ajax(obj);
+
+            }
+        };
+        //edit toppic
+        function EditToppic(toppicId) {
+
+            $(".span-new, .span-edit").hide();
+
+            var obj = {};
+            obj.url = "/admin/news/edittoppic";
+            obj.dataType = "json";
+            obj.type = "POST";
+            obj.contentType = "application/json";
+            obj.data = JSON.stringify({ Id: toppicId });
+            obj.success = function (result) {
+                if (result[0] == true) {
+                    $("#AddTopicModalLabel").html("CẬP NHẬT CHỦ ĐỀ");
+                    $("input[name='hd_toppicId']").val(result[1].TopicId);
+                    $("input[name='hd_relatedTopicId']").val(result[1].RelatedTopicId);
+                    $("input[name='toppicname']").val(result[1].Name);
+                    $("select[name='parent_toppicId']").val(result[1].ParentTopicId);
+                    $("#checkbox_seo_title").prop("checked", true);
+                    $("input[name='order']").val(result[1].Order);
+                    $("input[name='seo_title']").val(result[1].Seo_title);
+                    $("textarea[name='seo_desc']").val(result[1].Seo_desc);
+
+                    if (result[1].ShowMenu == true) {
+                        $("#showMenu").prop('checked', true);
+                    }
+                    else {
+                        $("#showMenu").prop('checked', false);
+                    }
+
+                    if (result[1].ShowNews == true) {
+                        $("#showNews").prop('checked', true);
+                    }
+                    else {
+                        $("#showNews").prop('checked', false);
+                    }
+                    GetListTopicByParent(result[1].ParentTopicId);
+                    //$("#AddTopicModal").modal("show");
+                    $("#AddTopicModal").modal({ backdrop: 'static', keyboard: false });
+                }
+                else {
+                    error(result[1]);
+                }
+            };
+            obj.complete = function () {
+
+            };
+            obj.error = function () {
+                error("Không thể thực hiện. Vui lòng thử lại sau.");
+            };
+
+            $.ajax(obj);
+        };
+        //delete toppic
+        function DeleteToppic(toppicId) {
+
+            if (confirm("Bạn muốn xóa chủ đề này?")) {
+
+                var obj = {};
+                obj.url = "/admin/news/deletetoppic";
+                obj.dataType = "json";
+                obj.type = "POST";
+                obj.contentType = "application/json";
+                obj.data = JSON.stringify({ Id: toppicId });
+                obj.success = function (result) {
+                    if (cnoty(result)) {
+                        reload();
+                    }
+                };
+                obj.complete = function () {
+
+                };
+                obj.error = function () {
+                    error("Không thể thực hiện. Vui lòng thử lại sau.");
+                };
+
+                $.ajax(obj);
+
+            }
+        };
+    </script>
+}
+
+
+

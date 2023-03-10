@@ -1,0 +1,106 @@
+﻿@model PKWebShop.Models.order
+@using PKWebShop.Models;
+@{
+    ViewBag.Title = "Xem hóa đơn: " + PKWebShop.AppLB.CommonFunc.GetIDStr(Model.Id);
+}
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="#">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/order/" class="btn btn-default">< Trở lại</a>
+    <a href="/admin/order/save/@Model.Id" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Sửa hóa đơn</a>
+    <a href="/admin/order/delete/@Model.Id" onclick="return confirm('Bạn xác nhận muốn xóa hóa đơn này?')" class="btn btn-default"><i class="glyphicon glyphicon-trash"></i> Xóa hóa đơn</a>
+</p>
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-user"></i> Chi tiết hóa đơn số: @PKWebShop.AppLB.CommonFunc.GetIDStr(Model.Id)</h2>
+            </div>
+            <div class="box-content">
+                <hr />
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <span><b>Khách hàng:</b> @Model.CustomerName</span><br />
+                        <span><b>Địa chỉ:</b> @Model.Customer_Address</span><br />
+                        <span><b>Điện thoại:</b> @Model.CustomerPhone</span><br />
+                        <span><b>Email:</b> @Model.CustomerEmail</span>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <span><b>Người giao hàng:</b> @Model.Shipping_Name</span><br />
+                        <span><b>Địa chỉ giao hàng:</b> @Model.ShippingAddress</span><br />
+                        <span><b>Điện thoại:</b> @Model.Shipping_Phone</span><br />
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <span><b>Ngày tạo:</b> @(Model.CreatedAt?.ToString("dd/MM/yyyy"))</span><br />
+                        <span><b>Cập nhật bởi:</b> @Model.UpdateBy</span><br />
+                        <span><b>Vào lúc:</b> @Model.UpdateAt</span><br />
+                        <span class="label-success label">@Model.Status</span>
+                    </div>
+                </div>
+
+                <table class="table table-striped table-bordered responsive">
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Tổng tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ViewBag.OrderDetail as List<orders_detail>)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.ProductName</td>
+                                <td>@item.Quantity</td>
+                                <td>@(item.Price?.ToString("#,###"))</td>
+                                <td>@(item.Quantity * item.Price)</td>
+                            </tr>
+                        }
+                        <tr class="warning">
+                            <td colspan="4"><span style="float:right;"><b>TỔNG TIỀN</b></span></td>
+                            <td><b>@(Model.SubTotal?.ToString("#,###"))</b></td>
+                        </tr>
+                        <tr class="warning">
+                            <td colspan="4"><span style="float:right;"><b>THUẾ (@(Model.TaxPercent + "%"))</b></span></td>
+                            <td><b>@((Model.SubTotal * (Model.TaxPercent/100) )?.ToString("#,###"))</b></td>
+                        </tr>
+                        <tr class="warning">
+                            <td colspan="4"><span style="float:right;"><b>CHI PHÍ GIAO HÀNG</b></span></td>
+                            <td><b>@(Model.Shipping?.ToString("#,###"))</b></td>
+                        </tr>
+                        <tr class="success">
+                            <td colspan="4"><span style="float:right;"><b>TỔNG CỘNG</b></span></td>
+                            <td><b>@(Model.GrandTotal?.ToString("#,###"))</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/order/" class="btn btn-default">< Trở lại</a>
+    <a href="/admin/order/save/@Model.Id" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Sửa hóa đơn</a>
+    <a href="/admin/order/delete/@Model.Id" onclick="return confirm('Bạn xác nhận muốn xóa hóa đơn này?')" class="btn btn-default"><i class="glyphicon glyphicon-trash"></i> Xóa hóa đơn</a>
+</p>
+

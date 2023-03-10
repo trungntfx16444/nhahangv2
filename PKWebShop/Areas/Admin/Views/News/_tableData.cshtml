@@ -1,0 +1,160 @@
+﻿@model IEnumerable<PKWebShop.Models.CustomizeModels.Group_News>
+@using PKWebShop.Models
+@{
+    var toppic = ViewBag.Toppic as List<n_toppic> ?? new List<n_toppic>();
+    var langs = PKWebShop.Services.SiteLang.GetListLangs();
+}
+
+@foreach (var item in Model)
+{
+    var tp = toppic.Where(x => item.news.TopicId?.Contains("\"" + x.ReId + "\"") == true).Select(r => r.Name).FirstOrDefault();
+    var link = Request.Url.GetLeftPart(UriPartial.Authority) + "/" + item.news.UrlCode + "-nd" + item.news.ReId;
+
+    <tr>
+        <td class="align-top">
+            <a href="/admin/news/detail/@item.news.ReId" class="font-size-15 font-weight-bold">@(item.news.Name)</a><br />
+            <span class="badge badge-pill badge-default" style="margin-left:-5px">
+                <b>Chủ đề:</b>
+                @(item.news.ToppicNames.Count > 0 ? string.Join(", ", item.news.ToppicNames) : "")
+            </span><br />
+            <span class="badge badge-pill badge-default pill-url" style="margin-left:-5px">
+                <b>Url:</b>
+                <a href="@link" target="_blank">@($"/{item.news.UrlCode}-nd{item.news.ReId}")</a>
+            </span>
+            <a class="btn btn-success btn-xs text-white" onclick="copy_text('@link')" style="vertical-align: super;"><i class="fa fa-copy"></i></a><br />
+            @if (langs.Count > 1)
+            {
+                foreach (var l in item.langs)
+                {
+                    <i class="flag-icon @(langs.FirstOrDefault(_l=>_l.Code ==(l??"vi")).Icon) m-r-5" style="padding:1px 11px"></i>
+                }
+            }
+            <span class="font-weight-semibold" data-toggle="tooltip" data-placement="top" title="Lượt xem">
+                <i class="anticon anticon-eye"></i> @(item.news.ViewCount == null ? 0 : item.news.ViewCount)
+            </span>
+        </td>
+        <td class="align-top">
+            <img src="@(!string.IsNullOrEmpty(item.news.Picture) ? item.news.Picture : "/Content/admin/img/no_image.jpg")" alt="Anh dai dien" style="width:100px" />
+        </td>
+        <td class="align-top">
+            @if (item.news.Order == 3)
+            {
+                <span class="badge badge-pill badge-danger">Ưu tiền hàng đâu</span>
+            }
+            else if (item.news.Order == 2)
+            {
+                <span class="badge badge-pill badge-secondary">Ưu tiên cao</span>
+            }
+            else if (item.news.Order == 1)
+            {
+                <span class="badge badge-pill badge-primary">Ưu tiên</span>
+            }
+            else
+            {
+                <span class="badge badge-pill badge-default">Không</span>
+            }
+        </td>
+        <td class="center align-top">
+            @if (item.news.Active == true)
+            {
+                <div class="d-flex align-items-center">
+                    <div class="badge badge-success badge-dot m-r-10"></div>
+                    <div>Xuất bản</div>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center">
+                    <div class="badge badge-danger badge-dot m-r-10"></div>
+                    <div>Bản nháp</div>
+                </div>
+            }
+        </td>
+        <td class="align-top">
+            <span>
+                @(item.news.CreatedAt != null ? item.news.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "---") <br />
+            </span>
+            <span>Bởi <span class="font-weight-semibold">@item.news.CreatedBy</span></span>
+        </td>
+        <td class="align-top">
+            @if (langs.Count > 1)
+            {
+                <div class="dropdown dropdown-animated scale-left lang_node">
+                    <a class="btn btn-xs btn-info text-white m-1" href="javascript:void(0);" data-toggle="dropdown">
+                        <i class="anticon anticon-eye" data-toggle="tooltip" data-placement="left" title="Xem chi tiết"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        @foreach (var l in item.langs)
+                        {
+                            var _l = langs.FirstOrDefault(la => la.Code == (l ?? "vi"));
+                            <a class="dropdown-item" href="@($"/admin/news/detail/{item.news.ReId}?lang={l}")">
+                                <i class="flag-icon @(_l.Icon)" style="padding:1px 11px"></i>
+                                @_l.FullName
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="dropdown dropdown-animated scale-left lang_node">
+                    <a class="btn btn-xs btn-success text-white m-1" href="javascript:void(0);" data-toggle="dropdown">
+                        <i class="anticon anticon-edit" data-toggle="tooltip" data-placement="left" title="Sửa bài viết"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        @foreach (var l in item.langs)
+                        {
+                            var _l = langs.FirstOrDefault(la => la.Code == (l ?? "vi"));
+                            <a class="dropdown-item" href="@($"/admin/news/save/{item.news.ReId}?lang={l}")">
+                                <i class="flag-icon @(_l.Icon)" style="padding: 1px 11px"></i>
+                                @_l.FullName
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="dropdown dropdown-animated scale-left lang_node">
+                    <a class="btn btn-xs btn-danger text-white m-1" href="javascript:void(0);" data-toggle="dropdown">
+                        <i class="anticon anticon-delete" data-toggle="tooltip" data-placement="left" title="Xóa bài viết"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        @foreach (var l in item.langs)
+                        {
+                            var _l = langs.FirstOrDefault(la => la.Code == (l ?? "vi"));
+                            <a class="dropdown-item" href="@($"/admin/news/delete/{item.news.ReId}?lang="+_l.Code)" onclick="return confirm('Bạn có chắc chắn muốn xóa bài viết này?')">
+                                <i class="flag-icon @(_l.Icon)" style="padding: 1px 11px"></i>
+                                @_l.FullName
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a href="@($"/admin/news/detail/{item.news.ReId}?lang={item.news.LangCode ?? "vi"}")" class="btn btn-xs btn-info text-white m-1" data-toggle="tooltip" data-placement="left" title="Xem chi tiết">
+                    <i class="anticon anticon-eye"></i>
+                </a>
+                <a href="@($"/admin/news/save/{item.news.ReId}?lang={item.news.LangCode ?? "vi"}")" class="btn btn-xs btn-success text-white m-1" data-toggle="tooltip" data-placement="left" title="Sửa bài viết">
+                    <i class="anticon anticon-edit"></i>
+                </a>
+                <a href="@($"/admin/news/delete/{item.news.ReId}?lang={item.news.LangCode ?? "vi"}")" onclick="return confirm('Bạn có chắc chắn muốn xóa bài viết này?')" class="btn btn-xs btn-danger text-white m-1" data-toggle="tooltip" data-placement="left" title="Xóa bài viết">
+                    <i class="anticon anticon-delete"></i>
+                </a>
+            }
+
+            @if (langs.Count > 1)
+            {
+                <button class="btn btn-default btn-xs text-primary m-1 add_lang" onclick="News_newLang('@item.news.ReId')" style="padding:3px 8px" data-toggle="tooltip" data-placement="left" title="Thêm ngôn ngữ">
+                    <i class="fa fa-plus"></i>
+                </button>
+            }
+        </td>
+    </tr>
+}
+
+<style>
+    .pill-url {
+        max-width: 80%;
+        overflow: hidden;
+    }
+</style>
+
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

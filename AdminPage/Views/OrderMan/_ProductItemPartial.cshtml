@@ -1,0 +1,131 @@
+﻿@model List<AdminPage.Models.orders_detail>
+@using AdminPage.Models
+
+@{
+    var listProp = ViewBag.ListProp as List<product_properties>;
+    double shippingFee = ViewBag.shippingFee != null ? ViewBag.shippingFee : 0;
+    double discountAmount = ViewBag.discountAmount ?? 0;
+    double discountPercent = ViewBag.discountPercent ?? 0;
+    double MoneyRate = ViewBag.MoneyRate != null ? (double)(ViewBag.MoneyRate) : 0;
+
+    Int64 FreeShip = Convert.ToInt64(ViewBag.FreeShip);
+
+    var subTotal = Model.Sum(x => (x.Quantity * x.Price)) ?? 0;
+    var total = subTotal - discountAmount;
+    var grandTotal = ViewBag.grandTotal ?? 0;
+}
+
+
+@if (ViewBag.Error != null)
+{
+    <input type="hidden" id="add_err" value="@(ViewBag.Error)" />
+}
+else
+{
+    <input type="hidden" id="add_err" value="" />
+    <input type="hidden" id="free_ship" name="FreeShip" value="@(FreeShip)" />
+    <input type="hidden" id="money_rate" name="MoneyRate" value="@(MoneyRate)" />
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên sản phẩm</th>
+                @*<th>Thuộc tính</th>*@
+                <th>Đơn giá</th>
+                <th>Số lượng</th>
+                <th>Tạm tính</th>
+                
+            </tr>
+        </thead>
+        <tbody id="product_item">
+            @if (Model != null && Model.Count() > 0)
+            {
+                foreach (var item in Model)
+                {
+                    <tr id="@($"tr_{item.Id}")" class="tr_item">
+                        <td class="align-top"><b class="td_stt">@(Model.IndexOf(item) + 1)</b></td>
+                        <td class="text-uppercase text-dark font-weight-semibold align-top">
+                            @(item.ProductName)<br />
+                            @*@foreach (var prop in listProp.Where(x => (item.ParentPropertiesId ?? "").Contains(x.ReId) && x.is_parrent == true))
+                            {
+                                <span class="badge badge-pill badge-success">
+                                    <b class="font-weight-semibold">@(prop.name):</b>
+                                    @(listProp.FirstOrDefault(x => (item.PropertiesId ?? "").Contains(x.ReId) && x.parrent_properties_id == prop.id)?.name)
+                                </span>
+                            }*@
+                        </td>
+                        <td class="align-top">
+                            @(item.Price?.ToString("#,###"))
+                        </td>
+                        <td class="align-top">
+                            <p class="text-center p-b-0">@(item.Quantity)</p>
+                        </td>
+                        <td class="align-top">
+                            @((item.Price * item.Quantity)?.ToString("#,###"))
+                        </td>
+                        <td class="align-top d-none">
+                            <div class="d-inline-block">
+                                <button type="button" class="btn btn-sm btn-warning" onclick="SelectItemOrder('@(item.ProductId)', '@(item.Id)')">
+                                    <i class="anticon anticon-form"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="RemoveItemOrder('@(item.Id)')">
+                                    <i class="anticon anticon-delete"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="7">Chưa có sản phẩm được chọn</td></tr>
+            }
+
+            <tr class="info">
+                <td colspan="4" class="font-weight-semibold">
+                    <button type="button" class="btn btn-sm btn-outline btn-outline-primary d-none" onclick="$('#addproduct').modal('show')">
+                        <i class="fa fa-plus"></i> Thêm sản phẩm
+                    </button> 
+                    <span class="float-right">TỔNG CỘNG</span>
+                </td>
+                <td colspan="2" id="SubTotal" class="font-weight-semibold">@(subTotal > 0 ? subTotal.ToString("#,###") : "0")</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="align-top text-right font-weight-semibold">
+                    GIẢM GIÁ<br />
+
+                </td>
+                <td colspan="2">
+                    <div class="input-group mb-3">
+                        <input type="text" id="DiscountAmount" name="DiscountAmount" class="form-control" value="@(discountAmount > 0 ? discountAmount.ToString("#,###"): discountPercent.ToString())" onblur="ChangeShippingOrDiscount()" oninput="this.value = this.value.replace(/[^0-9,]/g, '');" onkeyup="$(this).val(toMoney($(this).val()))" />
+                        <div class="btn-group btn-group-toggle input-group-btn" data-toggle="buttons">
+                            <label class="btn btn-outline-success @(discountAmount > 0 ? "" : "active")" style="border-radius: 0; padding: 0.6rem">
+                                <input type="radio" name="discount_type" @(discountAmount > 0 ? "" : "checked") autocomplete="off" value="%" onchange="ChangeShippingOrDiscount()"><b>%</b>
+                            </label>
+                            <label class="btn btn-outline-success @(discountAmount > 0 ? "active" : "")" style="padding:0.6rem">
+                                <input type="radio" name="discount_type" autocomplete="off" value="đ" onchange="ChangeShippingOrDiscount()"><b>đ</b>
+                            </label>
+                        </div>
+                    </div>
+
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" class="align-top text-right font-weight-semibold">PHÍ VẬN CHUYỂN</td>
+                <td colspan="2">
+                    <input type="text" id="ShippingFee" name="Shipping" class="form-control" value="@((FreeShip > 0 && grandTotal >= FreeShip) || shippingFee <= 0 ? "0" : shippingFee.ToString("#,###"))" onblur="ChangeShippingOrDiscount()" oninput="this.value = this.value.replace(/[^0-9,]/g, '');" onkeyup="$(this).val(toMoney($(this).val()))" />
+                </td>
+            </tr>
+            <tr @(MoneyRate > 0 ? "" : "style=display:none")>
+                <td colspan="5" id="money_rate_text" class="text-success text-right" style="border-right:none">
+                    Sử dụng điểm tích lũy giảm @(MoneyRate > 0 ? MoneyRate.ToString("#,###") : "0")
+                </td>
+                <td style="border-left:none"></td>
+            </tr>
+            <tr class="danger">
+                <td colspan="4" class="text-right font-weight-bold ">TỔNG TIỀN</td>
+                <td colspan="2" id="GrandTotal" class="font-weight-bold">@(grandTotal > 0 ? grandTotal.ToString("#,###") : "0")</td>
+            </tr>
+        </tbody>
+    </table>
+}

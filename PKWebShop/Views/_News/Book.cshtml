@@ -1,0 +1,318 @@
+﻿@model IEnumerable<PKWebShop.Models.n_news>
+@using PKWebShop.AppLB
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+
+@{
+    ViewBag.Title = "Trung Tâm Gia Sư Happy | Sách";
+    var key = "";
+    if (Request.Url.Segments.Length == 3)
+    {
+        key = Request.Url.Segments[2]?.ToString();
+    }
+
+
+    var arrData = ViewBag.ArrData as object[];
+    var trangkhac_topbg = arrData[0] as SectionFeatureModel;
+    var listTopic = arrData[1] as List<n_toppic>;
+    var top4NewBook = arrData[2] as List<n_news>;
+    var listTags = arrData[3] as List<string>;
+    var toppicName = arrData[4] as string;
+    var relateTopic = arrData[5] as n_toppic;
+    var tagName = arrData[6] as string;
+
+    var menuLevel1 = listTopic.Where(x => string.IsNullOrEmpty(x.RelatedTopicId)).ToList();
+    var menuLevel2 = listTopic.Where(x => !string.IsNullOrEmpty(x.RelatedTopicId)).ToList();
+
+    int totalRecords = int.Parse(TempData["totalRecords"].ToString());
+    int page = int.Parse(TempData["page"].ToString());
+    int rpp = int.Parse(TempData["rpp"].ToString());
+
+    var top1NewBook = new n_news();
+    if (Model != null && Model.Count() > 0)
+    {
+        top1NewBook = Model.FirstOrDefault();
+    }
+}
+
+
+<style type="text/css">
+    .widget_categories ul li.active a {
+        padding-right: 0px;
+        padding-left: 10px;
+        color: #be2c39;
+    }
+
+    .dropdown > .dropdown-menu {
+        display: block;
+        position: relative;
+        border: none;
+        box-shadow: none;
+        margin-top: 15px;
+        float: none;
+    }
+
+    .danhmuc ul li {
+        z-index: 1;
+    }
+
+    .danhmuc ul li a {
+        font-family: 'Pattaya', sans-serif;
+        font-size: 18px;
+    }
+
+    .dropdown-menu > .active > a {
+        background-color: antiquewhite;
+    }
+
+    .li_active {
+        color: red;
+    }
+
+    .widget_archive ul li a:hover {
+        padding-left: unset;
+    }
+
+    .meta-des1 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 8; /* number of lines to show */
+        -webkit-box-orient: vertical;
+        padding-bottom: 0px;
+    }
+
+    .meta-des2 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 5; /* number of lines to show */
+        -webkit-box-orient: vertical;
+        padding-bottom: 0px;
+    }
+</style>
+
+
+@if (trangkhac_topbg != null)
+{
+    <!--Breadcrumb start-->
+    <div class="ed_pagetitle" style="background-image: url(@(trangkhac_topbg.Picture));">
+        <div class="ed_img_overlay"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-4 col-sm-6">
+                    <div class="page_title">
+                        <h1>@(trangkhac_topbg.Title)</h1>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-8 col-sm-6">
+                    <ul class="breadcrumb">
+                        <li><a href="/">Trang chủ</a></li>
+                        <li><i class="fa fa-angle-double-right" aria-hidden="true"></i></li>
+                        <li><a href="/sach" style="cursor:pointer">@(trangkhac_topbg.Title)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Breadcrumb end-->
+}
+
+<!--Blog content start-->
+<div class="ed_transprentbg ed_toppadder80 ed_bottompadder80 blog">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-8 col-sm-8">
+                @if (!string.IsNullOrEmpty(tagName))
+                {
+                    <ul class="breadcrumb" style="border:1px solid grey">
+                        <li><a href="/sach">Sách</a></li>
+                        <li class="text-capitalize"><a href="javascript:void(0)">Tag: @tagName</a></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                }
+
+
+                @if (Model != null && Model.Count() > 0)
+                {
+                    <div class="blog-folder">
+                        <div class="blog-folder-left col-lg-5 col-xs-12">
+                            <div class="ed_blog_item ed_bottompadder50 ">
+                                <div class="ed_blog_image">
+                                    <a href="/sach/@CommonFunc.ConvertNonUnicodeURL(top1NewBook.Name)-@top1NewBook.NewsId">
+                                        <img src="@(top1NewBook.Picture ?? "/Content/admin/img/no_image.jpg")" alt="image">
+                                    </a>
+                                </div>
+                                <div class="ed_blog_info">
+                                    <h2><a href="/sach/@CommonFunc.ConvertNonUnicodeURL(top1NewBook.Name)-@top1NewBook.NewsId">@(top1NewBook.Name)</a></h2>
+                                    <ul>
+                                        <li data-toggle="tooltip" data-placement="right" title="Người viết bài">
+                                            <a href="javascript:void(0)"><i class="fa fa-user"></i> @(top1NewBook.CreatedBy)</a>
+                                        </li>
+                                        <li data-toggle="tooltip" data-placement="right" title="Ngày viết bài">
+                                            <a href="javascript:void(0)"><i class="fa fa-clock-o"></i> @(top1NewBook.CreatedAt?.ToString("dd/MM/yyyy"))</a>
+                                        </li>
+                                    </ul>
+                                    <p class="ed_bottompadder10 text-justify meta-des1">@Html.Raw(top1NewBook.ShortDescription?.Replace("\r\n", "<br/>"))</p>
+                                    <a href="/sach/@CommonFunc.ConvertNonUnicodeURL(top1NewBook.Name)-@top1NewBook.NewsId" class="btn ed_btn ed_orange">Xem thêm</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="blog-folder-right col-lg-7 col-xs-12">
+                            @foreach (var item in Model.Where(x => x.NewsId != top1NewBook?.NewsId).Take(3))
+                            {
+                                <div class="ed_blog_item">
+                                    <div class="ed_blog_image col-lg-4 col-xs-3">
+                                        <a href="/sach/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId">
+                                            <img src="@(item.Picture ?? "/Content/admin/img/no_image.jpg")" alt="image" />
+                                        </a>
+                                    </div>
+                                    <div class="ed_blog_info col-lg-8 col-xs-9">
+                                        <h2><a href="/sach/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId">@(item.Name)</a></h2>
+                                        <ul>
+                                            <li data-toggle="tooltip" data-placement="right" title="Người viết bài">
+                                                <a href="javascript:void(0)"><i class="fa fa-user"></i> @(item.CreatedBy)</a>
+                                            </li>
+                                            <li data-toggle="tooltip" data-placement="right" title="Ngày viết bài">
+                                                <a href="javascript:void(0)"><i class="fa fa-clock-o"></i> @(item.CreatedAt?.ToString("dd/MM/yyyy"))</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <!--list blog-->
+                    <div class="ed_blog_all_item">
+                        @foreach (var item in Model)
+                        {
+                            <div class="ed_blog_item ed_bottompadder50">
+                                <div class="ed_blog_image col-lg-4">
+                                    <a href="/sach/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId">
+                                        <img src="@(item.Picture ?? "/Content/admin/img/no_image.jpg")" alt="image" />
+                                    </a>
+                                </div>
+                                <div class="ed_blog_info col-lg-8">
+                                    <h2><a href="/sach/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId">@(item.Name)</a></h2>
+                                    <ul>
+                                        <li data-toggle="tooltip" data-placement="right" title="Người viết bài">
+                                            <a href="javascript:void(0)"><i class="fa fa-user"></i> @(item.CreatedBy)</a>
+                                        </li>
+                                        <li data-toggle="tooltip" data-placement="right" title="Ngày viết bài">
+                                            <a href="javascript:void(0)"><i class="fa fa-clock-o"></i> @(item.CreatedAt?.ToString("dd/MM/yyyy"))</a>
+                                        </li>
+                                        <li data-toggle="tooltip" data-placement="right" title="Lượt xem">
+                                            <a href="javascript:void(0)"><i class="fa fa-television"></i> @(item.ViewCount ?? 0)</a>
+                                        </li>
+                                    </ul>
+                                    <p class="ed_bottompadder10 text-justify meta-des2">@Html.Raw(item.ShortDescription?.Replace("\r\n", "<br/>"))</p>
+                                    <a href="/sach/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId" class="btn ed_btn ed_orange">Xem thêm</a>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="col-lg-12">
+                            @Html.Partial("_PagingPartial", new ViewDataDictionary { { "page", page }, { "rpp", rpp }, { "totalRecords", totalRecords }, { "url", "/sach" } })
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <h3 class="text-success">Sách đang được cập nhật</h3>
+                }
+            </div>
+            <!--Blog content end-->
+            <!--Sidebar Start-->
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                <div class="sidebar_wrapper">
+                    <aside class="widget widget_search">
+                        <form class="input-group">
+                            <input type="text" name="search" value="@(TempData["search"] ?? "")" class="form-control" placeholder="Tìm kiếm..." autocomplete="off">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="submit"><i class="fa fa-search"></i></button>
+                            </span>
+                        </form>
+                    </aside>
+
+                    <aside class="widget widget_categories danhmuc">
+                        <h4 class="widget-title" style="color:#be2c39;">Danh mục sách</h4>
+                        @if (menuLevel1 != null && menuLevel1.Count() > 0)
+                        {
+                            <ul>
+                                @foreach (var lv1 in menuLevel1)
+                                {
+                                    <li class="dropdown">
+                                        <a class="dropdown-toggle @if(relateTopic?.TopicId == lv1.TopicId){@Html.Raw("li_active");}" href="/danh-muc-sach/@lv1.URL">
+                                            <i class="fa fa-chevron-right"></i> @(lv1.Name)
+                                        </a>
+                                        @if (menuLevel2.Any(x => x.RelatedTopicId == lv1.TopicId))
+                                        {
+                                            <ul class="dropdown-menu">
+                                                @foreach (var lv2 in menuLevel2.Where(x => x.RelatedTopicId == lv1.TopicId))
+                                                {
+                                                    <li class="dropdown-item @if (toppicName.Equals(lv2.Name, StringComparison.OrdinalIgnoreCase)) { @Html.Raw("active"); }">
+                                                        <a href="/danh-muc-sach/@lv2.URL"><i class="fa fa-chevron-right"></i> @(lv2.Name)</a>
+                                                    </li>
+                                                }
+                                                <li class="dropdown-item @if(key == lv1.URL + "_k"){@Html.Raw("active");}">
+                                                    <a href="/danh-muc-sach/@(lv1.URL)_k">
+                                                        <i class="fa fa-chevron-right"></i> Khác
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        }
+                                    </li>
+                                }
+                                <li>
+                                    <a @if (key == "-1") { @Html.Raw("class='li_active'") } href="/danh-muc-sach/-1">
+                                        <i class="fa fa-chevron-right"></i> Khác
+                                    </a>
+                                </li>
+                            </ul>
+                        }
+                    </aside>
+
+                    <aside class="widget widget_archive">
+                        <h4 class="widget-title" style="color:#be2c39;">Sách Mới</h4>
+                        <ul>
+                            @foreach (var item in top4NewBook)
+                            {
+                                <li>
+                                    <a href="/sach/@CommonFunc.ConvertNonUnicodeURL(item.Name)-@item.NewsId" class="ed_blog_item">
+                                        <div class="ed_blog_image col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                                            <img src="@(item.Picture ?? "/Content/admin/img/no_image.jpg")" alt="image" />
+                                        </div>
+                                        <div class="ed_blog_info col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                                            <h3>@(item.Name)</h3>
+                                            <span style="color:#272727; font-size:12px; font-weight:600;">
+                                                <i class="fa fa-clock-o" style="font-size:15px; color:#be2c39; padding-right:5px;"></i>@(item.CreatedAt?.ToString("dd/MM/yyyy"))
+                                            </span>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </aside>
+
+                    @if (listTags != null && listTags.Count() > 0)
+                    {
+                        <aside class="widget widget_tag_cloud">
+                            <h4 class="widget-title">Tags</h4>
+                            @foreach (var item in listTags.Distinct())
+                            {
+                                <a href="/sach?tag=@(item?.Split(']')[0]?.Replace("[", "")?.Replace("]", ""))" class="ed_btn ed_orange">@(item?.Split(']')[1])</a>
+                            }
+                        </aside>
+                    }
+                </div>
+
+                <aside class="widget widget_tag_cloud">
+                    <h4 class="widget-title">Kết nối với chúng tôi</h4>
+                    <img style="width:40%; border:1px solid #808080" src="~/Content/user/images/img/GiaSuHappy_QRcode.jpg" />
+                </aside>
+            </div>
+            <!--Sidebar End-->
+        </div>
+    </div>
+</div>

@@ -1,0 +1,191 @@
+﻿/*--------------------------------------------------------------
+# Hero Section
+--------------------------------------------------------------*/
+.hero {
+    width: 100%;
+    position: relative;
+    color: #000;
+    padding-top:10px;
+    padding-bottom:10px;
+    background-color: #f4f8fa;
+}
+
+.hero-content {
+    padding: 60px 0 60px 0;
+}
+
+.hero .hero-title {
+    margin-bottom: 20px;
+    padding: 0;
+    font-size: 42px;
+    font-weight: 700;
+    color: #c50f21;
+    text-transform: uppercase;
+}
+
+.hero .hero-subtitle {
+    margin-bottom: 20px;
+    padding: 0;
+    font-size: 42px;
+    font-weight: 700;
+    color: #056674;
+    text-transform: uppercase;
+    font-weight: 400;
+}
+
+@media (max-width: 1179px) {
+    .hero .hero-title {
+        font-size: calc(40px * 0.8);
+    }
+
+    .hero .hero-subtitle {
+        font-size: calc(40px * 0.8);
+    }
+}
+
+.hero p {
+    font-size: 15px;
+    font-weight: 400;
+    margin-bottom: 40px;
+}
+
+.hero ul {
+    list-style-type: none;
+    margin-bottom: 0px;
+    padding-left: 0;
+}
+
+.hero form {
+    background: #fff;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+    .hero form .form-control {
+        padding-top: 18px;
+        padding-bottom: 18px;
+        padding-left: 20px;
+        padding-right: 20px;
+        border: none;
+        margin-right: 10px;
+        border: none !important;
+        background: none !important;
+    }
+
+        .hero form .form-control:hover,
+        .hero form .form-control:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+    .hero form .btn-primary {
+        background-color: var(--color-primary);
+        padding: 15px 30px;
+    }
+
+        .hero form .btn-primary:hover {
+            background-color: #2756ff;
+        }
+
+.hero .stats-item {
+    padding: 30px;
+    width: 100%;
+}
+
+    .hero .stats-item span {
+        font-size: 32px;
+        display: block;
+        font-weight: 700;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        position: relative;
+    }
+
+        .hero .stats-item span:after {
+            content: "";
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 3px;
+            background: var(--color-primary);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+        }
+
+    .hero .stats-item p {
+        padding: 0;
+        margin: 0;
+        font-family: var(--font-primary);
+        font-size: 15px;
+        font-weight: 600;
+    }
+.slide-hero-wrap{
+    display: flex;
+}
+.slide-hero-wrap .list-category{
+    width: 240px;
+    padding-right: 10px;
+}
+.slide-hero-wrap .slide-hero{
+    width: calc(100% - 240px);
+}
+.slide-hero-wrap .list-category ul{
+    display: block;
+    margin: 0;
+    padding: 15px;
+    z-index: 99;
+    background: #fff;
+    box-shadow: 0px 0px 30px rgb(127 137 161 / 25%);
+    transition: 0.3s;
+    border-radius: 5px;
+    font-family: var(--font-second);
+    font-weight: 500;
+}
+
+.slide-hero-wrap .list-category ul li.list-category-item {
+    margin-top: 10px;
+    padding: 10px 0 0;
+}
+.slide-hero-wrap .list-category ul li.list-category-item a{
+    display: flex;
+    align-items: stretch;
+}
+.slide-hero-wrap .list-category ul li.list-category-item:not(:first-child) {
+    border-top: 1px solid #dedede;
+}
+.slide-hero-wrap .list-category ul li.list-category-item:first-child {
+    margin-top: 0;
+    padding: 0 0 0;
+}
+.slide-hero-wrap .list-category ul .list-category-more{
+    margin-top: 20px;
+    text-align: center;
+}
+.slide-hero-wrap .list-category ul .list-category-more i{
+   color: #00aeef;
+}
+.slide-hero-wrap .list-category ul li.list-category-item img {
+    width: 19px;
+    height: 19px;
+    object-fit: contain;
+    margin-right: 8px;
+}
+.hero-img {
+    position: relative;
+    padding-top: 500px;
+    width: 100%;
+}
+.hero-img img.img-fluid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+@media (max-width: 767px) {
+    .slide-hero-wrap .list-category{display: none;}
+    .slide-hero-wrap .slide-hero{width: 100%;}
+}

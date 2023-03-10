@@ -1,0 +1,74 @@
+﻿@model IEnumerable<PKWebShop.Models.user_actions_log>
+@foreach (var item in Model)
+{
+    var a = item.Time.HasValue;
+    <tr>
+        <td data-sort="@(item.Time.Value.Ticks)">@(item.Time.HasValue ? item.Time.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss") : "")</td>
+        <td>@item.UserName</td>
+
+        <td>
+            @if (item.Action == "Added")
+            {
+                <span class="label label-success" style="background-color: forestgreen">Tạo mới</span>
+            }
+            else if (item.Action == "Modified")
+            {
+                <span class="label label-warning" style="background-color: orange">Chỉnh sửa</span>
+            }
+            else if (item.Action == "Deleted")
+            {
+                <span class="label label-danger">Xóa bỏ</span>
+            }
+            else
+            {
+                <span class="label label-default">@item.Action</span>
+            }
+        </td>
+        <td>
+            @{var type = item.EntityType.Split('.').LastOrDefault();
+                if (type == "n_news")
+                {
+                    @Html.Raw("Tin tức");
+                }
+                else if (type == "sectionfeaturedetail")
+                {
+                    @Html.Raw("Chức năng");
+                }
+                else if (type == "customer_request")
+                {
+                    @Html.Raw("Liên hệ");
+                }
+                else if (type == "webconfiguration")
+                {
+                    @Html.Raw("Thông tin hệ thống");
+                }
+                else if (type == "sectionfeature")
+                {
+                    @Html.Raw("Phân vùng chức năng");
+                }
+                else if (type == "users_permissions_granted")
+                {
+                    @Html.Raw("Phân quyền thành viên");
+                }
+                else if (type == "n_news_tags")
+                {
+                    @Html.Raw("Tag");
+                }
+                else if (type == "user")
+                {
+                    @Html.Raw("Thành viên");
+                }
+                else
+                {
+                    @Html.Raw(type);
+                }
+            }
+        </td>
+        <td>
+            <button class="btn btn-sm btn-success" onclick="viewdetail('@item.ID')">Xem chi tiết</button>
+            <input type="hidden" id="entity_@(item.ID)" value='@item.EntityValue' />
+            <input type="hidden" id="changed_@(item.ID)" value='@item.ChangedDetails' />
+        </td>
+    </tr>
+}
+

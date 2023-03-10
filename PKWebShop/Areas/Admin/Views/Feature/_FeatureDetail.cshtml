@@ -1,0 +1,66 @@
+﻿@model IEnumerable<(PKWebShop.Models.sectionfeaturedetail sd, string pic)>
+@{ 
+    string imgDefault = "/Content/admin/img/no_image.jpg";
+}
+
+@if (ViewBag.ErrMsg != null)
+{
+    <input type="hidden" id="@($"{ViewBag.SectionCode ?? ""}-errMsg")" value="@(ViewBag.ErrMsg)" />
+}
+else
+{
+    <input type="hidden" id="@($"{ViewBag.SectionCode ?? ""}-errMsg")" value="" />
+
+    <table class="table table-bordered">
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="@($"{item.sd.Id}-sfDetail")">
+                    <td class="align-top" style="width: 230px; background-color: #edf2f9;">
+                        <img src="@(item.pic??"")" onerror="$(this).remove()" width="230" height="100" style="object-fit:contain;">
+                    </td>
+                    <td class="align-top">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0" title="@(item.sd.Title)">@(item.sd.Title)</h5>
+                            <div class="card-toolbar">
+                                <ul>
+                                    <li class="d-flex mr-3">
+                                        <a class="text-dark m-r-10" href="javascript:void(0)" onclick="ChangeOrder('', '@item.sd.Id', false)">
+                                            <i class="anticon anticon-arrow-up font-size-20"></i>
+                                        </a>
+                                        <span class="font-weight-bold m-r-10">Vị trí: @item.sd.VolumeNumber</span>
+                                        <a class="text-dark" href="javascript:void(0)" onclick="ChangeOrder('', '@item.sd.Id', true)">
+                                            <i class="anticon anticon-arrow-down font-size-20"></i>
+                                        </a>
+                                    </li>
+                                    <li onclick="EditFeatureDetail('@(item.sd.Id)', '@(ViewBag.SectionCode)')">
+                                        <a class="text-dark" href="javascript:void(0)">
+                                            <i class="anticon anticon-form font-size-20"></i>
+                                        </a>
+                                    </li>
+                                    <li onclick="DeleteFeatureDetail('@(item.sd.Id)')">
+                                        <a class="text-dark" href="javascript:void(0)">
+                                            <i class="anticon anticon-delete font-size-20"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="m-b-10 @(string.IsNullOrEmpty(item.sd.URL) && string.IsNullOrEmpty(item.sd.Title) ? "d-none" : "")">
+                            <span class="badge badge-pill badge-geekblue" title="@(item.sd.URL)">
+                                <b>URL:</b> @(item.sd.URL)
+                            </span>
+                        </div>
+                        <div class="text-justify font-italic p-r-10 scrollbar scroll-style-1" style="max-height:100px;">@Html.Raw(item.sd.Description)</div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>

@@ -1,0 +1,69 @@
+﻿
+@{
+    ViewBag.Title = "Đổi mật khẩu";
+}
+
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <a href="/Users" class="breadcrumb-item">Thành viên</a>
+            <a href="/Users/Profile" class="breadcrumb-item">Profile</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+
+<p class="btn-group">
+    <a href="/users/profile/" class="btn btn-default">< Trở lại</a>
+</p>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["error"])
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @Html.Raw(TempData["success"])
+
+    </div>
+}
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header well" data-original-title="">
+                <h2 class="card-title">@ViewBag.Title</h2>
+            </div>
+            <div class="card-body">
+                <form role="form" action="/users/changepass" method="post">
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" required name="CurrentPass" class="form-control" placeholder="Password">
+                    </div>
+                    <div class="form-group">
+                        <label>Password mới</label>
+                        <input type="password" required name="NewPass" class="form-control" placeholder="New password">
+                    </div>
+                    <div class="form-group">
+                        <label>Nhập lại Password mới</label>
+                        <input type="password" required name="RetypePass" class="form-control" placeholder="Retype new password">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

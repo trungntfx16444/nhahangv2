@@ -1,0 +1,236 @@
+﻿@model IEnumerable<AdminPage.Models.giasu_teacher>
+
+@{
+    ViewBag.Title = "Danh sách Gia sư";
+}
+
+
+<style type="text/css">
+    .span-click {
+        cursor: pointer;
+        color: blue;
+    }
+</style>
+
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">Home</a>
+        </li>
+        <li>
+            <a href="/teacherman">Thông tin Gia sư</a>
+        </li>
+        <li>
+            <a href="javascript:void(0)">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+@if (TempData["e"] != null)
+{
+    <div class="alert alert-danger">@TempData["e"]</div>
+}
+else if (TempData["s"] != null)
+{
+    <div class="alert alert-success">@TempData["s"]</div>
+}
+
+
+<a href="/teacherman/save" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Thêm mới Gia sư</a>
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="fa fa-list"></i> @ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                @*<div class="col-lg-5 col-md-6 col-sm-8 col-xs-12 input-group">
+                    <input type="text" class="form-control" />
+                    <div class="input-group-addon" style="cursor:pointer">
+                        <i class="fa fa-search"></i> Tìm kiếm
+                        <img src="~/Content/admin/img/ajax-loaders/ajax-loader-1.gif" />
+                    </div>
+                </div>
+                <div class="clearfix"></div>*@
+                <br />
+                <div style="overflow:auto">
+                    <table id="tableData" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width:100px">Mã số</th>
+                                <th style="width:85px">Ảnh thẻ</th>
+                                <th style="min-width:300px">TT Gia sư</th>
+                                <th style="min-width:100px">Ghi chú</th>
+                                <th style="width:101px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count() > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr id="t_@item.Id">
+                                        <td>#@(item.Code)</td>
+                                        <td>
+                                            @if (string.IsNullOrWhiteSpace(item.Avatar))
+                                            {
+                                                <img src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="margin-top:3px;width:100px;display:block;border:1px dotted grey;" />
+                                            }
+                                            else
+                                            {
+                                                <img src="@item.Avatar" alt="Anh dai dien" style="margin-top:3px;width:100px;display:block;border:1px dotted grey;" />
+                                            }
+
+                                            <span class="label @(item.Active == true ? Html.Raw("label-primary") : Html.Raw("label-default"))">@(item.Active == true ? "Đang hoạt dộng" : "Không hoạt động")</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-capitalize"><b>@item.FullName</b> (@(item.Degree?.Split('|')[1]))</span><br />
+                                            <span>Phone: @(item.Phone)</span><br />
+                                            <span>Email: @(item.Email)</span><br />
+                                            <span>Địa chỉ: @(item.Address)</span><br /><br />
+                                            <a class="span-click" onclick="getInfo('@item.Id')">
+                                                <i class="fa fa-hand-o-right"></i> Xem thông tin: Khu vực dạy, Các môn dạy,<br /> Lớp dạy và Thời gian dạy
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span>@Html.Raw(item.Note?.Replace("\r\n", "<br/>"))</span>
+                                        </td>
+                                        <td>
+                                            <a href="/teacherman/save/v@(item.Id)" class="btn btn-block btn-sm btn-success">Xem chi tiết</a>
+                                            
+                                            <a style="margin-top:8px" href="/teacherman/save/@(item.Id)" class="btn  btn-block btn-sm btn-primary">Chỉnh sửa</a>
+                                            
+                                            <button style="margin-top:8px" class="btn btn-sm btn-block btn-danger" onclick="Delete('@item.Id')">Xóa</button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5">Chưa có Gia sư</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Popup modal-->
+<div class="modal fade" id="MyPopup" tabindex="-1" role="dialog" aria-labelledby="MyPopupLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="MyPopupLabel">Thông tin dạy học</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label><i class="fa fa-hand-o-right"></i> Khu vực dạy:</label>
+                    <p id="p-kvd" style="margin-left: 35px">text</p>
+                </div>
+                <div>
+                    <label><i class="fa fa-hand-o-right"></i> Các môn dạy:</label>
+                    <p id="p-md" style="margin-left: 35px">text</p>
+                </div>
+                <div>
+                    <label><i class="fa fa-hand-o-right"></i> Lớp dạy:</label>
+                    <p id="p-ld" style="margin-left: 35px">text</p>
+                </div>
+                <div>
+                    <label><i class="fa fa-hand-o-right"></i> Thời gian dạy:</label>
+                    <p id="p-tgd" style="margin-left: 35px">text</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#tableData').DataTable({
+            "bLengthChange": false,
+            "searching": true,
+            "paging": true,
+            "info": false,
+            "order": true
+        });
+    });
+
+    function Delete(id) {
+        if (confirm("Bạn muốn xóa Gia sư này?")) {
+
+            var obj = {};
+            obj.url = "/TeacherMan/DeleteTeacher";
+            obj.dataType = "json";
+            obj.type = "POST";
+            obj.contentType = "application/json";
+            obj.data = JSON.stringify({ id: id });
+            obj.success = function (result) {
+
+                if (result[0] == true) {
+                    $("#t_" + id).remove();
+
+                    let optSucc = $.parseJSON('{"text":"' + result[1] + '","layout":"topRight","type":"success"}');
+                    noty(optSucc);
+                }
+                else {
+                    let optErr = $.parseJSON('{"text":"' + result[1] + '","layout":"top","type":"error"}');
+                    noty(optErr);
+                }
+            };
+            obj.complete = function () {
+                //...
+            };
+            obj.error = function () {
+                let optErr = $.parseJSON('{"text":"Không thể thực hiện. Vui lòng thử lại sau.","layout":"top","type":"error"}');
+                noty(optErr);
+            };
+
+            $.ajax(obj);
+        }
+    };
+
+    function getInfo(id) {
+        var obj = {};
+        obj.url = "/TeacherMan/GetInfo";
+        obj.dataType = "json";
+        obj.type = "POST";
+        obj.contentType = "application/json";
+        obj.data = JSON.stringify({ id: id });
+        obj.success = function (result) {
+
+            if (result[0] == true) {
+                $("#p-kvd").html("&#10625; " + result[1]);
+                $("#p-md").html("&#10625; " + result[2]);
+                $("#p-ld").html("&#10625; " + result[3]);
+                $("#p-tgd").html("&#10625; " + result[4]);
+                $("#MyPopup").modal("show");
+            }
+            else {
+                let optErr = $.parseJSON('{"text":"' + result[1] + '","layout":"top","type":"error"}');
+                noty(optErr);
+            }
+        };
+        obj.complete = function () {
+            //...
+        };
+        obj.error = function () {
+            let optErr = $.parseJSON('{"text":"Không thể thực hiện. Vui lòng thử lại sau.","layout":"top","type":"error"}');
+            noty(optErr);
+        };
+
+        $.ajax(obj);
+    }
+</script>

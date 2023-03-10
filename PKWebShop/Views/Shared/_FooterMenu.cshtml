@@ -1,0 +1,58 @@
+﻿@model IEnumerable<(string title, List<(string name, string url)> items)>
+@using PKWebShop.AppLB
+@using PKWebShop.Models
+@{
+    webconfiguration info = UserContent.GetWebInfomation(true);
+}
+@*@foreach (var item in Model)
+    {
+        <div class="col-lg-4 col-md-4 col-sm-6 col-12">
+            <div class="footer-widget mb-40">
+                <h3 class="footer-title">@item.title</h3>
+                <div class="footer-info-list">
+                    <ul>
+                        @foreach (var s in item.items)
+                        {
+                            <li><a href="/@s.url">@s.name</a></li>
+                        }
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="col-lg-4 col-md-4 col-sm-12 col-12">
+        <div class="footer-widget mb-40">
+            <div class="contact-info-2">
+                <div class="footer-logo text-center">
+                    <a href="/">
+                        <img src="@(info.LogoFooter ?? info.LogoPicture ?? info.LogoHeader)" alt="logo" style="max-height: 100px;"/>
+                    </a>
+                </div>
+                <p>
+                    <small>
+                        @info.ShortAboutUs
+
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div>*@
+@foreach (var item in Model)
+{
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="footer-widget mb-40">
+            <h3 class="footer-title">
+                @item.title
+            </h3>
+            <div class="footer-info-list">
+                <ul>
+                    @foreach (var s in item.items)
+                    {
+                        <li><a href="/@s.url">@s.name</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}

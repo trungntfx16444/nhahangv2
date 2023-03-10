@@ -1,0 +1,99 @@
+﻿@model PKWebShop.Models.service
+@{
+    ViewBag.Title = Model.Name;
+    var langs = ViewBag.exitsLangs as List<PKWebShop.Services.SiteLang.Language>;
+    var lang = Request["lang"]?.ToString() ?? "vi";
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <a class="breadcrumb-item" href="/admin/services/">Dịch vụ - Sản phẩm</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["error"]
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["success"]
+    </div>
+}
+
+
+<p class="btn-group">
+    <a href="/admin/services/" class="btn btn-default">< Trở lại</a>
+    <a href="/admin/services/save/@Model.ReId?lang=@lang" class="btn btn-warning"><i class="anticon anticon-edit"></i> Sửa dịch vụ</a>
+    <a onclick="return confirm('Bạn xác nhận muốn dịch vụ này?')" href="/admin/services/delete/@Model.ServiceId" class="btn btn-danger"><i class="anticon anticon-delete"></i> Xóa dịch vụ</a>
+</p>
+
+<div class="card">
+    @if (langs.Count > 0)
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-6">
+                <ul class="nav nav-tabs border-0" id="langTab" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==lang ?"active":"")" @*data-toggle="tab"*@ href="/admin/services/detail/@Model.ReId?lang=@l.Code"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+            <div class="col-6 p-2">
+                <button id="quicksave" class="btn btn-sm btn-success float-right" style="display:none" onclick="quick_save()"><i class="fa fa-save"></i> Lưu nhanh</button>
+            </div>
+
+        </div>
+    }
+<div class="card-body" id="partial_content">
+    <p>
+        <label style="width:200px">Tên dịch vụ:</label>@Model.Name
+    </p>
+    <p>
+        <label style="width:200px">Vị trí:</label>@Model.Order
+    </p>
+
+    <p>
+        <label>Hình ảnh</label><br />
+        @if (string.IsNullOrWhiteSpace(Model.Picture))
+        {
+            <img src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="width:300px" />
+        }
+        else
+        {
+            <img src="@Model.Picture" alt="Anh dai dien" style="width:300px" />
+        }
+    </p>
+
+    <hr />
+    <h3>Giới thiệu dịch vụ</h3>
+    @if (string.IsNullOrWhiteSpace(Model.Decription))
+    {
+        <span>Không có nôi dung</span>
+    }
+    else
+    {
+        @Html.Raw(Model.Decription)
+    }
+</div>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/services/" class="btn btn-default">< Trở lại</a>
+    <a href="/admin/services/save/@Model.ServiceId" class="btn btn-warning"><i class="anticon anticon-edit"></i> Sửa dịch vụ</a>
+    <a onclick="return confirm('Bạn xác nhận muốn dịch vụ này?')" href="/admin/services/delete/@Model.ServiceId" class="btn btn-danger"><i class="anticon anticon-delete"></i> Xóa dịch vụ</a>
+</p>

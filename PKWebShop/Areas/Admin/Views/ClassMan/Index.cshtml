@@ -1,0 +1,183 @@
+﻿@model IEnumerable<PKWebShop.Models.giasu_class>
+
+@{
+    ViewBag.Title = "Danh sách Lớp học";
+}
+
+
+<style type="text/css">
+    .span-click {
+        cursor: pointer;
+        color: blue;
+    }
+</style>
+
+
+<div>
+    <ul class="breadcrumb">
+        <li>
+            <a href="/admin/">Home</a>
+        </li>
+        <li>
+            <a href="/admin/classman">Thông tin Lớp học</a>
+        </li>
+        <li>
+            <a href="javascript:void(0)">@ViewBag.Title</a>
+        </li>
+    </ul>
+</div>
+
+
+@if (TempData["e"] != null)
+{
+    <div class="alert alert-danger">@TempData["e"]</div>
+}
+else if (TempData["s"] != null)
+{
+    <div class="alert alert-success">@TempData["s"]</div>
+}
+
+
+<a href="/admin/classman/save" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Thêm Lớp học mới</a>
+
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="fa fa-list"></i> @ViewBag.Title</h2>
+            </div>
+            <div class="box-content">
+                <div style="overflow:auto">
+                    <table id="tableData" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width:100px">Mã số</th>
+                                <th style="min-width:240px">TT lớp</th>
+                                <th style="min-width:210px">Yêu cầu</th>
+                                <th style="min-width:240px">TT liên hệ</th>
+                                <th>Trạng thái lớp</th>
+                                <th style="width:101px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count() > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr id="c_@item.Id">
+                                        <td>#@(item.Code)</td>
+                                        <td>
+                                            <span><b>Lớp dạy: </b>@(item.ClassName?.Split('|')[1])</span><br />
+                                            <span><b>Môn dạy: </b>@item.Subjects</span><br />
+                                            <span><b>Số buổi: </b>@(!string.IsNullOrEmpty(item.LessonNumber) ? item.LessonNumber + "/tuần" : "")</span><br />
+                                            <span><b>Thời gian: </b>@(item.LearningTime)</span>
+                                        </td>
+                                        <td>
+                                            <span><b>Trình độ: </b>@(item.DegreeRequired?.Split('|')[1])</span><br />
+                                            <span><b>Thông tin khác: </b><br />@Html.Raw(item.Note?.Replace("\r\n", "<br/>"))</span>
+                                        </td>
+                                        <td>
+                                            <span><b>Phụ huynh: </b>@item.ContactName</span><br />
+                                            <span><b>Điện thoại: </b>@item.ContactPhone</span><br />
+                                            <span><b>Email: </b>@item.ContactEmail</span><br />
+                                            <span><b>Địa chỉ: </b>@(item.HomeNumber) @(item.ContactAddress), @(item.District?.Split('|')[1]), @(item.ProvinceOrCity?.Split('|')[1])</span>
+                                        </td>
+                                        <td>
+                                            @if (item.ApprovedAt == null)
+                                            {
+                                                <span class="label label-default">Chờ duyệt</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-info">Đã duyệt</span>
+                                            }
+                                            <br />
+                                            @if (item.IsComplete == true)
+                                            {
+                                                <span class="label label-danger">Lớp đã hoàn tất</span>
+                                            }
+                                            else
+                                            {
+                                                if (!string.IsNullOrEmpty(item.Status) && item.Status != "Lớp chưa giao")
+                                                {
+                                                    <span class="label label-primary">Lớp đã giao</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="label label-warning">Lớp chưa giao</span>
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            <a href="/admin/classman/save/v@(item.Id)" class="btn btn-block btn-sm btn-success">Xem chi tiết</a>
+
+                                            <a style="margin-top:8px" href="/admin/classman/save/@(item.Id)" class="btn  btn-block btn-sm btn-primary">Chỉnh sửa</a>
+
+                                            <button style="margin-top:8px" class="btn btn-sm btn-block btn-danger" onclick="Delete('@item.Id')">Xóa</button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6">Chưa có lớp</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#tableData').DataTable({
+            "bLengthChange": false,
+            "searching": true,
+            "paging": true,
+            "info": false,
+            "order": true
+        });
+    });
+
+    function Delete(id) {
+        if (confirm("Bạn muốn xóa Lớp này?")) {
+
+            var obj = {};
+            obj.url = "/admin/ClassMan/DeleteClass";
+            obj.dataType = "json";
+            obj.type = "POST";
+            obj.contentType = "application/json";
+            obj.data = JSON.stringify({ id: id });
+            obj.success = function (result) {
+
+                if (result[0] == true) {
+                    $("#c_" + id).remove();
+
+                    let optSucc = $.parseJSON('{"text":"' + result[1] + '","layout":"top","type":"success"}');
+                    noty(optSucc);
+                }
+                else {
+                    let optErr = $.parseJSON('{"text":"' + result[1] + '","layout":"top","type":"error"}');
+                    noty(optErr);
+                }
+            };
+            obj.complete = function () {
+                //...
+            };
+            obj.error = function () {
+                let optErr = $.parseJSON('{"text":"Không thể thực hiện. Vui lòng thử lại sau.","layout":"top","type":"error"}');
+                noty(optErr);
+            };
+
+            $.ajax(obj);
+        }
+    };
+
+</script>

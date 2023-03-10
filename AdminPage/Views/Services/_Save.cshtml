@@ -1,0 +1,86 @@
+﻿@using AdminPage.Models
+@using AdminPage.Utils
+@model AdminPage.Models.service
+    
+    @{ 
+        List<uploadmorefile> gallery = ViewBag.gallery ?? new List<uploadmorefile>();
+    }
+<form id="services_form" action="/services/save" method="post" onkeydown="$('#quicksave').show()" onchange="$('#quicksave').show()" enctype="multipart/form-data">
+    @Html.HiddenFor(m => m.ServiceId)
+    @Html.HiddenFor(m => m.ReId)
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Loại Phòng</label>
+                <input type="text" required name="Name" class="form-control" placeholder="loại Phòng" value="@Model.Name">
+            </div>
+            <div class="form-group lang_select" style="@(Model.ReId!=null?"display:none":"")">
+                <label>NGÔN NGỮ</label>
+                <select id="Language" name="LangCode" class="col-md-12 p-0">
+                    @foreach (var n in AdminPage.Services.SiteLang.GetListLangs())
+                    {
+                        <option data-icon="flag-icon @n.Icon" value="@n.Code" @(n.Code == Model.LangCode ? "selected" : "")> @n.Name </option>
+                    }
+                </select>
+            </div>
+            <div class="row">
+                <div class="col-md-9 form-group">
+                    <label>Giá Phòng</label>
+                    <input type="text" name="Price" class="form-control" placeholder="Giá Phòng" onblur="value = (parseFloat(this.value.replace(/,/g,'.')) || 0)" value="@Model.Price">
+                </div>
+                <div class="col-md-3 form-group">
+                    <label>Đơn vị tiền</label>
+                    <input type="text" name="CurrencyUnit" class="form-control" placeholder="Đơn vị" value="@(Model.CurrencyUnit ?? Constant.CURRENCY_SIGN)">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Số thứ tự</label>
+                <input type="number" name="Order" class="form-control" placeholder="Thứ tự xuất hiện trên menu" value="@Model.Order">
+            </div>
+            <div class="form-group">
+                <label>Giới thiệu ngắn</label>
+                <textarea rows="5" name="ShortDescription" class="form-control" placeholder="Giới thiệu phòng nghỉ">@Html.Raw(Model?.ShortDescription)</textarea>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Hình ảnh đại diện</label><br />
+                <a onclick="uploadpic()" href="#" style="vertical-align:top">[Upload ảnh]</a>
+
+                @if (string.IsNullOrWhiteSpace(Model.Picture))
+                {
+                    <img id="showPicture" onclick="uploadpic()" src="~/Content/admin/img/no_image.jpg" alt="Anh dai dien" style="margin-top:3px;width:200px;display:block;border:1px dotted grey;cursor:pointer" />
+                }
+                else
+                {
+                    <img id="showPicture" onclick="uploadpic()" src="@Model.Picture" alt="Anh dai dien" style="margin-top:3px;width:200px;display:block;cursor:pointer" />
+                }
+                <br />
+                <input type="hidden" id="hdPicture" name="Picture" value="@Model.Picture">
+            </div>
+            <div  class="form-group">
+                <label>
+                    Thêm hình ảnh phòng nghỉ
+                </label>
+                @Html.Partial("_UploadMoreFilesPartial", gallery, new ViewDataDictionary { { "upload", true } })
+            </div>
+        </div>
+      
+    </div>
+    
+    
+    <div class="form-group">
+        <label>Giới thiệu dịch vụ</label>
+        <textarea rows="10" name="description" class="form-control" placeholder="Giới thiệu dịch vụ">@Html.Raw(Model?.Decription)</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Lưu lại</button>
+
+</form>
+<script>
+    $(function () {
+        $("#Language").selectpicker();  
+        CKEDITOR.replace('description', { height: 450 });
+    })
+</script>

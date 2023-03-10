@@ -1,0 +1,73 @@
+﻿@model IEnumerable<(n_toppic topic, IEnumerable<n_news> news)>
+@using PKWebShop.Models
+@using PKWebShop.Resources
+@{
+    ViewBag.Title = "Tin tức";
+}
+
+<div class="breadcrumb-area bg-theme">
+    <div class="container">
+        <div class="breadcrumb-content">
+            <ul>
+                <li>
+                    <a href="/">Trang chủ</a>
+                </li>
+                <li class="active">Tin tức</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="blog-area pt-60 pb-60">
+    <div id="post" class="container">
+        <div class="row">
+            <div class="col-lg-9">
+                @foreach (var c in Model)
+                {
+                    <div class="product-area section-padding-1 pb-25">
+                        <div class="section-title-btn-wrap mb-25" style=" border-bottom: 2px solid #58aa40;">
+                            <div class="section-title">
+                                <a href="/tin-tuc?topic=@c.topic.URL"><h2 class="font-size-20" style="font-size:20px; color:green">@c.topic.Name</h2></a>
+                            </div>
+                            <div class="section-readmore">
+                                <a href="/tin-tuc?topic=@c.topic.URL">@Resource.ViewMore <i class="icon-arrow-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            @foreach (var n in c.news)
+                            {
+                                <div class="col-lg-6 col-md-6 col-12 col-sm-6">
+                                    <div class="blog-wrap mb-40">
+                                        <div class="blog-img mb-20">
+                                            <div class="box-img">
+                                                <a href="/@(n.UrlCode)-b@(n.ReId)"><img src="@n.Picture" onerror="this.onerror = null; this.src = '/Content/Client/images/no_image.png';" alt="@(n.ImageAlt)"  loading="lazy"></a>
+                                            </div>
+                                        </div>
+                                        <div class="blog-content">
+                                            <div class="blog-meta">
+                                                <ul>
+                                                    <li><a href="/tin-tuc?topic=@c.topic.URL">@n.ToppicName</a></li>
+                                                    <li>@((n.CreatedAt??DateTime.Now).ToString("dd MMMM"))</li>
+                                                </ul>
+                                            </div>
+                                            <h3><a href="/@(n.UrlCode)-b@(n.ReId)">@n.Name</a></h3>
+                                            <div class="excerpt mt-2">
+                                                @n.ShortDescription
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+            <div class="col-lg-3">
+                @Html.Partial("_Right")
+            </div>
+        </div>
+    </div>
+</div>
+

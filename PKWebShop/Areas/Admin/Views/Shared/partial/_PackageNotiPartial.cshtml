@@ -1,0 +1,67 @@
+﻿@using PKWebShop.Models.DTO
+@model PackageInfo
+@{
+    var controller = HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString();
+    var action = ViewContext.RouteData.GetRequiredString("action");
+    var notEnoughSpaceMessage = "Bạn không thể thực hiện các thao tác liên quan.";
+    var exp = new PKWebShop.Models.WebShopEntities().Package.FirstOrDefault(p => p.PackageType == "web_package")?.ExpirationDate;
+  if (Model.CanNotUseWeb())
+    {
+        if (action != "" && action != "index")
+        {
+            Response.Redirect($"/admin/{controller}");
+        }
+        /*switch (controller) {
+          case "productman":
+            notEnoughSpaceMessage = "Bạn không thể thực hiện các thao tác thay đổi sản phẩm.";
+            break;
+        }*/
+    }
+}
+
+<label class="blink_me">
+  @if (Model.WarExpired)
+  {
+    <text>
+      Trang web của sẽ hết hạn sử dụng vào ngày @(exp?.ToString("dd/MM/yyyy"))!
+      Vui lòng liên hệ nhà cung cấp để gia hạn.
+    </text>
+  }
+  else if (Model.IsExpired)
+  {
+    <text>
+      Trang web của bạn đã hết hạn !
+      Vui lòng liên hệ nhà cung cấp để gia hạn.
+    </text>
+  }
+  else if (Model.WarrningSpace)
+  {
+    <text>
+      Trang web của bạn sắp hết dung lượng lưu trữ cho phép !
+      Vui lòng liên hệ nhà cung cấp để bổ sung thêm.
+    </text>
+  }
+  else if (Model.NotEnoughSpace)
+  {
+    <text>
+      Trang web của bạn đã hết dung lượng lưu trữ cho phép !
+      @notEnoughSpaceMessage
+      Vui lòng liên hệ nhà cung cấp để bổ sung thêm.
+    </text>
+  }
+</label>
+
+<style>
+    .blink_me {
+        color: red;
+        text-transform: uppercase;
+        animation: slide-right 15s linear infinite;
+        white-space: nowrap;
+        position: absolute;
+    }
+    @@keyframes blinker {
+      50% {
+        opacity: 0;
+      }
+    }
+</style>

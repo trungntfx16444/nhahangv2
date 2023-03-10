@@ -1,0 +1,36 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@model featuredetail_view
+@{
+    string url_product = ViewBag.url_product;
+    var cateId = Model.Detail.URL.Split(new string[] { "-pc" }, StringSplitOptions.RemoveEmptyEntries).ElementAtOrDefault(1);
+    var order = Model.Detail.URL.Contains("-pc") ? string.Empty : Model.Detail.URL.Split('?')[0];
+    var PartialId = Model.Detail.Id;
+}
+<div id="@PartialId" class="product-area pt-50">
+    <div class="container bg-white">
+        <div class="section-title-tab-wrap mb-20">
+            <div class="section-title-3 px-2">
+                <h2>@Model.Detail.Title</h2>
+            </div>
+            <b></b>
+            <div class="btn-style-5 pl-3">
+                <a href="@Model.Detail.URL">Xem tất cả <i class="icon-arrow-right"></i></a>
+            </div>
+        </div>
+        <p>@Model.Detail.SubTitle</p>
+        <div class="row item_list">
+
+        </div>
+        <div class="read-more text-center">
+            <a href="@(!string.IsNullOrEmpty(Model.Detail.URL) ? Model.Detail.URL : $"/{url_product}")" class="btn bg-gradient text-white">
+                XEM THÊM <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        let PartialId ='@PartialId', cateId = '@cateId', order='@order', take = 8;
+        LoadListProductPartial(PartialId, cateId, order, take, "_Product-05_item");
+    })
+</script>

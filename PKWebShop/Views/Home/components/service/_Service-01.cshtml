@@ -1,0 +1,36 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{ 
+    var adminSite = UserContent.GetAdminSite();
+}
+
+@if (Model?.Details?.Count > 0)
+{
+    <div class="service-area ptb-50" style="background-color: #f1f2f2">
+        <div class="container">
+            <div class="section-title text-center">
+                <h2 class="title text-uppercase">
+                    @Html.Raw(Model.Feature.Title?.Replace("[", "<span>").Replace("]", "</span>"))
+                </h2>
+            </div>
+            <div class="row justify-content-center">
+                @foreach (var item in Model.Details)
+                {
+                    <div class="col-lg-5 col-md-6 col-sm-6 col-6">
+                        <a class="single-service-wrap" href="@(string.IsNullOrEmpty(item.Detail.URL)||item.Detail.URL=="#" ? "javascript:void(0)" : item.Detail.URL)" >
+                            <div class="service-icon">
+                                <img class="img-fluid" src="@($"{adminSite}{item?.Files?.FirstOrDefault()?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy" />
+                                @*<img class="img-fluid" src="@($"{adminSite}{d.Files.FirstOrDefault()?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">*@
+                            </div>
+                            <div class="service-content">
+                                <h2 class="service-title text-white px-2">@item.Detail.Title</h2>
+                                @*<div class="service-desc">@d.Detail.SubTitle</div>*@
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

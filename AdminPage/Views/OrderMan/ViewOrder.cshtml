@@ -1,0 +1,310 @@
+﻿@model AdminPage.Models.order
+@using Inner.Libs.Helpful
+@using AdminPage.AppLB
+@using AdminPage.Enums
+@using AdminPage.Models
+@using AdminPage.Utils
+
+@{
+    webconfiguration info = UserContent.GetWebInfomation(true);
+    var listStatus = UserContent.OrderStatus();
+    var listProductItem = ViewBag.ListOrderDetail as List<orders_detail>;
+    var listProp = ViewBag.ListProp as List<product_properties>;
+    var cusAddress = ViewBag.CusAddress as string;
+    var Shipping = ViewBag.Shipping as string;
+}
+<style>
+    @@page {
+        size: A4;
+        margin: 0;
+        padding: 20px;
+    }
+
+    @@media print {
+        html, body {
+            width: 210mm;
+            height: 297mm;
+            font-size: 14px;
+        }
+        .header, .side-nav, .page-header, .list_btn, .footer {
+            display: none !important;
+        }
+        .card{
+            border: none;
+        }
+       /* .card-body, #invoice {
+            padding: 0 !important;
+        }*/
+        
+    }
+</style>
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i> Home
+            </a>
+            <a class="breadcrumb-item" href="/orderman">Quản lý đơn hàng</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+
+<div class="container">
+    <div class="m-b-10 list_btn">
+        <a href="/orderman" class="btn btn-default float-left">
+            <i class="anticon anticon-left"></i> Trở lại
+        </a>
+        <a class="btn btn-warning float-right" href="/orderman/save/@(Model.Id)">
+            <i class="anticon anticon-edit"></i> Sửa đơn hàng
+        </a>
+        <div class="dropdown float-right mr-2">
+            <button class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                <span>Thay đổi trạng thái</span>
+            </button>
+            <div class="dropdown-menu">
+                @foreach (var status in listStatus)
+                {
+                    <a class="dropdown-item @(status.Key==Model.Status?"disabled":"")" href="/orderman/ChangeStatus/@(Model.Id)?status=@status.Key" onclick="return confirm('Bạn có chắc muốn cập nhật trạng thái đơn hàng thành \'@status.Value\'')">@status.Value</a>
+                }
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger">
+            <div class="d-flex align-items-center justify-content-start">
+                <span class="alert-icon">
+                    <i class="anticon anticon-warning font-size-18"></i>
+                </span>
+                <span>@Html.Raw(TempData["error"])</span>
+            </div>
+        </div>
+    }
+    else if (TempData["success"] != null)
+    {
+        <div class="alert alert-success">
+            <div class="d-flex align-items-center justify-content-start">
+                <span class="alert-icon">
+                    <i class="anticon anticon-check font-size-18"></i>
+                </span>
+                <span> @Html.Raw(TempData["success"])</span>
+            </div>
+        </div>
+    }
+    <div class="card">
+        <div class="card-body">
+            <div id="invoice" class="p-h-30">
+                <div class="m-t-15 lh-2">
+                    <div class="inline-block">
+                        <img class="img-fluid" src="@(info.LogoPicture)" style="height:50px;">
+                    </div>
+                    <div class="float-right">
+                        <h2>ĐƠN HÀNG</h2>
+                    </div>
+                </div>
+
+                <div class="row m-t-20 lh-2">
+                    <div class="col-sm-8">
+                        <div class="p-l-10 m-t-10">
+                            <h3 class="font-weight-semibold text-dark">@(info.CompanyName)</h3>
+                            <span>@(info.Address)</span><br>
+                            Email:
+                            <span>@(info.ContactEmail)</span><br />
+                            Phone:
+                            <span>@(info.Hotline)</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="m-t-10">
+                            <div class="text-dark text-uppercase d-inline-block">
+                                <span class="font-weight-semibold text-dark">Mã đơn hàng :</span>
+                            </div>
+                            <div class="float-right">#@(Model.Id)</div>
+                        </div>
+                        <div>
+                            <div class="text-dark text-uppercase d-inline-block">
+                                <span class="font-weight-semibold text-dark">Ngày tạo :</span>
+                            </div>
+                            <div class="float-right">@($"{Model.CreatedAt:dd/MM/yyyy}")</div>
+                        </div>
+                        <div>
+                            <div class="text-dark text-uppercase d-inline-block">
+                                <span class="font-weight-semibold text-dark">Trạng thái :</span>
+                            </div>
+                            <div class="float-right">@(listStatus.FirstOrDefault(x => x.Key == Model.Status).Value)</div>
+                        </div>
+                        <div>
+                            <div class="text-dark text-uppercase d-inline-block">
+                                <span class="font-weight-semibold text-dark">Thanh toán :</span>
+                            </div>
+                            <div class="float-right">
+                                <i class="font-weight-semibold">@(Ext.EnumParse<PaymentMethod>(Model.PaymentMethod).Text())</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row m-t-20 lh-2">
+                    <div class="col-sm-8">
+                        <h5 class="p-l-10 m-t-10 text-uppercase">Thông tin khách hàng:</h5>
+                        <address class="p-l-10 m-t-10">
+                            <span class="font-weight-semibold text-dark">@($"{Model.CustomerName} - {Model.CustomerPhone}")</span><br>
+                            <span>Địa chỉ: @(cusAddress.Trim(new char[] { ',', ' ' }))</span><br>
+                            <span>Email: @(Model.CustomerEmail)</span>
+                        </address>
+                    </div>
+                    <div class="col-sm-4">
+                        <h5 class="p-l-10 m-t-10 text-uppercase">Địa chỉ giao hàng:</h5>
+                        <address class="p-l-10 m-t-10">
+                            <span>@(Shipping.Trim(new char[] {',', ' '}))</span>
+                        </address>
+                    </div>
+                </div>
+
+                <div class="m-t-20">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>STT.</th>
+                                    <th style="width:45%">Sản phẩm</th>
+                                    <th>Đơn giá</th>
+                                    <th>Số lượng</th>
+                                    <th class="text-right">Tạm tính</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in listProductItem)
+                                {
+                                    <tr>
+                                        <th class="align-top">@(listProductItem.IndexOf(item) + 1)</th>
+                                        <td class="align-top">
+                                            @(item.ProductName)
+                                            @if (!string.IsNullOrEmpty(item.PropertiesId))
+                                            {
+                                                <br />
+                                                <i>
+                                                    @foreach (var prop in listProp.Where(x => (item.ParentPropertiesId ?? "").Contains(x.ReId) && x.is_parrent == true))
+                                                    {
+                                                        <span>
+                                                            <b class="font-weight-semibold">@(prop.name):</b>
+                                                            @(listProp.FirstOrDefault(x => (item.PropertiesId ?? "").Contains(x.ReId) && x.parrent_properties_id == prop.id)?.name + "; ")
+                                                        </span>
+                                                    }
+                                                </i>
+                                            }
+                                        </td>
+                                        <td class="align-top">@(item.Price?.ToString("#,###")) @Constant.CURRENCY_SIGN</td>
+                                        <td class="align-top text-right">@(item.Quantity)</td>
+                                        <td class="align-top text-right">@((item.Price * item.Quantity)?.ToString("#,###")) @Constant.CURRENCY_SIGN</td>
+                                    </tr>
+                                }
+
+
+                            </tbody>
+                            <tbody id="total_detail">
+                                <tr>
+                                    <td colspan="2" rowspan="5" style=" text-align: left; vertical-align: top; border: 1px solid #ededed">
+                                        <label>Ghi chú:</label><br />
+                                        <p class="font-size-13 m-b-0">@Html.Raw(Model.Customer_Comment?.Replace("\r\n", "<br/>"))</p>
+                                    </td>
+                                    <td><h6>Tổng:</h6></td>
+                                    <td><h6>@listProductItem.Sum(x=>x.Quantity)</h6></td>
+                                    <td><h6>@(Model.SubTotal?.ToString("#,###")) @Constant.CURRENCY_SIGN</h6></td>
+                                </tr>
+                                @if (Model.Shipping.Value > 0)
+                                {
+                                    <tr>
+                                        <td colspan="2" style="border: none; padding-top: 0; padding-bottom: 0;">
+                                            <h6>
+                                                Phí vận chuyển:
+                                            </h6>
+                                        </td>
+                                        <td class="pt-0 pb-0">
+                                            <h6><span style="text-decoration: @(Model.SubTotal == Model.GrandTotal + Model.DiscountAmount && Model.Shipping.Value > 0 ? "line-through" : "")">@((Model.Shipping != null && Model.Shipping > 0) ? Model.Shipping?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</span></h6>
+                                        </td>
+                                    </tr>
+
+                                }
+                                @if ((Model.DiscountAmount > 0) || (Model.DiscountPercent > 0) || !string.IsNullOrEmpty(Model.GiftCode))
+                                {
+                                    <tr>
+                                        <td colspan="2" class="pt-0 pb-0 align-top">
+                                            <h6>
+                                                Giảm giá:
+                                            </h6>
+                                        </td>
+                                        <td class="pt-0 pb-0">
+                                            <h6>
+                                                @if (Model.DiscountAmount > 0)
+                                                {
+                                                    @((Model.DiscountAmount != null && Model.DiscountAmount > 0) ? Model.DiscountAmount?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN
+                                                }
+                                                else if (Model.DiscountPercent > 0)
+                                                {
+                                                    @(((Model.DiscountPercent ?? 0)/100 * (Model.SubTotal ?? 0)).ToString("#,###")) @Constant.CURRENCY_SIGN
+                                                }
+
+                                                @if (!string.IsNullOrEmpty(Model.GiftCode))
+                                                {
+                                                    <br /><span class="text-muted font-size-13">(Mã giảm giá: @(Model.GiftCode)@(Model.DiscountPercent > 0 ? $" -{Model.DiscountPercent}%" : ""))</span>
+                                                }
+                                            </h6>
+                                        </td>
+                                    </tr>
+
+                                }
+                                @if ((Model.BonusPointsUsed ?? 0) > 0)
+                                {
+                                    <tr>
+                                        <td colspan="2" class="pt-0 pb-0">
+                                            <h6>Sử dụng điểm tích lũy giảm:</h6>
+                                        </td>
+                                        <td class="pt-0 pb-0">
+                                            <h6>@(Model.BonusPointsDiscount?.ToString("#,###")) @Constant.CURRENCY_SIGN</h6>
+                                        </td>
+                                    </tr>
+
+                                }
+                                <tr>
+
+                                    <td colspan="2">
+                                        <h4>Tổng thanh toán:</h4>
+                                    </td>
+                                    <td>
+                                        <h4>@(Model.GrandTotal > 0 ? Model.GrandTotal?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</h4>
+                                    </td>
+
+                                    @*<td colspan="3">
+                                            <div class="float-right text-right font-weight-semibold text-dark">
+                                                <h4><span class="font-weight-semibold">Tổng thanh toán:</span> @(Model.GrandTotal > 0 ? Model.GrandTotal?.ToString("#,###") : "0") @Constant.CURRENCY_SIGN</h4>
+                                            </div>
+                                        </td>*@
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    #total_detail {
+        border-top: 1px solid #dee2e6;
+    }
+
+        #total_detail td {
+            border: none;
+            padding-top: 15px;
+            padding-bottom: 0;
+            text-align: right;
+        }
+</style>

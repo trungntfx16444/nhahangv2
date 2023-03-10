@@ -1,0 +1,47 @@
+﻿@model List<AdminPage.Models.product>
+@using AdminPage.Utils
+@if (ViewBag.Error != null)
+{
+    <input type="hidden" id="err_msg" value="@(ViewBag.Error)" />
+}
+else
+{
+    <input type="hidden" id="err_msg" value="" />
+    <div class="row">
+
+
+        @foreach (var item in Model)
+        {
+        <div class="col-md-6">
+            <div style="border:1px solid lightgrey;margin-bottom:5px;">
+                <div class="row">
+                    <div class="col-md-4 col-sm-12 col-xs-12">
+                        <img class="img-thumbnail" src="@(item.Picture)" style="width:100%;" />
+                    </div>
+                    <div class="col-md-8 col-sm-12 col-xs-12" style="padding:5px 10px;">
+                        <label class="text-success text-uppercase" data-toggle="tooltip" title="@(item.ProductName)">
+                            <b class="p-r-5 meta-des">@(item.ProductName)</b>
+                        </label>
+                        <p>
+                            <b>Giá:</b>
+                            <span style="color:red">
+                                @((item.SalePrice > 0 && item.SalePrice < item.Price) ? item.SalePrice?.ToString("#,##0") : item.Price?.ToString("#,##0"))
+                                @Constant.CURRENCY_SIGN
+                            </span>
+                        </p>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal" onclick="SelectItemOrder('@(item.ReId)', '')">
+                                <i class="anticon anticon-double-right"></i> Chọn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+}
+
+<script type="text/javascript">
+    $('[data-toggle="tooltip"]').tooltip()
+</script>

@@ -1,0 +1,52 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.Utils
+@model sFeatures_view
+<div id="san-pham">
+    @foreach (var detail in Model.Details)
+    {
+        //Tiêu đề sản phẩm
+        @detail.Detail.Title
+        //List sản phẩm
+        if (detail.Data is IEnumerable<product>)
+        {
+            foreach (var product in detail.Data as IEnumerable<product>)
+            {
+                //Link chi tiết
+                <a href=@($"/{product.Url}-pd{product.ReId}")></a>
+
+                //Hình ảnh
+                <img src="@product.Picture" alt="@product.ProductName" srcset="@product.pictureResize(3) 700w,@product.pictureResize(4) 2000w" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy" />
+
+                //Tên
+                <span> @product.ProductName</span>
+
+                //Mô tả ngắn
+                <span>@Html.Raw(product.ShortDescription)</span>
+
+                //Nút đặt hàng
+                <button onclick="CheckProduct('@(product.ReId)')"></button>
+
+                //Giá bán
+                <div class="product-price">
+                    @if (product.Price > 0)
+                    {
+                        if (product.SalePrice > 0 && product.SalePrice < product.Price)
+                        {
+                            <span class="new-price"> @Constant.CURRENCY_SIGN @((product.SalePrice ?? 0).ToString("#,##0.00"))</span>
+                            <span class="old-price"> @Constant.CURRENCY_SIGN @((product.Price ?? 0).ToString("#,##0.00"))</span>
+                        }
+                        else
+                        {
+                            <span class="new-price">@Constant.CURRENCY_SIGN @((product.Price ?? 0).ToString("#,##0.00")) </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="new-price">Liên hệ</span>
+                    }
+                </div>
+            }
+        }
+    }
+</div>

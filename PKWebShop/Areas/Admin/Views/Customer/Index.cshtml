@@ -1,0 +1,82 @@
+﻿@model IEnumerable<PKWebShop.Models.loyalcustomer>
+@{
+    ViewBag.Title = "Khách hàng tiêu biểu";
+}
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/admin/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+<p class="btn-group">
+    <a href="/admin/customer/save" class="btn btn-primary"><i class="anticon anticon-plus"></i> Thêm khách hàng</a>
+</p>
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["error"]
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["success"]
+    </div>
+}
+
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header well" data-original-title="">
+                <h2 class="card-title">Khách hàng tiêu biểu - sẽ được show ở trang chủ.</h2>
+
+            </div>
+            <div class="card-body">
+
+                <table class="table table-hover bootstrap-datatable datatable responsive">
+                    <thead>
+                        <tr>
+                            <th>Tên khách hàng</th>
+                            <th>Logo</th>
+                            <th>URL</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.CustomerName</td>
+                                <td><img src="@item.LogoPicture" alt="logo khách hàng" style="width:100px" /></td>
+                                <td>@item.URL</td>
+                                <td class="center">
+                                    <a class="btn btn-xs btn-warning" href="/admin/customer/save/@item.Id" data-toggle="tooltip" title="Sửa">
+                                        <i class="anticon anticon-edit"></i>
+                                    </a>
+                                    <a class="btn btn-xs btn-danger" href="/admin/customer/delete/@item.Id" data-toggle="tooltip" title="Xóa bài viết" onclick="return confirm('Bạn xác nhận muốn xóa?')">
+                                        <i class="anticon anticon-delete"></i>
+                                    </a>
+
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,50 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{ 
+    var adminSite = UserContent.GetAdminSite();
+}
+
+@foreach (var d in Model.Details)
+{
+    <section class="about-us-area ptb-40 bg-img" style="background-image: url('../../../../Content/client/images/Rectangle-3.jpg');">
+        <div class="container">
+            <div class="section-title">
+                <h2 class="title">
+                    Real <span>estate</span>
+                    <lineimg class="d-block">
+                        <img src="~/Content/client/img/title-line.png" />
+                    </lineimg>
+                </h2>
+            </div>
+            <div class="about-us-content text-center">
+
+                @Html.Raw(d.Detail.Description)
+                
+            </div>
+            <div class="row justify-content-center flex-row-reverse">
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-us-img mb-3 mb-md-0">
+                        <img class="img-fluid" src="~/Content/client/img/about-1.jpg" />
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-us-img mb-3 mb-md-0">
+                        <img class="img-fluid" src="~/Content/client/img/about-2.jpg" />
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-us-img mb-3 mb-md-0">
+                        <img class="img-fluid" src="~/Content/client/img/about-3.jpg" />
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-us-img mb-3 mb-md-0">
+                        <img class="img-fluid" src="~/Content/client/img/about-4.jpg" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+}

@@ -1,0 +1,301 @@
+﻿@using AdminPage.AppLB
+@{
+    ViewBag.Title = "Khách hàng liên hệ";
+}
+
+<div class="page-header">
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item">
+                <i class="anticon anticon-home m-r-5"></i>Home
+            </a>
+            @if (UserContent.isLandingPage == false)
+            {
+                <span class="breadcrumb-item active">Khách hàng</span>
+            }
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+@if (TempData["error"] != null)
+{
+<div class="alert alert-danger">
+    <div class="d-flex align-items-center justify-content-start">
+        <span class="alert-icon">
+            <i class="anticon anticon-close-circle"></i>
+        </span>
+        <span>@TempData["error"]</span>
+    </div>
+</div>
+}
+@if (TempData["success"] != null)
+{
+<div class="alert alert-success">
+    <div class="d-flex align-items-center justify-content-start">
+        <span class="alert-icon">
+            <i class="anticon anticon-check-circle"></i>
+        </span>
+        <span>@TempData["success"]</span>
+    </div>
+</div>
+}
+<div class="card">
+    <div class="card-body" id="partial_content">
+        <!--Search-->
+        <div class="form-group row">
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Từ ngày</span>
+                    </div>
+                    <input type="date" id="From" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="fDate" value="@(ViewBag.From)" />
+                </div>
+            </div>
+            <div class="col-md-3 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Đến ngày</span>
+                    </div>
+                    <input type="date" id="To" class="form-control" data-date="" data-date-format="DD/MM/YYYY" name="tDate" value="@(ViewBag.To)" />
+                </div>
+            </div>
+            <div class="col-md-2 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Trạng thái</span>
+                    </div>
+                    <select id="Status" class="form-control cursor-pointer" name="Status">
+                        <option value="" selected>Tất cả</option>
+                        <option value="-1">Đã hủy</option>
+                        <option value="0">Đang chờ</option>
+                        <option value="1">Đã hỗ trợ</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4 col-xs-12 m-t-5">
+                <div class="input-group">
+                    <input type="text" id="search" class="form-control" value="" placeholder="Nhập tên KH, sđt hoặc email" autocomplete="off" />
+                    <div id="btn_search" class="input-group-append" style="cursor:pointer">
+                        <span class="input-group-text"><i class="fa fa-search"></i>&nbsp;Tìm kiếm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Table list customer-->
+        <table id="log_table" class="table table-bordered table-hover responsive">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Người liên Hệ</th>
+                    <th class="no-sort" style="width:40%;">Ghi chú</th>
+                    <th>Trạng thái</th>
+                    <th style="width:90px;" class="no-sort"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--Append data using dataTable ajax-->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="UpdateAppointment" tabindex="-1" role="dialog" aria-labelledby="UpdateAppointmentLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="frm-update" action="/appointment/save" method="post">
+                <div class="modal-header">
+                    <h5>Cập nhật thông tin</h5>
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" />
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold">Họ tên</label>
+                            <input type="text" class="form-control" name="FullName" placeholder="Họ tên" required>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold">Trạng thái</label>
+                            <select class="form-control" name="Status">
+                                <option value="-1">Đã hủy đăng ký</option>
+                                <option value="0">Đang chờ</option>
+                                <option value="1">Đã hỗ trợ</option>
+                                @* <option value="2">Đã trả phòng </option> *@
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold">Điện thoại</label>
+                            <input type="text" class="form-control phone" name="Phone" data-inputmask="'mask':'999-999-9999'" placeholder="000-000-0000" required>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold">Email</label>
+                            <input type="email" class="form-control" name="Email" placeholder="vidu@gmail.com">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold">Ngày đăng ký</label>
+                            <input type="date" name="FromDate" class="form-control" data-date="" data-date-format="DD/MM/YYYY" value="">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-semibold">Ngày hỗ trợ</label>
+                            <input type="date" name="ToDate" class="form-control" data-date="" data-date-format="DD/MM/YYYY" value="">
+                        </div>
+                        <div class="col-md-12 form-group">
+                            <label class="font-weight-semibold">Ghi chú</label>
+                            <textarea class="form-control" name="Note" rows="4" placeholder="Ghi chú"></textarea>
+                        </div>
+                    </div>
+                    @*<div class="form-group">
+                            <label>Người lớn</label>
+                            <input type="text" min="1" class="form-control" name="AdultsAmount" placeholder="Người lớn" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Trẻ em</label>
+                            <input type="number" min="0" class="form-control" name="ChildrenAmount" placeholder="Trẻ em" required>
+                        </div>*@
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Đóng</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            $("#frm-update").ajaxForm(function (data) {
+                if (data[0]) {
+                    success(data[1]);
+                    table.draw();
+                    $("#UpdateAppointment").modal("hide");
+                } else {
+                    error(data[1]);
+                }
+            });
+        });
+
+        var table = $('#log_table').DataTable({
+            'lengthChange': false,
+            'paging': true,
+            'searching': false,
+            'ordering': true,
+            'info': true,
+            'autoWidth': false,
+            "order": [[0, "desc"]],
+            "columnDefs": [{
+                "targets": 'no-sort',
+                "orderable": false,
+            }],
+            "processing": true,
+            "language": {
+                "infoFiltered": "",
+                "processing": '<img src="/Content/admin/img/loading.gif" width="60px">'
+            },
+            "serverSide": true,
+            "ajax": {
+                "type": "POST",
+                "url": "/Appointment/Load_table",
+                "data": function (data) {
+                    data.From = $("#From").val();
+                    data.To = $("#To").val();
+                    data.status = $("#Status").val();
+                    data.search = $("#search").val();
+                    return data;
+                },
+                "dataSrc": function () {
+                    return '';
+                },
+                "complete": function (json) {
+                    if (json.responseJSON.data) {
+                        if (json.responseJSON.data[0] == -1) {
+                            window.location.reload();
+                        }
+                        $("#log_table tbody").html(json.responseJSON.data);
+                    }
+                }
+            }
+        });
+        table.on('draw', function () {
+            //...
+        });
+
+        $("#search").keypress(function () {
+            if (event.keyCode == 13) {
+                $("#btn_search").trigger("click");
+            }
+        });
+
+        $("#btn_search").click(function () {
+            table.draw();
+        });
+
+        function Update(key) {
+            $.ajax({
+                method: "GET",
+                url: "/appointment/getdata",
+                data: { id: key },
+                dataType: "json"
+            }).done(function (response) {
+                if (response.status == true) {
+                    let frmId = "#frm-update";
+                    $(`${frmId}`).resetForm();
+                    $(`${frmId}`).loadJSON(response.data);
+                    if (response.data.FromDate != null) {
+                        $(`${frmId} input[name="FromDate"]`).val(moment(response.data.FromDate).format("YYYY-MM-DD")).trigger("change");
+                    }
+
+                    var mo = moment(response.data.FromDate, "YYYY-MM-DD");
+                    $(`${frmId} input[name="FromDate"]`).val(mo.isValid() ? mo.format("YYYY-MM-DD") : "").trigger("change");
+                    mo = moment(response.data.ToDate, "YYYY-MM-DD");
+                    $(`${frmId} input[name="ToDate"]`).val(mo.isValid() ? mo.format("YYYY-MM-DD") : "").trigger("change");
+                    //$(`${frmId} input[name="Id"]`).val(response.data.Id);
+                    //$(`${frmId} input[name="FullName"]`).val(response.data.FullName);
+                    //$(`${frmId} input[name="Phone"]`).val(response.data.Phone);
+                    $(`${frmId} input[name="Email"]`).val(response.data.Email);
+                    //if (response.data.FromDate != null) {
+                    //    $(`${frmId} input[name="FromDate"]`).val(moment(response.data.FromDate).format("YYYY-MM-DDTHH:mm"));
+                    //}
+                    //else {
+                    //    $(`${frmId} input[name="FromDate"]`).val("");
+                    //}
+                    //$(`${frmId} textarea[name="Note"]`).val(response.data.Note);
+                    //$(`${frmId} select[name="Status"]`).val(response.data.Status);
+                    $("#UpdateAppointment").modal("show");
+                }
+                else {
+                    warning(response.message)
+                }
+            }).fail(function () {
+                error("Đã có lỗi xảy ra. Vui lòng thử lại.")
+            });
+        };
+
+        function Delete(key) {
+            if (confirm("Bạn có chắc muốn xóa đăng ký hỗ trợ này?")) {
+                $.ajax({
+                    method: "POST",
+                    url: "/appointment/delete",
+                    data: { id: key },
+                    dataType: "json"
+                }).done(function (response) {
+                    if (response.status == true) {
+                        table.draw();
+                    }
+                    else {
+                        warning(response.message)
+                    }
+                }).fail(function () {
+                    error("Đã có lỗi xảy ra. Vui lòng thử lại.");
+                });
+            }
+        };
+    </script>
+}

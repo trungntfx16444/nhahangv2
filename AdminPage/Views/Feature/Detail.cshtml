@@ -1,0 +1,295 @@
+﻿@model IEnumerable<AdminPage.Models.sectionfeature>
+@{
+    ViewBag.Title = "Quản lý chức năng - nội dung";
+    var langs = AdminPage.Services.SiteLang.GetListLangs();
+    var lang = Request["lang"]?.ToString() ?? AdminPage.Services.SiteLang.GetDefault().Code;
+    var a = new AdminPage.Models.sectionfeaturedetail();
+}
+
+
+<div class="page-header">
+    <h2 class="header-title">@ViewBag.Title</h2>
+    <div class="header-sub-title">
+        <nav class="breadcrumb breadcrumb-dash">
+            <a href="/" class="breadcrumb-item"><i class="anticon anticon-home m-r-5"></i>Tổng quan</a>
+            <span class="breadcrumb-item active">@ViewBag.Title</span>
+        </nav>
+    </div>
+</div>
+
+
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["error"]
+    </div>
+}
+else if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["success"]
+    </div>
+}
+
+
+
+
+<div class="card">
+    @if (langs.Count > 0)
+    {
+        <div class="card-header row no-gutters px-0">
+            <div class="col-6">
+                <ul class="nav nav-tabs border-0" id="langTag" role="tablist">
+                    @foreach (var l in langs)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(l.Code==lang ?"active":"")" @*data-toggle="tab"*@ href="/feature/detail?lang=@l.Code"><i class="flag-icon @l.Icon"></i> @l.Name</a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+            <div class="col-6 p-2">
+                <button id="quicksave" class="btn btn-sm btn-success float-right" style="display:none" onclick="quick_save()"><i class="fa fa-save"></i> Lưu nhanh</button>
+            </div>
+
+        </div>
+    }
+    <div class="card-body">
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">Chọn chức năng</span>
+            </div>
+            <select name="secfeature" class="form-control" onchange="ChangeFeature(this.value)">
+                @foreach (var item in Model)
+                {
+                    <option value="@item.Code">@item.Description</option>
+                }
+            </select>
+        </div>
+        <div class="clearfix"></div>
+
+        <br />
+        <p class="btn-group">
+            <a href="#" class="btn btn-sm btn-primary" onclick="AddNew()"><i class="anticon anticon-plus"></i> Thêm nội dung</a>
+        </p>
+
+        <div id="partial_content">
+
+
+
+
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+
+<!--Them sua chi tiet chuc nang-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form id="form_detail" class="form-horizontal" action="/feature/SaveDetail" method="post">
+
+                <div class="modal-header">
+                    <h3>Thêm nội dung</h3>
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                </div>
+                <div class="modal-body row">
+
+                    <div class="col-sm-12">
+                        <input type="hidden" name="SectionCode" />
+                        <input type="hidden" name="Id" />
+                        <input type="hidden" name="LangCode" value="@lang" />
+
+                        <div class="form-group row">
+                            <label class="col-md-3 text-right">Tiêu đề:</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="Title" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-3 text-right">Tiêu đề phụ:</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="SubTitle" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-3 text-right">Picture/Video:</label>
+                            <div class="col-md-9">
+                                <img id="showPicture" class="img-thumbnail" style="max-height:200px" /><br />
+
+                                <!--<video id="showVideo" height="200" ng-show="sfd.pic.includes('.mp4')" controls>
+                                    <source id="Video" src="{{sfd.pic}}" type="video/mp4">-->
+                                @*<source src="movie.ogg" type="video/ogg">*@
+                                <!--Your browser does not support the video tag.
+                                </video>-->
+
+                                <input type="hidden" id="Picture" name="Picture" class="form-control" />
+                                <a href="#" class="btn btn-xs btn-danger" onclick="delpic()">Xóa</a>
+                                <a href="#" class="btn btn-xs btn-success" onclick="uploadpic()">Thay đổi</a>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-3 text-right">Mô tả:</label>
+                            <div class="col-md-9">
+                                <textarea rows="5" cols="80" name="Description" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        @*<div class="form-group">
+                                <b>Số giá trị:</b>
+                                <div class="col-md-10">
+                                    <input type="number" ng-model="sfd.volume" class="form-control" />
+                                </div>
+                            </div>*@
+                        <div class="form-group row">
+                            <label class="col-md-3 text-right">URL:</label>
+                            <div class="col-md-9">
+                                <input type="text" name="URL" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Đóng</a>
+                    <button type="submit" class="btn btn-primary">Lưu lại</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+@section scripts
+{
+
+    <script src="~/Content/admin/ckfinder/ckfinder_v1.js"></script>
+    <script src="~/Content/admin/js/jquery.loadJSON.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            CKEDITOR.replace('Description', {
+                toolbar: [
+                    { name: 'document', items: ['Source', '-', 'NewPage', 'Preview', '-', 'Templates'] },	// Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
+                    ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],			// Defines toolbar group without name.																				// Line break - next group will be placed in new line.
+                    { name: 'basicstyles', items: ['Bold', 'Italic'] }
+                ], height: 100
+            });
+            ChangeFeature('@(Model.FirstOrDefault()?.Code)');
+            $("#form_detail").ajaxForm(function (data) {
+                cnoty(data);
+                ChangeFeature();
+                $('#myModal').modal('hide');
+            })
+
+        })
+        function ChangeFeature(code) {
+            code = code || $('[name="secfeature"]').val();
+            $.ajax({
+                method: "POST",
+                url: "/feature/_featureDetail",
+                data: { code },
+                dataType: "html"
+            })
+                .done(function (data) {
+                    $("#partial_content").html(data);
+                })
+                .fail(function (data) {
+                    noty({ "text": data, "layout": "topRight", "type": "error" });
+                })
+                .always(function () {
+                });
+        }
+        function AddNew() {
+            $("#form_detail").clearForm();
+            $("#form_detail input[name=Id]").val("");
+            $("#form_detail img").prop("src", "");
+            $('[name="SectionCode"]').val($('[name="secfeature"]').val());
+            $("#myModal").modal("show");
+        }
+        function Edit(id) {
+            debugger;
+            $('[name="SectionCode"]').val($('[name="secfeature"]').val());
+                $.ajax({
+                    method: "POST",
+                    url: "/feature/getfeatureDetail",
+                    data: { id },
+                    dataType: "json"
+                })
+                    .done(function (data) {
+                        if (data[0]) {
+                            $("#form_detail").clearForm();
+                            $("#form_detail").loadJSON(data[1]);
+                            $("#showPicture").prop("src", $('[name="Picture"]').val());
+                            CKEDITOR.instances.Description.setData(data[1].Description);
+                            $("#myModal").modal("show");
+                        } else {
+                            error(data[1]);
+                        }
+                    })
+                    .fail(function (data) {
+                        noty({ "text": data, "layout": "topRight", "type": "error" });
+                    })
+                    .always(function () {
+                    });
+
+        }
+
+        function uploadpic() {
+            var finder = new CKFinder();
+            finder.BasePath = '/Content/admin/ckfinder/';
+            finder.SelectFunction = SetFileField;
+            finder.Popup();
+
+            //$("#showPicture").show();
+            //$("#showVideo").hide();
+        }
+        function SetFileField(fileUrl, data) {
+            //alert(fileUrl);
+            $("#Picture").val(fileUrl);
+
+                $("#showPicture").attr("src", fileUrl);
+
+        }
+        function DeleteFeatureDetail(id) {
+            if (confirm('Xác nhận bạn muốn xóa?')) {
+                $.ajax({
+                    method: "POST",
+                    url: "/feature/DeleteDetail",
+                    data: { id },
+                    dataType: "json"
+                })
+                    .done(function (data) {
+                        $("#panel_" + id).hide(500);
+                        var optionsNoty = $.parseJSON('{"text":"Xóa thành công","layout":"bottom","type":"success","timeout": "3000"}');
+                        noty(optionsNoty);
+                    })
+                    .fail(function (data) {
+                        var optionsErr = $.parseJSON('{"text":"' + data.statusText + '","layout":"bottom","type":"error","timeout": "3000"}');
+                        noty(optionsErr);
+                    })
+            }
+        }
+        function delpic() {
+            $("#Picture").val("/Content/admin/img/no_image.jpg");
+            //$("#showPicture").attr("src", "/Content/admin/img/no_image.jpg");
+        }
+    </script>
+
+
+}

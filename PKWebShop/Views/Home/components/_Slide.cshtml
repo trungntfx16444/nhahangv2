@@ -1,0 +1,54 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Models.CustomizeModels
+@{
+    //webconfiguration info = UserContent.GetWebInfomation();
+    var adminSite = UserContent.GetAdminSite();
+    //var duAn = UserContent.GetDuAnLapDat() ?? new List<n_news>();
+}
+<script src="~/Content/client/vendor/skitter/jquery.easing.1.3.js"></script>
+<script src="~/Content/client/vendor/skitter/jquery.skitter.min.js"></script>
+<div class="position-relative">
+    <div class="banner banner-home skitter skitter-large with-dots">
+        <ul>
+            @foreach (var s in Model.Details.OrderBy(o => o.Detail.VolumeNumber))
+            {
+                foreach (var p in s.Files)
+                {
+                    <li><img src="@($"{adminSite}{p.FileName}")" /></li>
+                }
+            }
+
+
+        </ul>
+    </div>
+</div>
+<script>
+    $(function () {
+        $('.skitter-large').skitter({
+            navigation: true,
+            interval: 2000,
+            with_animations: ["showBarsRandom", "swapBarsBack", "directionLeft", "cubeSize", "block", "horizontal", "paralell"],
+        });
+    });
+</script>
+
+<script>
+    $(function () {
+        LoadFilterOptions();
+
+
+    })
+    function LoadFilterOptions() {
+        $.ajax({
+            method: "POST",
+            url: "/home/LoadFilterOptions",
+            dataType: "html"
+        }).done(function (data) {
+            $(`.search-adv-area`).html(data);
+        });
+    }
+</script>
+
+

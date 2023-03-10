@@ -1,0 +1,41 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    string url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.TinTuc).url;
+    var adminsite = UserContent.GetAdminSite();
+    int i = 1;
+}
+<div class="blog-area ptb-50 bg-img">
+    <div class="container">
+        <div class="section-title text-center">
+            <h2 class="title">
+                @Html.Raw(Model.Feature.Title?.Replace("[", "<span>").Replace("]", "</span>"))
+            </h2>
+            @if (!string.IsNullOrEmpty(Model.Feature.SubTitle))
+            {
+                <div class="line-left">@(Model.Feature.SubTitle)</div>
+            }
+        </div>
+        <div class="blog-slider slide-warp-arrow">
+            @foreach (var item in Model.Details)
+            {
+                var first_pic = item.Files.FirstOrDefault();
+                <div class="px-2">
+                    <div class="blog-wrap">
+                        <a href="@(item.Detail.URL)">
+                            <div class="blog-img">
+                                <img src="@adminsite@(first_pic?.FileName)" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                <div class="blog-content">
+                                    @*<div class="blog-number">@((i++).ToString().PadLeft(2,'0'))</div>*@
+                                    <h3 class="blog-title text-white">@(item.Detail.Title)</h3>
+                                </div>
+                            </div>
+                            <div class="blog-desc  pt-3">@Html.Raw(item.Detail.Description)</div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

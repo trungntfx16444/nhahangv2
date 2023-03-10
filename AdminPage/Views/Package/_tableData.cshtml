@@ -1,0 +1,28 @@
+﻿@using AdminPage.Models
+@using Inner.Libs.Helpful;
+@using AdminPage.Enums
+@model Dictionary<string, List<Package>>
+@{
+    List<PackageType> packageUse = Enum.GetValues(typeof(PackageType)).OfType<PackageType>().Select(x => x).ToList();
+}
+@foreach (var enumEntry in packageUse)
+{
+    if (Model.ContainsKey(enumEntry.Code<string>()) == false || Model[enumEntry.Code<string>()].Count == 0)
+    {
+        @Html.Partial("_tableRowData", (new Package()
+        {
+            PackageType = enumEntry.Code<string>()
+        }, enumEntry.Text(), 1))
+        continue;
+    }
+    foreach (var item in  Model[enumEntry.Code<string>()].Select((entry,i) => new {i, entry}))
+    {
+        var name = enumEntry.Text();
+        if (item.i > 0)
+        {
+            name = "";
+        }
+        @Html.Partial("_tableRowData", (item.entry, name, Model[enumEntry.Code<string>()].Count))
+    }
+}
+

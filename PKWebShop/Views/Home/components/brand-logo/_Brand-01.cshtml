@@ -1,0 +1,36 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@model sFeatures_view
+@using PKWebShop.AppLB
+@{
+    var adminSite = UserContent.GetAdminSite();
+}
+<div class="brand-logo-area pt-0 pb-40">
+    <div class="container">
+        <div class="vendor_">
+            <div class="section-title-tab-wrap align-items-inherit mb-20">
+                <div class="section-title-3">
+                    <h2 class="pb-5">@Model.Feature.Title</h2>
+                </div>
+            </div>
+            <div class="brand-logo-wrap-4 slide-warp-arrow">
+                @foreach (var d in Model.Details)
+                {
+                    foreach (var f in d.Files)
+                    {
+                        <div class="px-2">
+                            <div class="single-brand">
+                                <img class="img-fluid" src="@($"{adminSite}{f.FileName}")" />
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .single-brand-logo-2 {
+        border-radius: 0;
+        border: 2px solid var(--color-theme-secondary)
+    }
+</style>

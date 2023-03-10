@@ -1,0 +1,182 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    string url_tintuc = UserContent.GetUrlSite(SiteSEO.code_SEO.TinTuc).url;
+    var adminSite = UserContent.GetAdminSite();
+    //var video = Model.Details.Where(x => x.Detail.Id == "4").Take(4);
+    //var first_video = video != null ? video?.FirstOrDefault() : new featuredetail_view();
+    //var news = Model.Details.Where(x => x.Detail.Id == "2").Take(6);
+}
+
+<style type="text/css">
+    .blog-content h3 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        /*margin-bottom: 5px !important;*/
+    }
+
+    .blog-area .swiper-button-next, .blog-area .swiper-button-prev {
+        top: 30%;
+    }
+</style>
+
+<div class="blog-area ptb-40" style="background-color: #f7f7f7">
+    <div class="container">
+        <div class="section-title text-center mb-30">
+            <h2 class="title">@Html.Raw(Model.Feature.Title?.Replace("[", "<span>").Replace("]", "</span>"))</h2>
+            <div class="img-line-title text-center">
+                <img class="img-fluid" src="~/Content/client/images/icon/line-title.png" />
+            </div>
+        </div>
+        <div class="blog-Swiper">
+            <div class="swiper blogSwiper">
+                <div class="swiper-wrapper">
+                    @foreach (var item in Model.Details)
+                    {
+                        var first_pic = item.Files.FirstOrDefault();
+
+                        <div class="swiper-slide">
+                            <div class="blog-wrap">
+                                <div class="blog-img">
+                                    <a href="@(item.Detail.URL)">
+                                        <img src="@($"{adminSite}{first_pic?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                    </a>
+                                </div>
+                                <div class="blog-content">
+                                    <h3><a href="@(item.Detail.URL)" title="@(item.Detail.Title)">@(item.Detail.Title)</a></h3>
+                                    @if (!string.IsNullOrEmpty(item.Detail.Id))
+                                    {
+                                        <div class="blog-s_desc">@Html.Raw(item.Detail.Description)</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+            <div class="mt-3 text-center">
+                <a class="btn-view-more" href="/tin-tuc ">
+                    <span>Xem thêm <i class="fas fa-arrow-right ml-1"></i></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div class="blog-area pb-40">
+        <div class="container">
+            <div class="vendor_">
+                <div class="row blog-row">
+                    <div class="col-lg-6 mb-3 mb-lg-0">
+                        <div class="row blog-row">
+                            <div class="col-12">
+                                <div class="section-title-tab-wrap align-items-inherit mb-20">
+                                    <div class="section-title-3 d-flex align-items-center">
+                                        <h2 class="pb-5">
+                                            Video
+                                        </h2>
+                                    </div>
+                                    <div class="btn-style-5">
+                                        <a href="/video">Xem tất cả <i class="icon-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="blog-wrap">
+                                    <div class="blog-img mb-2 blog-video">
+                                        <a href="@(first_video?.Detail.URL)">
+                                            <img src="@($"{adminSite}{first_video?.Files?.FirstOrDefault()?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+
+                                        </a>
+                                        <span class="icon-video">
+                                            <img class="img-fluid" src="/Content/client/images/icon/video.png">
+                                        </span>
+                                    </div>
+                                    <div class="blog-content">
+                                        <h3>
+                                            <a href="@(first_video?.Detail.URL)" title="@(first_video?.Detail.Title)">@(first_video?.Detail.Title)</a>
+                                        </h3>
+                                        <div class="blog-meta">
+                                            <ul>
+                                                <li>@(first_video?.Detail.CreateAt?.ToString("dd/MM/yyyy"))</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                @foreach (var item in video?.Skip(1))
+                                {
+                                    var first_pic = item.Files.FirstOrDefault();
+                                    <div class="blog-wrap row">
+                                        <div class="blog-img col-5 pr-2 blog-video">
+                                            <a href="@(item.Detail.URL)">
+                                                <img src="@($"{adminSite}{first_pic?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+
+                                            </a>
+                                            <span class="icon-video">
+                                                <img class="img-fluid" src="/Content/client/images/icon/video.png">
+                                            </span>
+                                        </div>
+                                        <div class="blog-content col-7 pl-2">
+                                            <h3><a href="@(item.Detail.URL)" title="@(item.Detail.Title)">@(item.Detail.Title)</a></h3>
+                                            <div class="blog-meta">
+                                                <ul>
+                                                    <li>@(item.Detail.CreateAt?.ToString("dd/MM/yyyy"))</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="section-title-tab-wrap align-items-inherit mb-20">
+                            <div class="section-title-3">
+                                <h2 class="pb-5">TIN TỨC</h2>
+                            </div>
+                            <div class="btn-style-5">
+                                <a href="@url_tintuc">Xem tất cả <i class="icon-arrow-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            @foreach (var item in news)
+                            {
+                                var first_pic = item.Files.FirstOrDefault();
+                                <div class="col-md-6">
+                                    <div class="blog-wrap row">
+                                        <div class="blog-img col-5 pr-2">
+                                            <a href="@(item.Detail.URL)">
+                                                <img src="@($"{adminSite}{first_pic?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                            </a>
+                                        </div>
+                                        <div class="blog-content col-7 pl-2">
+                                            <h3><a href="@(item.Detail.URL)" title="@(item.Detail.Title)">@(item.Detail.Title)</a></h3>
+                                            <div class="blog-meta">
+                                                <ul>
+                                                    <li>@(item.Detail.CreateAt?.ToString("dd/MM/yyyy"))</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+<script>
+    $(function () {
+        $(".blog-wrap").matchHeight();
+
+    })
+</script>

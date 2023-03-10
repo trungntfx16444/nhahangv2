@@ -1,0 +1,55 @@
+﻿@model IEnumerable<AdminPage.Models.category>
+@using AdminPage.AppLB
+@{
+    var clientSite = CommonFunc.GetClientSite();
+    var divID = Guid.NewGuid().ToString("N");
+}
+<div id="@divID" class="levelcate body-content pt-2">
+    @foreach (var item in Model)
+    {
+        <div id="@(item.ReId)" class="div-cate2 mb-2" draggable="true">
+            @{ var cateLevel2 = $"/{item.UrlCode}-pc{item.ReId}";}
+            <div class="d-flex">
+                <img height="70" width="70" style="margin:5px" />
+                <div class="header-content" style="width: calc(100% - 70px); overflow: hidden;">
+                    <input name="cate_id_order" type="hidden" class="cate2" value="@($"{item.ReId}")" />
+                    <div>
+                        <span class="cate_name font-weight-semibold text-dark">
+                            @(item.CategoryName)
+                        </span>
+                        <span class="float-right">
+                            @*<i class="cate1 cursor-pointer text-success anticon anticon-plus" onclick="GetCateDetail('@(item.ReId)', 'add')"></i>*@
+                            <i class="cursor-pointer text-primary ml-2 anticon anticon-edit" onclick="GetCateDetail('@(item.ReId)')"></i>
+                            <i class="cursor-pointer text-danger ml-2 anticon anticon-delete" onclick="DeleteCategory('@(item.ReId)')"></i>
+                        </span>
+                    </div>
+                    <div>
+                        <span class="mb-1 cate2 badge badge-pill @(item.Active == true ? "badge-purple" : "badge-magenta")">
+                            @(item.Active == true ? "Hiển thị" : "Không hiển thị")
+                        </span>
+                        <div>
+                            <span class="badge badge-pill badge-default text-left">
+                                <span class=" font-weight-semibold">Url:</span>
+                                <a href="@($"{clientSite}{cateLevel2}")" target="_blank">
+                                    <span class=" text-primary">@cateLevel2</span>
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<script>
+    $(function () {
+        $("#@divID .div-cate2").click(function () {
+            var curActive = $("#@divID .div-cate2.active");
+            if (curActive != $(this)) {
+                curActive.removeClass("active");
+                $(this).toggleClass("active");
+            }
+
+        })
+    });
+</script>

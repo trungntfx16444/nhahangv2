@@ -1,0 +1,178 @@
+﻿@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@model sFeatures_view
+@{
+    //var info = ViewBag.WebInfo as webconfiguration ?? new webconfiguration();
+    //var cates = UserContent.GetWebCategoryProduct();
+    //string url_product = ViewBag.url_product;
+    //Constant.CURRENCY_SIGN = "đ";
+    string url_sanpham = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+    var adminSite = UserContent.GetAdminSite();
+    int i = 0;
+    var slide = false;
+
+    var cateLv1 = ViewBag.CateLv1 as List<category>;
+    var cateLv2 = ViewBag.CateLv2 as List<category>;
+    var cateLv3 = ViewBag.CateLv3 as List<category>;
+    cateLv2.AddRange(cateLv3);
+}
+
+<div class="shop-area ptb-40">
+    @foreach (var d in Model.Details)
+    {
+        var data = d.Data[0] as List<(category Key, List<product> Value)>;
+        var count = d.Data[1]?.ToString();
+        <div class="product-area">
+            <div class="container">
+                <div class="section-title text-center">
+                    <h2 class="title"> @Html.Raw(d.Detail.Title?.Replace("[", "<span>").Replace("]", "</span>"))</h2>
+                    <div>@d.Detail.SubTitle</div>
+                </div>
+                @*<div class="tab-btn-wrap mb-40 justify-content-center">
+                        <div class="tab-style-2 nav">
+                            @foreach (var c in data.Select(s => s.Key))
+                            {
+                                <a href="#product@(i)-@c.ReId" data-toggle="tab" @(c.ReId == data.FirstOrDefault().Key?.ReId ? "class=active" : "")> @c.CategoryName </a>
+                            }
+                        </div>
+                        <div class="btn-style-2">
+                            <a class="animated" href="@Model.Feature.Url">Xem thêm <i class="icon-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="tab-btn-wrap mb-40">
+                        <div class="tab-style nav">
+                            @foreach (var c in data.Select(s => s.Key))
+                            {
+                                <a href="#product@(i)-@c.ReId" data-toggle="tab" @(c.ReId == data.FirstOrDefault().Key?.ReId ? "class=active" : "")> @c.CategoryName </a>
+                            }
+                            <a class="animated" href="@Model.Feature.Url">Xem thêm <i class="icon-arrow-right"></i></a>
+                        </div>
+                    </div>*@
+                @if (!slide)
+                {
+                    <div class="row product-row">
+                        @foreach (var c in data)
+                        {
+                            foreach (var product in c.Value)
+                            {
+                                var cateChild = cateLv2.Where(x => (product.CategoryId ?? "").Contains(x.ReId));
+                                var prodUrl = $"/{product.Url}-pd{product.ReId}";
+                                <div class="col-lg-2 col-md-4 col-6 px-2">
+                                    <div class="single-product-wrap">
+                                        <div class="product-img product-img-zoom">
+                                            <a href="@(prodUrl)" tabindex="-1">
+                                                <img src="@($"{adminSite}{product.Picture}")" alt="@product.ProductName" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                            </a>
+                                        </div>
+                                        <div class="product-content-wrap">
+                                            <div class="product-content-left">
+                                                <h4 class="text-left" title="@product.ProductName">
+                                                    <a href="@(prodUrl)" tabindex="-1">@product.ProductName</a>
+                                                </h4>
+                                                <div class="tag-size">
+                                                    @foreach (var cc in cateChild)
+                                                    {
+                                                        <a href="@($"/{cc.UrlCode}-pc{cc.ReId}")" class="tag">@(cc.CategoryName)</a>
+                                                    }
+                                                </div>
+                                                <div class="price-wrap">
+                                                    <div class="size">
+                                                        @product.Acreage m²
+                                                    </div>
+                                                    <div class="price-item"><span class="product-price">@(product.Price > 0 ? product.ShowPrice : "Thỏa thuận")</span></div>
+                                                </div>
+                                                <div class="locate-time">
+                                                    <span class="time"><i class="far fa-clock"></i> @CommonFunc.TimeAgo(product.CreateAt)</span>
+                                                    <span class="locate"><i class="fas fa-map-marker-alt" style="width: 13px; text-align: center;"></i> @product.locationInfo.LocationString()</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="tab-content jump">
+                        @foreach (var c in data)
+                        {
+                            <div id="product@(i)-@c.Key.ReId" class="tab-pane @(c.Key.ReId == data.FirstOrDefault().Key?.ReId ? "active" : "") ">
+                                <div class="product-slider-active-3 slide-warp-arrow">
+                                    @foreach (var product in c.Value)
+                                    {
+                                        <div class="product-plr-1 px-md-2">
+                                            <div class="single-product-wrap">
+                                                <div class="product-img product-img-zoom">
+                                                    <a href="@($"/{product.Url}-pd{product.ReId}")" tabindex="-1">
+                                                        <img src="@($"{adminSite}{product.Picture}")" alt="@product.ProductName" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                                    </a>
+                                                    @if (product.SalePrice > 0 && product.SalePrice < product.Price && product.Quantity != 0)
+                                                    {
+                                                        <span class="pro-badge left"> @(((product.SalePrice ?? 0) / (product.Price ?? 0) * 100 - 100).ToString("0"))%</span>
+                                                    }
+                                                </div>
+                                                <div class="product-content-wrap">
+                                                    <div class="product-content-left">
+                                                        <h4 class="text-left">
+                                                            <a href="@($"/{product.Url}-pd{product.ReId}")" tabindex="-1">@product.ProductName</a>
+                                                        </h4>
+                                                        @if (c.Key.ReId == null)
+                                                        {
+                                                            <i><small><a href="@($"/{CommonFunc.ConvertNonUnicodeURL(product.CategoryName)}-pc{product.CategoryId}")">@product.CategoryName</a></small></i>
+                                                        }
+                                                        <div class="tag-size">
+                                                            @if (!string.IsNullOrWhiteSpace(product.TagID))
+                                                            {
+                                                                var tags = product.TagID?.Split(',') ?? new string[0];
+                                                                var tagsName = product.TagName?.Split(',') ?? new string[0];
+                                                                for (int j = 0; j < tags.Length; j++)
+                                                                {
+                                                                    <a href="@($"/{url_sanpham}?tag={tags[j]}")" class="tag">@tagsName[j]</a>
+                                                                }
+                                                            }
+                                                        </div>
+                                                        <div class="price-wrap">
+                                                            <div class="size">
+                                                                @product.Acreage m²
+                                                            </div>
+                                                            <div class="price-item"><span class="product-price">@(product.Price > 0 ? product.ShowPrice : "Thỏa thuận")</span></div>
+                                                        </div>
+                                                        <div class="locate-time">
+                                                            <span class="time"><i class="far fa-clock"></i> @CommonFunc.TimeAgo(product.CreateAt)</span>
+                                                            <span class="locate"><i class="fas fa-map-marker-alt" style="width: 13px; text-align: center;"></i> @product.locationInfo.LocationString()</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="text-center mt-30">
+                    <a href="@d.Detail.URL" class="btn btn-theme btn-view-more">
+                        Xem thêm @if (!string.IsNullOrWhiteSpace(count) && count != "0")
+                        {@Html.Raw(count + " tin khác...")}
+                    </a>
+                </div>
+            </div>
+        </div>
+        i++;
+    }
+
+</div>
+
+
+<script>
+    $(function () {
+        $(".product-content-left h4").matchHeight();
+        $(".product-content-left .product-price").matchHeight();
+    })
+</script>

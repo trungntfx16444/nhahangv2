@@ -1,0 +1,141 @@
+﻿@model PKWebShop.Models.n_news
+    @using PKWebShop.Resources
+@{
+    ViewBag.Title = Model.TitleWebsite;
+    ViewBag.SEO_Description = Model.SEODescription;
+    ViewBag.og_image = Model.Picture;
+    ViewBag.topicid = Model.TopicId;
+    var arrData = ViewBag.ArrData as object[];
+    var top_bg = ViewBag.trangkhac_topbg as PKWebShop.Models.sectionfeaturedetail;
+
+
+}
+<div class="page-breadcrumbs" style=" @if (top_bg != null) { @Html.Raw("background-image: url(../../" + @top_bg.Picture + ")") }">
+    <div class="container">
+        <div class="row py-5">
+            <div class="col-lg-8">
+                <h1 class="m-0">@Model.Name</h1>
+            </div>
+            <div class="col-lg-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="py-1 my-2 breadcrumb float-right">
+                        <li class="breadcrumb-item"><a href="/">@Resource.Home></li>
+                        @if (!string.IsNullOrEmpty(ViewBag.UrlPage))
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <a href="/@ViewBag.UrlPage"> @Model.ParentTopicName</a>
+                            </li>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.ToppicName))
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">
+                                @Model.ToppicName
+                            </li>
+                        }
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="cs-sidebar-enabled cs-sidebar-right">
+    <div class="container">
+        <div class="row">
+            <!-- Content-->
+            <div class="col-lg-9 cs-content py-4 mb-2 mb-sm-0 pb-sm-5">
+                <!-- Post content-->
+                <div id="post-content">
+                    @Html.Raw(Model.Decription)
+                </div>
+
+                <!-- Tags + Sharing-->
+                <div class="row no-gutters position-relative align-items-center">
+                    <div class="col-md-12 pl-md-3 py-2 py-md-3 d-flex">
+                        <div class="fb-share-button"
+                             data-href="@Request.Url.GetLeftPart(UriPartial.Authority)/@ViewBag.UrlPage/@Model.UrlCode"
+                             data-layout="button"
+                             data-size="large">
+                            <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=@Request.Url.GetLeftPart(UriPartial.Authority)/@ViewBag.UrlPage/@Model.UrlCode" class="fb-xfbml-parse-ignore">Chia sẻ</a>
+                        </div>
+                        <div class="zalo-share-button ml-3" data-href="@Request.Url.GetLeftPart(UriPartial.Authority)/@ViewBag.UrlPage/@Model.UrlCode" data-oaid="579745863508352884" data-layout="3" data-color="blue" data-customize=false></div>
+                    </div>
+                </div>
+                <div class="row no-gutters position-relative align-items-center border-top border-bottom my-5">
+                    <div class="col-md-12 py-2 py-dm-3 pr-md-3 text-center text-md-left">
+                        @foreach (var tag in (Model.Tags?.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0]))
+                        {
+                            var _tag = tag.Split(']');
+                            <a class="cs-tag mr-2 my-2" href="/@ViewBag.UrlPage?tag=@_tag[0].Replace("[","")">#@_tag[1]</a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Related posts (carousel)-->
+                <div class="pb-4 pb-md-5 d-none">
+                    <h2 class="h3 pb-4">Bài Viết Liên Quan</h2>
+                    <div class="cs-carousel">
+                        <div class="cs-carousel-inner" data-carousel-options="{&quot;items&quot;: 2, &quot;controls&quot;: false, &quot;autoHeight&quot;: true, &quot;responsive&quot;: {&quot;0&quot;:{&quot;items&quot;:1, &quot;gutter&quot;: 16},&quot;500&quot;:{&quot;items&quot;:2, &quot;gutter&quot;: 16},&quot;850&quot;:{&quot;items&quot;:2, &quot;gutter&quot;: 16}, &quot;1100&quot;:{&quot;items&quot;:2, &quot;gutter&quot;: 23}}}">
+                            <!-- Article-->
+                            <div class="pb-2">
+                                <article class="card card-hover mx-1">
+                                    <a class="card-img-top" href="#"><img src="~/Content/img/blog/02.jpg" alt="Post thumbnail" /></a>
+                                    <div class="card-body">
+                                        <h2 class="h5 nav-heading mb-4"><a href="#">How technology affect our decisions</a></h2><a class="media meta-link font-size-sm align-items-center pt-3" href="#">
+
+                                        </a>
+                                        <div class="mt-3 text-right text-nowrap"><a class="meta-link font-size-xs" href="#"><i class="fe-message-square mr-1"></i>&nbsp;3</a><span class="meta-divider"></span><a class="meta-link font-size-xs" href="#"><i class="fe-calendar mr-1 mt-n1"></i>&nbsp;Feb 4</a></div>
+                                    </div>
+                                </article>
+                            </div>
+                            <!-- Article-->
+                            <div class="pb-2">
+                                <article class="card card-hover mx-1">
+                                    <a class="card-img-top" href="#"><img src="~/Content/img/blog/03.jpg" alt="Post thumbnail" /></a>
+                                    <div class="card-body">
+                                        <h2 class="h5 nav-heading mb-4"><a href="#">Open space - new trend in office design</a></h2><a class="media meta-link font-size-sm align-items-center pt-3" href="#">
+
+                                        </a>
+                                        <div class="mt-3 text-right text-nowrap"><a class="meta-link font-size-xs" href="#"><i class="fe-message-square mr-1"></i>&nbsp;12</a><span class="meta-divider"></span><a class="meta-link font-size-xs" href="#"><i class="fe-calendar mr-1 mt-n1"></i>&nbsp;Jan 10</a></div>
+                                    </div>
+                                </article>
+                            </div>
+                            <!-- Article-->
+                            <div class="pb-2">
+                                <article class="card card-hover mx-1">
+                                    <a class="card-img-top" href="#"><img src="~/Content/img/blog/06.jpg" alt="Post thumbnail" /></a>
+                                    <div class="card-body">
+                                        <h2 class="h5 nav-heading mb-4"><a href="#">Business offices of Fortune 500 companies</a></h2><a class="media meta-link font-size-sm align-items-center pt-3" href="#">
+
+                                        </a>
+                                        <div class="mt-3 text-right text-nowrap"><a class="meta-link font-size-xs" href="#"><i class="fe-message-square mr-1"></i>&nbsp;5</a><span class="meta-divider"></span><a class="meta-link font-size-xs" href="#"><i class="fe-calendar mr-1 mt-n1"></i>&nbsp;Nov 20</a></div>
+                                    </div>
+                                </article>
+                            </div>
+                            <!-- Article-->
+                            <div class="pb-2">
+                                <article class="card card-hover mx-1">
+                                    <a class="card-img-top" href="#"><img src="~/Content/img/blog/05.jpg" alt="Post thumbnail" /></a>
+                                    <div class="card-body">
+                                        <h2 class="h5 nav-heading mb-4"><a href="#">Payments made easy. New tech in E-commerce</a></h2><a class="media meta-link font-size-sm align-items-center pt-3" href="#">
+
+                                        </a>
+                                        <div class="mt-3 text-right text-nowrap"><a class="meta-link font-size-xs" href="#"><i class="fe-message-square mr-1"></i>&nbsp;17</a><span class="meta-divider"></span><a class="meta-link font-size-xs" href="#"><i class="fe-calendar mr-1 mt-n1"></i>&nbsp;Nov 08</a></div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sidebar-->
+            @Html.Partial("_Left_content")
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        const myViewer = new ImgPreviewer('#post-content');
+    })
+    
+</script>

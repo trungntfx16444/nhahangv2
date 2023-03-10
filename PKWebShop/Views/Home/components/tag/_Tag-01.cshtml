@@ -1,0 +1,71 @@
+﻿@model sFeatures_view
+@using PKWebShop.Models.CustomizeModels
+@using PKWebShop.AppLB
+@{
+    //string url_tintuc = UserContent.GetUrlSite(SiteSEO.code_SEO.TinTuc).url;
+    var adminSite = UserContent.GetAdminSite();
+    //var news = Model.Details.Where(x => x.Detail.Id == "2").Take(6);
+    var first = Model.Details.FirstOrDefault();
+}
+
+<div class="blog-area ptb-40">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 mb-3 mb-lg-0">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="section-title">
+                            <h2 class="title">
+                                @Html.Raw(Model.Feature.Title?.Replace("[", "<span>").Replace("]", "</span>"))
+                            </h2>
+                            <div class="line-left @(string.IsNullOrEmpty(Model.Feature.SubTitle) ? "d-none" : "")">
+                                @Model.Feature.SubTitle
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tag-block">
+                            <a href="@(first?.Detail.URL)">
+                                <div class="tag-content">
+                                    <h2 class="tag-title">
+                                        @(first?.Detail.Title)
+                                    </h2>
+                                    <span class="tag-number">@(first?.Detail.SubTitle)</span>
+                                </div>
+                                <img class="img-fluid" src="@($"{adminSite}{first?.Files?.FirstOrDefault()?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            @foreach (var item in Model.Details?.Skip(1).Take(4))
+                            {
+                                <div class="col-md-6 col-6">
+                                    <div class="tag-block">
+                                        <a href="@(item?.Detail.URL)">
+                                            <div class="tag-content">
+                                                <h2 class="tag-title">
+                                                    @(item?.Detail.Title)
+                                                </h2>
+                                                <span class="tag-number">@(item?.Detail.SubTitle)</span>
+                                            </div>
+                                            <img class="img-fluid" src="@($"{adminSite}{item?.Files?.FirstOrDefault()?.FileName}")" onerror="this.onerror=null;this.src='/Content/Client/images/no_image.png';" loading="lazy">
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="tag-relate">
+                    @foreach (var item in Model.Details?.Skip(5))
+                    {
+                        <a class="btn" href="@(item?.Detail.URL)">
+                            @(item?.Detail.Title)
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

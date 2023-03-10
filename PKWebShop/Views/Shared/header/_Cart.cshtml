@@ -1,0 +1,75 @@
+﻿<div class="sidebar-cart-active inside">
+    <div class="sidebar-cart-all">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <div class="text-start">
+                <div id="offcanvasRightLabel" class="mb-0 h3 fw-bold">Giỏ hàng</div>
+            </div>
+            <a class="cart-close cart-toggle" href="javascript:void(0)"><i class="far fa-times-circle"></i></a>
+        </div>
+
+        <div class="cart-content">
+            <h5 style=" text-align: right;">
+                <a href="javascript:void(0)" class="float-right text-dark">Xóa tất cả</a>
+            </h5>
+            <div id="cart-content" class="mb-4 cart-content">
+
+                <ul class="list-group list-group-flush">
+                    @for (int b=0;b<20;b++)
+                    {
+                        <li class="list-group-item py-3 ps-0 border-bottom">
+                            <!-- row -->
+                            <div class="row align-items-center">
+                                <div class="col-3 col-md-2">
+                                    <div class="img">
+                                        <img src="/Content/client/img/menu_list_1_1.jpg" alt="Ecommerce" class="img-fluid">
+                                    </div>
+                                    
+                                </div>
+                                <div class="col-5 col-md-6 col-lg-6">
+                                    <!-- title -->
+                                    <a href="#" class="text-inherit">
+                                        <h4 class="mb-0 product-name">Salted Instant Popcorn </h4>
+                                    </a>
+                                    <span><small class="text-muted">100g</small></span>
+                                    <!-- text -->
+                                    <div class="mt-2 small lh-1">
+                                        <a href="#!" class="text-decoration-none text-inherit">
+                                            <span class="me-1 align-text-bottom">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-success">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                    </path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </span><span class="text-muted">Remove</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- price -->
+                                <div class="col-4 text-lg-end text-start text-md-end col-md-4">
+                                    <div class="product-price">
+                                        <ins class="d-block">250.000 VNĐ</ins>
+                                        <del class="d-block">250.000 VNĐ</del>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </li>
+                    }
+
+
+                </ul>
+               
+                <div class="cart-total">
+                    <div class="h3 d-flex justify-content-between align-content-center fw-bold ">Tổng: <span class="text-danger">0.000 đ</span></div>
+                </div>
+            </div>
+            <div class="cart-btn-wrap d-flex justify-content-between">
+                <a href="#" class="cart-btn btn">Tiếp tục mua</a>
+                <a href="#" class="cart-checkout-btn btn">Đặt hàng</a>
+            </div>
+        </div>
+    </div>
+</div>

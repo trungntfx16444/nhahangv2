@@ -1,0 +1,127 @@
+﻿@model List<PKWebShop.Models.CustomizeModels.SessionOrderProducts>
+
+@{
+    var GrandTotal = (Model?.Sum(p => double.Parse(p.Total)) ?? 0).ToString("#,##0");
+}
+
+
+@if (ViewBag.Error != null)
+{
+    <p class="alert alert-warning">Chọn sản phẩm thất bại. @ViewBag.Error</p>
+}
+
+<input type="hidden" id="QtyTemp"/>
+<table id="tableOderProduct" class="table table-hover table-responsive">
+    <thead style="background-color:gray; color:white">
+        <tr>
+            <th style="width:30px"></th>
+            <th colspan="2" style="width:200px">Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Số tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td title="bỏ chọn sản phẩm">
+                    <span style="font-size:15px; cursor:pointer" onclick="ChooseProduct('del','@item.Id')">&#10005;</span>
+                </td>
+                <td>
+                    <img src="@(!string.IsNullOrEmpty(item.Picture) ? item.Picture : "/Content/admin/img/no_image.jpg")" width="60" />
+                </td>
+                <td>
+                    <span class="text-capitalize">@(item.ProductName)</span><br />
+                    <span style="color:orangered">@(item.Price)</span>
+                </td>
+                <td>
+                    <input type="number" name="qty_@item.Id" value="@(item.Quantity)" onfocus="EditQty('@item.Id')" onblur="UpdateQty('@item.Id')" style="width:60px;height:35px;" min="1" max="99" autocomplete="off" /><br />
+                    <div id="div_edit_@item.Id" style="display:none">
+                        <button type="button" style="width:26px; margin-top:5px; color:#00a65a" data-toggle="tootip" title="Cập nhật">
+                            <i class="fa fa-check"></i>
+                        </button>
+                        <button id="cancel_@item.Id" type="button" style="width:26px; margin-top:5px; color:orangered" data-toggle="tootip" title="Hủy bỏ">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+                <td id="total_@item.Id">@(item.Total)</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot style="background-color:#EEEEEE">
+        @if (Model != null && Model.Count() > 0)
+        {
+            <tr>
+                <td colspan="4" class="text-right text-uppercase"><b>Tổng tiền</b></td>
+                <td class="text-success"><b id="GrandTotal">@(GrandTotal)</b></td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td colspan="5">Chưa có sản phẩm nào được chọn</td>
+            </tr>
+        }
+    </tfoot>
+</table>
+
+<script type="text/javascript">
+    let _number = @(Model.Count() > 0 ? Model.Sum(p => p.Quantity) : 0);
+    document.getElementById("cartNum").innerHTML = _number;
+
+    sessionStorage.setItem("product", _number);
+
+    function EditQty(id) {
+        $("#div_edit_" + id).show();
+        let val = $("input[name='qty_" + id + "']").val();
+        $("#QtyTemp").val(val);
+    };
+    
+    function UpdateQty(id) {
+        $("#div_edit_" + id).hide();
+
+        if ($("#cancel_" + id).is(":hover") == true) {
+            //console.log("cancel");
+            let val = $("#QtyTemp").val();
+            $("input[name='qty_" + id + "']").val(val);
+        }
+        else {
+            //console.log("update");
+            let quantity = $("input[name='qty_" + id + "']").val();
+
+            if (parseInt(quantity) == "NaN" || quantity == "" || parseInt(quantity) < 1) {
+                quantity = 1;
+            }
+
+            $.ajax({
+                method: "POST",
+                url: "/cart/UpdateQuantity",
+                data: {
+                    id: id,
+                    qty: quantity,
+                },
+                dataType: "json"
+            })
+                .done(function (data) {
+                    if (data[0] == true) {
+                        $("#total_" + id).html(data[1]);
+                        $("#GrandTotal").html(data[2]);
+                        $("input[name='qty_" + id + "']").val(quantity);
+                        $("#cartNum").html(data[3]);
+                        sessionStorage.setItem("product", data[3]);
+                    }
+                    else {
+                        alert(data[1]);
+                    }
+                })
+                .fail(function () {
+                    alert("Oops! Something went wrong");
+                });
+        }
+
+        $("#QtyTemp").val("");
+    };
+
+    
+</script>

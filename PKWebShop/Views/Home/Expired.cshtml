@@ -1,0 +1,78 @@
+﻿
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Utils
+@using PKWebShop.Models.CustomizeModels
+
+@{
+    Layout = null;
+    string url_product = UserContent.GetUrlSite(SiteSEO.code_SEO.SanPham).url;
+    webconfiguration info = UserContent.GetWebInfomation();
+
+    var order = ViewBag.Order as order;
+    var listProductItem = ViewBag.ListOrderDetail as List<orders_detail>;
+    var listProp = ViewBag.ListProp as List<product_properties>;
+}
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="shortcut icon" href="@(info.LogoPicture ?? info.LogoHeader ?? info.LogoFooter)">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Thông báo hết hạn">
+    <meta name="author" content="Webphukhang">
+    <meta name="generator" content="Webphukhang">
+    <title>Thông báo hết hạn</title>
+    <link rel="shortcut icon" href="#">
+    <!-- Bootstrap core CSS -->
+    <link href="~/Content/client/css/vendor/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/client/css/vendor/fontawesome.min.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Color.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Font.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Site.css" rel="stylesheet" />
+    <link href="~/Content/client/css/Thank.css" rel="stylesheet" />
+    <style>
+        h1 {
+            text-transform: uppercase;
+            font-size: calc(5vw + 25px);
+            font-weight: 500;
+            color: #fff;
+            text-shadow: 1px 4px 4px #999, 1px 4px 10px #999, 1px 3px 0px #919191;
+        }
+        h4{
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="masthead mb-auto">
+            <!--...-->
+        </header>
+        <main role="main" class="inner cover">
+
+            <h1>Thông báo</h1>
+            <h4>Website của bạn đã hết hạn</h4>
+            <p>Vui lòng liên hệ</p>
+            <p style="font-size: 20px; font-weight: bold; color: var(--color-theme-primary); ">Hotline: 0935.352.028 - 0908.733.913</p>
+            <div class="row d-flex justify-content-md-center" style="padding-top: 20px;">
+                <div class="col-md-6 col-12 mb-3 mb-md-0">
+                    <a href="/" class="btn btn-theme w-100 p-3">
+                        <i class="far fa-play-circle"></i>
+                        Đã gia hạn web
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <footer class="mastfoot mt-auto">
+            <div class="inner">
+                <p>Copyright © 2021 @(info.Copyright) | <a href="https://webphukhang.com/" target="_blank">Thiết kế bởi Webphukhang</a>.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

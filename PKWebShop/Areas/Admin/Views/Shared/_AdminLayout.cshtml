@@ -1,0 +1,972 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+@using PKWebShop.Models
+@using PKWebShop.AppLB
+@using PKWebShop.Services
+@using PKWebShop.Utils
+@{
+    if (!User.Identity.IsAuthenticated)
+    {
+        Response.Redirect("/admin/home/Login");
+    }
+    var cmem = Authority.GetThisUser();
+    if (cmem == null)
+    {
+        Response.Redirect("/admin/home/Login");
+    }
+    var webLicense = new PackageServices().WebPackInfo();
+    if (webLicense.IsExpired)
+    {
+        Response.Redirect("/Expired");
+    }
+    webconfiguration info = UserContent.GetWebInfomation(true);
+    var access = Authority.GetAccessAuthority(cmem);
+    string controller = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+    string action = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
+
+}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Webphukhang">
+    <title>@info.CompanyName</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="@info.LogoPicture">
+    <!-- page css -->
+    <!-- Core css -->
+    @*<link href='~/content/admin/bower_components/chosen/chosen.min.css' rel='stylesheet'>*@
+    <link href="~/Content/admin/assets/vendors/datatables/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/admin/js/jquery-ui/jquery-ui.css" rel="stylesheet" />
+    <link href='~/content/admin/css/jquery.noty.css' rel='stylesheet'>
+    <link href='~/content/admin/css/noty_theme_default.css' rel='stylesheet'>
+    <link href='~/content/admin/css/animate.min.css' rel='stylesheet'>
+    @*<link href="~/Content/admin/assets/vendors/select2/select2.css" rel="stylesheet" />*@
+
+    <link href="~/Content/admin/assets/vendors/select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/Content/admin/assets/vendors/select2/select2-bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/Content/flag/css/flag-icon.min.css" rel="stylesheet" />
+    <link href="~/Content/admin/assets/css/style.css" rel="stylesheet" />
+    <link href="~/Content/admin/assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css" rel="stylesheet" />
+    <link href="~/Content/admin/assets/css/app.min.css" rel="stylesheet">
+    <link href="~/Content/admin/assets/css/style.css" rel="stylesheet" />
+    <link href="~/Content/bootstrapselect/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link href="~/Content/flag/css/flag-icon.min.css" rel="stylesheet" />
+    <link href="~/Content/json-viewer/jquery.json-viewer.css" rel="stylesheet" />
+    <link href="~/Content/Tags-Input-Autocomplete/jquery.tagsinput-revisited.min.css" rel="stylesheet" />
+    <link href="~/Content/admin/assets/vendors/perfect-scrollbar/css/perfect-scrollbar.min.css" rel="stylesheet" />
+    <link href="~/Content/admin/css/custom.css" rel="stylesheet" />
+    <!-- Page loading styles-->
+    <style type="text/css">
+        .cs-page-loading {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-transition: all .4s .2s ease-in-out;
+            transition: all .4s .2s ease-in-out;
+            background-color: #fff;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 9999;
+        }
+
+            .cs-page-loading.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .cs-page-loading.ajax_active {
+                opacity: .5;
+                visibility: visible;
+                transition: 1s;
+            }
+
+                .cs-page-loading.ajax_active > .cs-page-loading-inner {
+                    opacity: 1;
+                }
+
+        .cs-page-loading-inner {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
+            -webkit-transition: opacity .2s ease-in-out;
+            transition: opacity .2s ease-in-out;
+            opacity: 0;
+        }
+
+        .cs-page-loading.active > .cs-page-loading-inner {
+            opacity: 1;
+        }
+
+        .cs-page-loading-inner > span {
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: normal;
+            color: #3f87f5;
+        }
+
+        .cs-page-spinner {
+            display: inline-block;
+            width: 2.75rem;
+            height: 2.75rem;
+            margin-bottom: .75rem;
+            vertical-align: text-bottom;
+            border: .15em solid #3f87f5;
+            border-right-color: transparent;
+            border-radius: 50%;
+            -webkit-animation: spinner .75s linear infinite;
+            animation: spinner .75s linear infinite;
+        }
+
+        #sticky-wrapper {
+            z-index: 999;
+        }
+
+        .dropdown-menu.open.show ul.dropdown-menu.inner {
+            display: block
+        }
+
+        #left-menu ul > li > a:not(.nav-link-custom):hover {
+            background-color: aliceblue;
+            transition: 0.5s;
+        }
+
+        label.required:after {
+            content: " *";
+            color: red;
+        }
+
+        .button-loading {
+            opacity: 0.8;
+            cursor: no-drop !important;
+        }
+
+            .button-loading > .anticon-loading {
+                display: inherit !important;
+            }
+
+        .btn:focus {
+            box-shadow: unset !important;
+        }
+
+        @@-webkit-keyframes spinner {
+            100% {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        @@keyframes spinner {
+            100% {
+                -webkit-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        .ps-scrollbar-y-rail {
+            z-index: 1000;
+            opacity: 0 !important;
+        }
+
+        label.label-toolbar {
+            display: flow-root !important;
+            margin-bottom: 2px;
+        }
+
+            label.label-toolbar > span:first-child {
+                /*text-transform: uppercase;*/
+                float: left;
+            }
+
+            label.label-toolbar > span:last-child {
+                font-size: 18px;
+                float: right;
+            }
+
+                label.label-toolbar > span:last-child > i {
+                    cursor: pointer;
+                    margin-right: 7px;
+                }
+
+        @if (!webLicense.MultiLanguage)
+        {<text>
+            #langTab, .lang_select, .add_lang, .lang_col button , .lang_col .lang_node:nth-child(n+2) {
+                display: none !important;
+            }
+        </text>}
+
+        .logo-header {
+            display: flex;
+            flex-wrap: wrap!important;
+            justify-content: center;
+            align-items: center!important;
+            text-align: center;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .is-folded #div-chart {
+            display: none;
+        }
+    </style>
+    <!-- Page loading scripts-->
+    <script type="text/javascript">
+        (function () {
+            window.onload = function () {
+                var preloader = document.querySelector('.cs-page-loading');
+                //console.log(preloader.classList);
+                preloader.classList.remove('active');
+                //setTimeout(function () {
+                //    console.log(preloader.hide);
+                //    if (preloader.hide) { preloader.hide(); }
+                //}, 2000);
+            };
+        })();
+
+    </script>
+    <script src="~/Content/admin/assets/vendors/jquery/dist/jquery.min.js"></script>
+    <script src="~/Content/admin/js/jquery-ui/jquery-ui.js"></script>
+    <script src="~/Content/admin/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="~/Areas/Admin/Angular/angular.min.js"></script>
+</head>
+
+<body>
+    <div class="cs-page-loading active">
+        <div class="cs-page-loading-inner">
+            <div class="cs-page-spinner"></div>
+        </div>
+    </div>
+    <div class="app">
+        <div class="layout">
+            <!-- Header START -->
+            <div class="header">
+                <div class="logo logo-dark logo-header">
+                    <a href="/" target="_blank" style="">
+                        <img height="50" src="@info.LogoHeader" alt="Logo">
+                        <img class="logo-fold" src="@info.LogoPicture" alt="Logo" style="width: auto; max-height: 69px; max-width: 100%; padding: 10px;">
+                    </a>
+                </div>
+                <div class="logo logo-white logo-header">
+                    <a href="/" target="_blank">
+                        <img height="50" src="@info.LogoHeader" alt="Logo">
+                        <img class="logo-fold" src="@info.LogoPicture" alt="Logo" style="width: auto;max-height: 69px; max-width:100%;padding: 10px;">
+                    </a>
+                </div>
+                <div class="nav-wrap">
+                    <ul class="nav-left">
+                        <li class="desktop-toggle">
+                            <a href="javascript:void(0);">
+                                <i class="anticon"></i>
+                            </a>
+                        </li>
+                        <li class="mobile-toggle">
+                            <a href="javascript:void(0);">
+                                <i class="anticon"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="" style="width: 100%;line-height: 69px;overflow: hidden;position: relative;">
+                        @Html.Partial("partial/_PackageNotiPartial", webLicense)
+                    </div>
+                    <ul class="nav-right">
+                        <li class="dropdown dropdown-animated scale-left">
+                            <div class="pointer" data-toggle="dropdown">
+                                <div class="avatar avatar-image  m-h-10 m-r-15">
+                                    <img src="@(!string.IsNullOrEmpty(cmem.Avatar) ? cmem.Avatar : "/Content/client/img/avatardefault.png")" alt="">
+                                </div>
+                            </div>
+                            <div class="p-b-15 p-t-20 dropdown-menu pop-profile">
+                                <div class="p-h-20 p-b-15 m-b-10 border-bottom">
+                                    <div class="d-flex m-r-50">
+                                        <div class="avatar avatar-lg avatar-image">
+                                            <img src="@(!string.IsNullOrEmpty(cmem.Avatar) ? cmem.Avatar : "/Content/client/img/avatardefault.png")" alt="">
+                                        </div>
+                                        <div class="m-l-10">
+                                            <p class="m-b-0 text-dark font-weight-semibold">@cmem.Fullname</p>
+                                            <p class="m-b-0 opacity-07">@cmem.Role</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="/admin/users/save/@cmem.UserId" class="dropdown-item d-block p-h-15 p-v-10">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <i class="anticon opacity-04 font-size-16 anticon-user"></i>
+                                            <span class="m-l-10">Edit Profile</span>
+                                        </div>
+                                    </div>
+                                </a>
+                                <a href="/admin/home/logout" class="dropdown-item d-block p-h-15 p-v-10">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <i class="anticon opacity-04 font-size-16 anticon-logout"></i>
+                                            <span class="m-l-10">Logout</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </li>
+                        <li class=" d-none">
+                            <a href="javascript:void(0);" data-toggle="modal" data-target="#quick-view">
+                                <i class="anticon anticon-appstore"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Header END -->
+            <!-- Side Nav START -->
+            <div id="left-menu" class="side-nav">
+                @Html.Partial("partial/_PackageDiskChart", webLicense)
+                
+                <div class="side-nav-inner">
+                    <ul class="side-nav-menu scrollable">
+                        <!--Home-->
+                        <li class="nav-item dropdown @(controller == "home" ? "active" : "")">
+                            <a class="dropdown-toggle" href="/admin/home">
+                                <span class="icon-holder">
+                                    <i class="anticon anticon-dashboard"></i>
+                                </span>
+                                <span class="title">Bảng điều khiển</span>
+                            </a>
+                        </li>
+                        <!--Thành viên-->
+                        <li class="nav-item dropdown">
+                            <a class="dropdown-toggle" href="javascript:void(0);">
+                                <span class="icon-holder">
+                                    <i class="anticon anticon-user"></i>
+                                </span>
+                                <span class="title">Thành viên</span>
+                                <span class="arrow">
+                                    <i class="arrow-icon"></i>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                @if (access.ContainsKey("update_member"))
+                                {
+                                    <li @(controller == "users" && (action == "index" || action == "save") ? "class=active" : "")>
+                                        <a href="/admin/users">
+                                            <i class="anticon anticon-double-right"></i> DS thành viên
+                                        </a>
+                                    </li>
+                                }
+                                <li @(controller == "users" && action == "logs" ? "class=active" : "")>
+                                    <a href="/admin/users/logs">
+                                        <i class="anticon anticon-double-right"></i> Nhật ký hoạt động
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!--Khách hàng-->
+                        @if (access.ContainsKey("update_customer") && webLicense.IsNewsSite() == false)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="dropdown-toggle" href="javascript:void(0);">
+                                    <span class="icon-holder">
+                                        <i class="anticon anticon-usergroup-add"></i>
+                                    </span>
+                                    <span class="title">Khách hàng</span>
+                                    <span class="arrow">
+                                        <i class="arrow-icon"></i>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li @(controller == "customerman" ? "class=active" : "")>
+                                        <a href="/admin/customerman">
+                                            <i class="anticon anticon-double-right"></i> Danh sách khách hàng
+                                        </a>
+                                    </li>
+                                    @if (access.ContainsKey("update_apoiment"))
+                                    {
+                                        <li @(controller == "appointment" ? "class=active" : "")>
+                                            <a href="/admin/appointment">
+                                                <i class="anticon anticon-double-right"></i> Khách hàng liên hệ
+                                            </a>
+                                        </li>
+                                    }
+                                    @*<li @(controller == "customer" ? "class=active" : "")>
+                                <a href="/admin/customer">
+                                    <i class="anticon anticon-double-right"></i> Đối tác
+                                </a>
+                            </li>*@
+                                </ul>
+                            </li>
+                        }
+
+                        <!--Bài viết-->
+                        <li class="nav-item dropdown">
+                            <a class="dropdown-toggle" href="javascript:void(0);">
+                                <span class="icon-holder">
+                                    <i class="anticon anticon-file-text"></i>
+                                </span>
+                                <span class="title">Bài viết</span>
+                                <span class="arrow">
+                                    <i class="arrow-icon"></i>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li @(controller == "news" && action == "toppic" ? "class=active" : "")>
+                                    <a href="/admin/news/toppic">
+                                        <i class="anticon anticon-double-right"></i> Quản lý chủ đề
+                                    </a>
+                                </li>
+                                <li @(controller == "news" && (action == "index" || action == "save" || action == "detail") ? "class=active" : "")>
+                                    <a href="/admin/news/">
+                                        <i class="anticon anticon-double-right"></i> Quản lý bài viết
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!--Tags-->
+                        <li class="nav-item dropdown @(controller == "news" && action == "tags" ? "active" : "")">
+                            <a href="/admin/news/tags">
+                                <span class="icon-holder">
+                                    <i class="anticon anticon-tags"></i>
+                                </span>
+                                <span class="title">Quản lý Tags</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link-custom">
+                                <h6 class="title mb-0">DỊCH VỤ - SẢN PHẨM</h6>
+                            </a>
+                        </li>
+                        <!--Dịch vụ-->
+                        <!--<li class="nav-item dropdown">
+            <a class="dropdown-toggle" href="javascript:void(0);">
+                <span class="icon-holder">
+                    <i class="anticon anticon-solution"></i>
+                </span>
+                <span class="title">Dịch vụ</span>
+                <span class="arrow">
+                    <i class="arrow-icon"></i>
+                </span>
+            </a>
+            <ul class="dropdown-menu">-->
+                        @*<li @(controller == "services" ? "class=active" : "")>
+                    <a href="/admin/services">
+                        <i class="anticon anticon-double-right"></i> Phòng cho thuê
+                    </a>
+                </li>*@
+
+                        <!--</ul>
+            </li>-->
+                        @if (webLicense.IsNewsSite() == false)
+                        {
+                            <!--Sản phẩm-->
+                            <li class="nav-item dropdown">
+                                <a class="dropdown-toggle" href="javascript:void(0);">
+                                    <span class="icon-holder">
+                                        <i class="anticon anticon-appstore"></i>
+                                    </span>
+                                    <span class="title">Sản phẩm</span>
+                                    <span class="arrow">
+                                        <i class="arrow-icon"></i>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li @(controller == "productman" && action == "category" ? "class=active" : "")>
+                                        <a href="/admin/productman/category">
+                                            <i class="anticon anticon-double-right"></i> Danh mục sản phẩm
+                                        </a>
+                                    </li>
+                                    <li @(controller == "productman" && (action == "index" || action == "save" || action == "detail") ? "class=active" : "")>
+                                        <a href="/admin/productman">
+                                            <i class="anticon anticon-double-right"></i> DS sản phẩm
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <!--Đơn hàng-->
+                            if (access.ContainsKey("update_order"))
+                            {
+                                <li class="nav-item dropdown @(controller == "orderman" ? "active" : "")">
+                                    <a href="/admin/orderman">
+                                        <span class="icon-holder">
+                                            <i class="anticon anticon-shopping"></i>
+                                        </span>
+                                        <span class="title">Đơn hàng</span>
+                                    </a>
+                                </li>
+                            }
+                        }
+
+                        @if (access.ContainsKey("update_payment") && webLicense.PaymentOnline)
+                        {
+                            <li class="nav-item dropdown update_payment">
+                                <a href="/admin/payment">
+                                    <span class="icon-holder">
+                                        <i class="anticon anticon-dollar"></i>
+                                    </span>
+                                    <span class="title">Thanh toán online</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if ((access.ContainsKey("update_gift_code") && webLicense.GiftCode) || (access.ContainsKey("update_membership_point") && webLicense.MembershipPoints))
+                        {
+                            <!--Chương trình khuyến mãi-->
+                            <li class="nav-item dropdown">
+                                <a class="dropdown-toggle" href="javascript:void(0);">
+                                    <span class="icon-holder">
+                                        <i class="anticon anticon-qrcode"></i>
+                                    </span>
+                                    <span class="title">Khuyến mãi</span>
+                                    <span class="arrow">
+                                        <i class="arrow-icon"></i>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    @if (access.ContainsKey("update_gift_code") && webLicense.GiftCode)
+                                    {
+                                        <li @(controller == "giftcode" ? "class=active" : "")>
+                                            <a href="/admin/giftcode">
+                                                <i class="anticon anticon-double-right"></i> Mã giảm giá
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (access.ContainsKey("update_membership_point") && webLicense.MembershipPoints)
+                                    {
+                                        <li class="nav-item dropdown @(controller == "bonuspoints"  && action == "index" ? "active" : "")">
+                                            <a href="/admin/BonusPoints/">
+                                                <i class="anticon anticon-double-right"></i> Tích điểm
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
+                        @if (access.ContainsKey("update_warehouse") && webLicense.Warehouse)
+                        {
+                            <!--Quản lý kho-->
+                            <li class="nav-item dropdown">
+                                <a class="dropdown-toggle" href="javascript:void(0);">
+                                    <span class="icon-holder">
+                                        <i class="anticon anticon-home"></i>
+                                    </span>
+                                    <span class="title">Quản lý kho</span>
+                                    <span class="arrow">
+                                        <i class="arrow-icon"></i>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li @(controller == "inventory" && action == "importtickets" ? "class=active" : "")>
+                                        <a href="/admin/inventory/importtickets">
+                                            <i class="anticon anticon-double-right"></i> Nhập kho
+                                        </a>
+                                    </li>
+                                    <li class="@(controller == "inventory" && action == "index" ? "active" : "")">
+                                        <a href="/admin/inventory">
+                                            <i class="anticon anticon-double-right"></i> Tồn kho
+                                        </a>
+                                    </li>
+                                    <li class="@(controller == "inventory" && action == "vendors" ? "active" : "")">
+                                        <a href="/admin/inventory/vendors">
+                                            <i class="anticon anticon-double-right"></i> Nhà cung cấp
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        @if (access.ContainsKey("update_dept") && webLicense.Dept)
+                        {
+                            <!--Công nợ-->
+                            <li class="nav-item dropdown">
+                                <a class="dropdown-toggle" href="javascript:void(0);">
+                                    <span class="icon-holder">
+                                        <i class="anticon anticon-calculator"></i>
+                                    </span>
+                                    <span class="title">Công nợ</span>
+                                    <span class="arrow">
+                                        <i class="arrow-icon"></i>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li @(controller == "dept" && action == "receipt" ? "class=active" : "")>
+                                        <a href="/admin/dept/receipt">
+                                            <i class="anticon anticon-double-right"></i> Thu
+                                        </a>
+                                    </li>
+                                    <li @(controller == "dept" && action == "expense" ? "class=active" : "")>
+                                        <a href="/admin/dept/expense">
+                                            <i class="anticon anticon-double-right"></i> Chi
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        @if (access.ContainsKey("update_shipping_fee") && webLicense.ShippingFee)
+                        {
+                            <li class="nav-item dropdown @(controller == "shipping" && action == "shippingfee" ? "active" : "")">
+                                <a href="/admin/shipping/shippingFee">
+                                    <span class="icon-holder">
+                                        <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 491.1 491.1">
+                                            <path d="M401.5 322.95c-12 0-23.4 4.7-32 13.2-8.6 8.6-13.4 19.8-13.4 31.8s4.7 23.2 13.4 31.8c8.7 8.5 20 13.2 32 13.2 24.6 0 44.6-20.2 44.6-45s-20-45-44.6-45zm0 70c-13.8 0-25.4-11.4-25.4-25s11.6-25 25.4-25c13.6 0 24.6 11.2 24.6 25s-11 25-24.6 25zm11.6-219.9c-1.8-1.7-4.2-2.6-6.7-2.6h-51.3c-5.5 0-10 4.5-10 10v82c0 5.5 4.5 10 10 10h81.4c5.5 0 10-4.5 10-10v-54.9c0-2.8-1.2-5.5-3.3-7.4l-30.1-27.1zm13.4 79.4h-61.4v-62.1h37.4l24 21.6v40.5zm-269.2 70.5c-12 0-23.4 4.7-32 13.2-8.6 8.6-13.4 19.8-13.4 31.8s4.7 23.2 13.4 31.8c8.7 8.5 20 13.2 32 13.2 24.6 0 44.6-20.2 44.6-45s-20-45-44.6-45zm0 70c-13.8 0-25.4-11.4-25.4-25s11.6-25 25.4-25c13.6 0 24.6 11.2 24.6 25s-11 25-24.6 25zm-66.7-57.7H70.5v-26.6c0-5.5-4.5-10-10-10s-10 4.5-10 10v36.6c0 5.5 4.5 10 10 10h30.1c5.5 0 10-4.5 10-10s-4.5-10-10-10zm50.7-54.5c0-5.5-4.5-10-10-10H10c-5.5 0-10 4.5-10 10s4.5 10 10 10h121.3c5.5 0 10-4.4 10-10zm-111-36.1l121.3.7c5.5 0 10-4.4 10.1-9.9.1-5.6-4.4-10.1-9.9-10.1l-121.3-.7h-.1c-5.5 0-10 4.4-10 9.9-.1 5.6 4.4 10.1 9.9 10.1zm20.4-45.4H172c5.5 0 10-4.5 10-10s-4.5-10-10-10H50.7c-5.5 0-10 4.5-10 10s4.5 10 10 10zm436.7-13.5l-71.6-59.3c-1.8-1.5-4-2.3-6.4-2.3h-84.2v-36c0-5.5-4.5-10-10-10H60.5c-5.5 0-10 4.5-10 10v73.2c0 5.5 4.5 10 10 10s10-4.5 10-10v-63.2h234.8v237.1h-82c-5.5 0-10 4.5-10 10s4.5 10 10 10h122.1c5.5 0 10-4.5 10-10s-4.5-10-10-10h-20.1v-191.1h80.6l65.2 54-.7 136.9H460c-5.5 0-10 4.5-10 10s4.5 10 10 10h20.3c5.5 0 10-4.4 10-9.9l.8-151.6c-.1-3-1.4-5.9-3.7-7.8z" />
+                                        </svg>
+                                    </span>
+                                    <span class="title">Quản lý phí giao hàng</span>
+                                </a>
+                            </li>
+                        }
+
+                        <li>
+                            <a class="nav-link-custom">
+                                <h6 class="title mb-0">CHỨC NĂNG</h6>
+                            </a>
+                        </li>
+
+                        <!--Quảng cáo-->
+                        <li class="nav-item dropdown @(controller == "qcao" ? "active" : "")">
+                            <a href="/admin/Qcao">
+                                <span class="icon-holder">
+                                    <i class="anticon anticon-layout"></i>
+                                </span>
+                                <span class="title">Popup quảng cáo</span>
+                            </a>
+                        </li>
+
+                        <!--Khu vực chức năng-->
+                        <li class="nav-item dropdown">
+                            <a class="dropdown-toggle" href="javascript:void(0);">
+                                <span class="icon-holder">
+                                    <i class="anticon anticon-desktop"></i>
+                                </span>
+                                <span class="title">Cài đặt giao diện</span>
+                                <span class="arrow">
+                                    <i class="arrow-icon"></i>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li @(controller == "menumgr" ? "class=active" : "")>
+                                    <a href="/admin/menuMgr">
+                                        <i class="anticon anticon-double-right"></i> Menu
+                                    </a>
+                                </li>
+                                <li @(controller == "feature" && action == "index" ? "class=active" : "")>
+                                    <a href="/admin/feature">
+                                        <i class="anticon anticon-double-right"></i> Các thành phần
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        @*
+                <li class="nav-item @if (controller == "aboutus") { @Html.Raw(@"active") ; }">
+                    <a href="/admin/aboutus">
+                        <span class="icon-holder">
+                            <i class="anticon anticon-line"></i>
+                        </span>
+                        <span class="title">Giới thiệu</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="dropdown-toggle" href="javascript:void(0);">
+                        <span class="icon-holder">
+                            <i class="anticon anticon-customer-service"></i>
+                        </span>
+                        <span class="title">Tư vấn</span>
+                        <span class="arrow">
+                            <i class="arrow-icon"></i>
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li @if (controller == "supportpolicy" && action == "Index") { @Html.Raw(@"class=""active""") ; }>
+                            <a href="/admin/supportpolicy/index">HD Đặt hàng</a>
+                        </li>
+                        <li @if (controller == "supportpolicy" && action == "paymentpo") { @Html.Raw(@"class=""active""") ; }>
+                            <a href="/admin/supportpolicy/paymentpo">HD Thanh toán</a>
+                        </li>
+                        <li @if (controller == "supportpolicy" && action == "customerpolicy") { @Html.Raw(@"class=""active""") ; }>
+                            <a href="/admin/supportpolicy/customerpolicy">CS Khách hàng</a>
+                        </li>
+                        <li @if (controller == "supportpolicy" && action == "ship") { @Html.Raw(@"class=""active""") ; }>
+                            <a href="/admin/supportpolicy/ship">CT Giao hàng</a>
+                        </li>
+                    </ul>
+                </li>
+                        *@
+
+                        <li class="nav-item dropdown">
+                            <a class="dropdown-toggle" href="javascript:void(0);">
+                                <span class="icon-holder">
+                                    <i class="anticon anticon-setting"></i>
+                                </span>
+                                <span class="title">Hệ thống</span>
+                                <span class="arrow">
+                                    <i class="arrow-icon"></i>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li @(controller == "contact" ? "class=active" : "")>
+                                    <a href="/admin/contact">
+                                        <i class="anticon anticon-double-right"></i> Thông tin web
+                                    </a>
+                                </li>
+
+                                @if (cmem.RoleLevel == (int)UserContent.UserRole.Admin)
+                                {
+                                    <li @(controller == "users" && action == "permissionmanagement" ? "class=active" : "")>
+                                        <a href="/admin/users/permissionmanagement">
+                                            <i class="anticon anticon-double-right"></i> Phân quyền
+                                        </a>
+                                    </li>
+                                    @*<li @(controller == "memberlog" ? "class=active" : "")>
+                                <a href="/admin/memberlog/">
+                                    <i class="anticon anticon-double-right"></i> Hoạt động thành viên
+                                </a>
+                            </li>*@
+                                }
+                                <li @(controller == "home" && action == "testemail" ? "class=active" : "")>
+                                    <a href="/admin/home/testemail">
+                                        <i class="anticon anticon-double-right"></i> Cấu hình email gửi
+                                    </a>
+                                </li>
+                                @*@if (webLicense.IsPackageOther() == false)
+                        {
+                            <li class="path-package-menu">
+                                <a href="/admin/package">
+                                    <i class="anticon anticon-double-right"></i> Tính năng web
+                                </a>
+                            </li>
+                        }*@
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Side Nav END -->
+            <!-- Page Container START -->
+            <div class="page-container">
+                <!-- Content Wrapper START -->
+                <div class="main-content">
+                    @RenderBody()
+                </div>
+                <!-- Content Wrapper END -->
+                <!-- Footer START -->
+                <footer class="footer">
+                    <div class="footer-content">
+                        <p class="m-b-0">Copyright © @DateTime.Now.ToString("yyyy") Design by Webphukhang. All rights reserved. Ver 1.0.22</p>
+                        <span>
+                            Hôm nay: @DateTime.Now.ToString("dd/MM/yyyy")
+                        </span>
+                    </div>
+                </footer>
+                <!-- Footer END -->
+            </div>
+            <!-- Page Container END -->
+            <!-- Quick View START -->
+            <div class="modal modal-right fade quick-view" id="quick-view">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header justify-content-between align-items-center">
+                            <h5 class="modal-title">Theme Config</h5>
+                        </div>
+                        <div class="modal-body scrollable">
+                            <div class="m-b-30">
+                                <h5 class="m-b-0">Header Color</h5>
+                                <p>Config header background color</p>
+                                <div class="theme-configurator d-flex m-t-10">
+                                    <div class="radio">
+                                        <input id="header-default" name="header-theme" type="radio" checked value="default">
+                                        <label for="header-default"></label>
+                                    </div>
+                                    <div class="radio">
+                                        <input id="header-primary" name="header-theme" type="radio" value="primary">
+                                        <label for="header-primary"></label>
+                                    </div>
+                                    <div class="radio">
+                                        <input id="header-success" name="header-theme" type="radio" value="success">
+                                        <label for="header-success"></label>
+                                    </div>
+                                    <div class="radio">
+                                        <input id="header-secondary" name="header-theme" type="radio" value="secondary">
+                                        <label for="header-secondary"></label>
+                                    </div>
+                                    <div class="radio">
+                                        <input id="header-danger" name="header-theme" type="radio" value="danger">
+                                        <label for="header-danger"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div>
+                                <h5 class="m-b-0">Side Nav Dark</h5>
+                                <p>Change Side Nav to dark</p>
+                                <div class="switch d-inline">
+                                    <input type="checkbox" name="side-nav-theme-toogle" id="side-nav-theme-toogle">
+                                    <label for="side-nav-theme-toogle"></label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div>
+                                <h5 class="m-b-0">Folded Menu</h5>
+                                <p>Toggle Folded Menu</p>
+                                <div class="switch d-inline">
+                                    <input type="checkbox" name="side-nav-fold-toogle" id="side-nav-fold-toogle">
+                                    <label for="side-nav-fold-toogle"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Quick View END -->
+        </div>
+    </div>
+
+
+    <!-- Core Vendors JS -->
+    <script src="~/content/admin/js/jquery.cookie.js"></script>
+    <script src="~/Content/admin/assets/vendors/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    <!-- page js -->
+    @*<script src="~/Content/admin/assets/vendors/select2/select2.min.js"></script>*@
+    <script src="~/Content/admin/assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="~/Content/admin/assets/vendors/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Content/admin/assets/vendors/datatables/dataTables.bootstrap.min.js"></script>
+    <script src="~/Content/admin/assets/js/pages/datatables.js"></script>
+    <script src="~/Content/admin/ckeditor/ckeditor.js"></script>
+    <script src="~/Content/admin/ckfinder/ckfinder_v1.js"></script>
+    <script src="~/Content/admin/js/notify/notify.min.js"></script>
+    <script src="~/Content/bootstrapselect/js/bootstrap-select.min.js"></script>
+    <script src="~/Content/admin/js/jquery.form.min.js"></script>
+    <script src="~/Content/admin/js/jquery.sticky.js"></script>
+    <script src="~/Content/js/moment-js/moment.js"></script>
+    <script src="~/Content/admin/js/jquery.loadJSON.js"></script>
+    <script src="~/Content/js/noty-cfg.js"></script>
+    <script src="~/Content/json-viewer/jquery.json-viewer.js"></script>
+    <script src="~/Content/Tags-Input-Autocomplete/jquery.tagsinput-revisited.js"></script>
+    <script src="~/Content/admin/assets/vendors/select2/js/select2.full.min.js"></script>
+    <!-- Core JS -->
+    <script src="~/Content/admin/assets/vendors/perfect-scrollbar/js/perfect-scrollbar.jquery.min.js"></script>
+    <script src="~/Content/admin/assets/vendors/perfect-scrollbar/js/perfect-scrollbar.min.js"></script>
+    <script src="~/Content/admin/assets/js/app.min.js"></script>
+    <script src="~/Content/js/Custom.js"></script>
+
+    <script type="text/javascript">
+        document.addEventListener("keydown", function (e) {
+            if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.keyCode == 83) {
+                e.preventDefault();
+                // Process the event here (such as click on submit button)
+                if ($("#quicksave").length && $("#quicksave").is(":visible")) {
+                    $("#quicksave").trigger("click");
+                }
+            }
+        }, false);
+
+        $(function () {
+            //dùng để xử lý ngày tháng cho input[type='date']
+            $("input[type='date']").on("change", function () {
+                var mo = moment(this.value, "YYYY-MM-DD");
+                if (mo.isValid())
+                    this.setAttribute("data-date", mo.format(this.getAttribute("data-date-format")));
+                else {
+                    this.setAttribute("data-date", "");
+                }
+            }).trigger("change");
+            //end.
+
+            $("#myTab").closest(".card-header").addClass("bg-white shadow-sm").sticky({ topSpacing: 70 });
+            var mainform = $(".main-form").formSerialize();
+
+            $(".main-form").on("click change input", function () {
+                if ($(this).formSerialize() != mainform) {
+                    $("#quicksave").show();
+                }
+            })
+
+            CKEDITOR.on("instanceReady", function (event) {
+                var ck = CKEDITOR.instances[event.editor.name];
+                var ck = event.editor;
+                if (ck) {
+                    ck.on("change", function () {
+                        $("[name=" + event.editor.name + "]").val(ck.getData()).trigger("change");
+                    })
+                }
+            });
+
+            $(".alert").fadeTo(5000, 500).slideUp(500, function () {
+                $(".alert").slideUp(500);
+            });
+
+            $('[data-toggle="tooltip"]').tooltip();
+        })
+        $(document).ajaxSend(function () {
+            $(".cs-page-loading").addClass("ajax_active");
+        });
+        $(document).ajaxComplete(function () {
+            $(".cs-page-loading").removeClass("ajax_active");
+        });
+
+        function ajaxLoading(loading = "on") {
+            if (loading == "on") {
+                $(".cs-page-loading").addClass("ajax_active");
+            }
+            else {
+                $(".cs-page-loading").removeClass("ajax_active");
+            }
+        }
+
+        function copy_text(text) {
+            var $temp = $("<input>");
+            $("body").append($temp);
+            $temp.val(text).select();
+            document.execCommand("copy");
+            $temp.remove();
+            success("Đã sao chép url");
+        }
+
+        function U2A(str) {
+            var reserved = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            reserved = reserved.replace(/đ/g, 'd').replace(/[ ]+/g, '-');
+            reserved = reserved.replace(/[^0-9a-z-]/gi, '').replace(/-+/g, '-');
+            return reserved;
+        }
+
+        //dinh dang tien vnd
+        function toMoney(str) {
+            try {
+                let _char = str.toString().search("-") != -1 ? "-" : "";
+
+                let _number = $.isNumeric(str) ? str.toString().replace(/[^0-9]/g, '') : str.replace(/[^0-9]/g, '');
+                if (_number != "") {
+                    let vnd = Number(_number).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+                    return `${_char}${vnd.substring(0, vnd.length - 2)}`;
+                }
+                return _number;
+            } catch {
+                return "0";
+            }
+        }
+    </script>
+    @RenderSection("scripts", required: false)
+
+    <script type="text/javascript">
+        let interval = null;
+        (function () {
+            interval = setInterval(function () {
+                $.get('/KeepAlive.ashx', function (d) {
+                    //console.log(d);
+                });
+            }, 1 * 60 * 1000);
+        })();
+    </script>
+</body>
+
+</html>
